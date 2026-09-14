@@ -497,7 +497,7 @@ export class IaBookReader extends LitElement {
   _bindEventListeners() {
     window.addEventListener('BookReader:PostInit', /** @param {CustomEvent} e */ (e) => {
       this.bookreader = e.detail.props;
-      this.bookreader.shell = this;
+      this.bookreader.initShell(this);
       this.bookReaderLoaded = true;
       this.bookReaderCannotLoad = false;
       this.loaded = true;

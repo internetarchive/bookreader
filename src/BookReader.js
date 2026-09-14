@@ -704,6 +704,7 @@ BookReader.prototype.init = function() {
     plugin._bindNavigationHandlers();
   }
   this.setupKeyListeners();
+  this._setupUserActionListeners();
 
   this.lastScroll = (new Date().getTime());
   this.refs.$brContainer.on('scroll', this, function(e) {
@@ -819,6 +820,43 @@ BookReader.prototype.resize = function() {
     this._modes.mode2Up.resizePageView();
   }
   this.trigger(BookReader.eventNames.resize);
+};
+
+/**
+ * Registers the UI wrapping BookReader (e.g. `<ia-bookreader>`), which hosts book
+ * UI of its own — side menus, panels — outside BookReader's own element.
+ *
+ * @param {import('@/src/ia-bookreader/ia-bookreader.js').IaBookReader} shell
+ */
+BookReader.prototype.initShell = function (shell) {
+  this.shell = shell;
+  // Only the shell sees interactions with both its UI and BookReader's own.
+  this._setupUserActionListeners(shell);
+};
+
+/**
+ * Binds listeners that signal the patron is actively using the book.
+ *
+ * Consumers outside BookReader (e.g. ia-book-actions) use this to keep a loan
+ * from expiring while it is being read. The capture phase is required: several
+ * control handlers return `false`, which jQuery turns into `stopPropagation()`,
+ * so a bubbling listener would never see clicks on the navbar.
+ *
+ * @private
+ * @param {HTMLElement} [target] element to listen on; prefer the outermost one
+ * that holds book UI, since anything outside it is invisible to these listeners.
+ */
+BookReader.prototype._setupUserActionListeners = function (target = this.refs.$br[0]) {
+  if (!target || target === this._userActionTarget) return;
+
+  if (!this._onUserAction) {
+    this._onUserAction = () => this.trigger(BookReader.eventNames.userAction);
+  }
+  for (const eventName of ['pointerdown', 'keydown']) {
+    this._userActionTarget?.removeEventListener(eventName, this._onUserAction, { capture: true });
+    target.addEventListener(eventName, this._onUserAction, { capture: true });
+  }
+  this._userActionTarget = target;
 };
 
 /**
