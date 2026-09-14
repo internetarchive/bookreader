@@ -16,6 +16,24 @@ export default class WebTTSEngine extends AbstractTTSEngine {
     return typeof(window.speechSynthesis) !== 'undefined';
   }
 
+  /**
+   * @param {SpeechSynthesisVoice} voice
+   * @returns {boolean}
+   */
+  static isGoodVoice(voice) {
+    const badVoicePrefixes = [
+      // Exclude known novelty/undesired macOS voice families (e.g. joke/system variants)
+      'com.apple.speech.synthesis.voice.',
+      'com.apple.eloquence.',
+      'com.apple.voice.super-compact.',
+    ];
+
+    return (
+      voice.voiceURI
+      && !badVoicePrefixes.some(prefix => voice.voiceURI.startsWith(prefix))
+    );
+  }
+
   /** @param {TTSEngineOptions} options */
   constructor(options) {
     super(options);
@@ -80,7 +98,7 @@ export default class WebTTSEngine extends AbstractTTSEngine {
 
   /** @override */
   getVoices() {
-    const voices = speechSynthesis.getVoices();
+    const voices = speechSynthesis.getVoices().filter(WebTTSEngine.isGoodVoice);
     if (voices.filter(v => v.default).length != 1) {
       // iOS bug where the default system voice is sometimes
       // missing from the list
