@@ -104,6 +104,8 @@ BookReader.constModeThumb = 3;
 // Although this can actualy have any BookReaderPlugin subclass as value, we
 // hardcode the known plugins here for type checking
 BookReader.PLUGINS = {
+  /** @type {typeof import ('./plugins/plugin.annotations.js').AnnotationsPlugin | null} */
+  annotations: null,
   /** @type {typeof import('./plugins/plugin.archive_analytics.js').ArchiveAnalyticsPlugin | null}*/
   archiveAnalytics: null,
   /** @type {typeof import('./plugins/plugin.autoplay.js').AutoplayPlugin | null}*/
@@ -180,6 +182,7 @@ BookReader.prototype.setup = function(options) {
 
   // Construct the usual plugins first to get type hints
   this.plugins = {
+    annotations: BookReader.PLUGINS.annotations ? new BookReader.PLUGINS.annotations(this) : null,
     archiveAnalytics: BookReader.PLUGINS.archiveAnalytics ? new BookReader.PLUGINS.archiveAnalytics(this) : null,
     autoplay: BookReader.PLUGINS.autoplay ? new BookReader.PLUGINS.autoplay(this) : null,
     chapters: BookReader.PLUGINS.chapters ? new BookReader.PLUGINS.chapters(this) : null,

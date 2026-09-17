@@ -26,6 +26,8 @@ const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), selec
  * previously-focused element on close. The host's `aria-label` is forwarded
  * to the inner dialog as its accessible name.
  *
+ * Sourced from https://github.com/internetarchive/openlibrary/blob/master/openlibrary/components/lit/OlPopover.js
+ *
  * @element ol-popover
  *
  * @prop {Boolean} open - Whether the popover is currently open
@@ -62,7 +64,7 @@ export class OlPopover extends LitElement {
       placement: { type: String },
       offset: { type: Number },
       autoClose: { type: Boolean, attribute: 'auto-close' },
-      _position: { state: true },
+      position: { state: true },
       _transformOrigin: { state: true },
       _animState: { state: true },
       _mobile: { state: true },
@@ -250,7 +252,7 @@ export class OlPopover extends LitElement {
       this.placement = 'bottom-center';
       this.offset = 4;
       this.autoClose = true;
-      this._position = { top: 0, left: 0, height: 0, width: 0};
+      this.position = { top: 0, left: 0, height: 0, width: 0};
       this._transformOrigin = 'top left';
       this._animState = 'closed';
       this._mobile = false;
@@ -296,12 +298,12 @@ export class OlPopover extends LitElement {
                     aria-label="${ifDefined(this.getAttribute('aria-label') || undefined)}"
                     tabindex="-1"
                     style="${this._mobile ? `
-                        height: ${this._position.height + 50}px;
+                        height: ${this.position.height + 50}px;
                     ` : `
-                        top: ${this._position.top}px;
-                        left: ${this._position.left}px;
-                        width: ${this._position.width}px;
-                        height: ${this._position.height + 20}px;
+                        top: ${this.position.top}px;
+                        left: ${this.position.left}px;
+                        width: ${this.position.width}px;
+                        height: ${this.position.height}px;
                         transform-origin: ${this._transformOrigin};
                     `}"
                     @transitionend="${this._onTransitionEnd}"
@@ -576,7 +578,7 @@ export class OlPopover extends LitElement {
       // Find where the anchor center falls within the panel horizontally
       const anchorCenterInPanel = anchorCenter - left;
       const originX = `${anchorCenterInPanel}px`;
-      this._position = { ...this._position, top, left};
+      this.position = { ...this.position, top, left};
       this._transformOrigin = `${originX} ${originY}`;
     }
 

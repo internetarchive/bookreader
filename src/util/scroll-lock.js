@@ -10,6 +10,8 @@
  * until every holder releases it. The scroll offset is captured on the first lock
  * and restored on the last unlock. Callers should track whether they hold a lock
  * (so they unlock exactly once) rather than relying on the counter directly.
+ *
+ * Sourced from https://github.com/internetarchive/openlibrary/blob/master/openlibrary/components/lit/utils/scroll-lock.js
  */
 
 let lockCount = 0;

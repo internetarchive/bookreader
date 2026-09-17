@@ -10,9 +10,7 @@ import '@internetarchive/icon-edit-pencil/icon-edit-pencil.js';
 import '@internetarchive/icon-ellipses';
 import { isIOS, isAndroid } from './browserSniffing.js';
 import { genAt, genFilter } from './generators.js';
-import { BRAnnotationModal } from '../plugins/plugin.annotations.js';
 
-const BR_HIGHLIGHTS_LOCAL_STORAGE_KEY = "BRhighlightStorage";
 const MAX_FULL_QUOTE_URL_CHARS = 80;
 const TRUNCATED_QUOTE_WORD_COUNT = 3;
 
@@ -24,8 +22,6 @@ export class TextSelectionManager {
 
   /** @type {BRSelectMenu} */
   selectMenu;
-  /** @type {BRAnnotationModal} */
-  annotationModal;
 
   get selectMenuEnabled() {
     return this.br.plugins.experiments?.isEnabled('copyLinkToHighlight') || this.br.plugins.experiments?.isEnabled('annotateHighlight');
@@ -54,9 +50,6 @@ export class TextSelectionManager {
 
     this.selectMenu = new BRSelectMenu(br);
     this.selectMenu.className = "br-select-menu__root";
-
-    this.annotationModal = new BRAnnotationModal(br);
-    this.annotationModal.className = "br-annotate-menu__root";
   }
 
   init() {
@@ -187,7 +180,6 @@ export class TextSelectionManager {
 
     $(textLayer).on("mouseup.textSelectPluginHandler", (event) => {
       this.mouseIsDown = false;
-      this.hideAnnotationModal();
       textLayer.style.pointerEvents = "none";
       if (skipNextMouseup) {
         skipNextMouseup = false;
@@ -221,7 +213,6 @@ export class TextSelectionManager {
       if (event.which != 1) return;
       event.stopPropagation();
       this.showSelectMenu();
-      this.hideAnnotationModal();
     });
   }
 
@@ -244,27 +235,6 @@ export class TextSelectionManager {
 
   hideSelectMenu() {
     this.selectMenu.hide();
-  }
-
-  /**
-   * @param {HTMLElement[]} nodes
-   * @param {HTMLElement} [anchorEl] Element to anchor the annotation popover
-   *  to, e.g. the br-menu-option button that was clicked
-   */
-  showAnnotationModal(nodes, anchorEl) {
-    if (!this.annotationsMenuEnabled) return;
-    if (!nodes.length) return;
-    this.annotationModal.highlightAnnotationEnabled = this.br.plugins?.experiments?.isEnabled('annotateHighlight');
-
-    if (!this.annotationModal.isConnected) {
-      document.body.append(this.annotationModal);
-    }
-    this.annotationModal.show(nodes, anchorEl);
-  }
-
-  hideAnnotationModal() {
-    // default behavior to save and hide on close
-    this.annotationModal.handleSaveAnnotation();
   }
 
   _limitSelection = () => {
@@ -510,6 +480,11 @@ class BRSelectMenu extends LitElement {
   @query('#br-select-copy-link-option')
   copyLinkOption;
 
+  /** @type {import('../plugins/plugin.annotations.js').BookReaderTextSelectionMenuOptions[]} */
+  annotationOptions = [];
+  /** @type {import('../plugins/plugin.annotations.js').BookReaderTextSelectionMenuOptions[]} */
+  extendedOptions = [];
+
   @property({type: Boolean, reflect: true})
   open = false;
 
@@ -578,37 +553,6 @@ class BRSelectMenu extends LitElement {
     `;
   }
 
-  renderRemoveOption() {
-    return html`
-      <br-menu-option
-        @click=${this.handleDeleteHighlight}
-        icon="share"
-        label="Delete Highlight and Annotation"
-      ></br-menu-option>
-    `;
-  }
-
-  renderAddAnnotationOption() {
-    return html`
-      <br-menu-option
-        id="annotate-option"
-        @click=${this.handleAddAnnotation}
-        icon="edit-pencil"
-        label="Annotate"
-      ></br-menu-option>
-    `;
-  }
-
-  renderHighlightOption() {
-    return html`
-      <br-menu-option
-        @click=${this.handleHighlightSave}
-        icon="edit-pencil"
-        label="Highlight"
-      ></br-menu-option>
-    `;
-  }
-
   renderShowMoreOption() {
     return html`
       <br-menu-option
@@ -621,42 +565,35 @@ class BRSelectMenu extends LitElement {
     `;
   }
 
-  renderLocalStorageOptions() {
-    return html`
-      <br-menu-option
-        @click=${this.renderSavedHighlights}
-        icon="share"
-        label="Load Highlights"
-      ></br-menu-option>
-      <br-menu-option
-        @click=${() => {window.localStorage.removeItem(BR_HIGHLIGHTS_LOCAL_STORAGE_KEY);}}
-        icon="share"
-        label="Remove Stored Highlights"
-      ></br-menu-option>`;
-  }
-
   renderDefaultOptions() {
     return html`
       ${this.copyLinkToHighlightEnabled ? this.renderCopyLinkToHighlightOption() : ''}
-      ${this.highlightAnnotationEnabled ? this.renderHighlightOption() : ''}
-      ${this.highlightAnnotationEnabled ? this.renderAddAnnotationOption() : ''}
     `;
   }
 
-  renderExtendedOptions() {
-    return html`
-    ${this.renderDefaultOptions()}
-    ${this.activeHighlightNodes ? this.renderRemoveOption() : ''}
-    ${this.renderLocalStorageOptions()}
-    `;
+  /** @param {import('../plugins/plugin.annotations.js').BookReaderTextSelectionMenuOptions[]} */
+  renderAdditionalOptions(options) {
+    const output = [];
+    for (const option of options) {
+      output.push(html`
+        <br-menu-option
+          @click=${option.clickFunction}
+          icon=${option.iconName}
+          label=${option.labelName}
+        ></br-menu-option>
+      `);
+    }
+    return output;
   }
 
   render() {
     const hasMoreOptions = this.br.plugins.experiments?.isEnabled('annotateHighlight');
     // TODO change the second button to use a different icon
     return html`
-    ${this.showExtended ? this.renderExtendedOptions() : this.renderDefaultOptions()}
-    ${!this.showExtended && hasMoreOptions ? this.renderShowMoreOption() : ""}
+      ${this.renderDefaultOptions()}
+      ${this.renderAdditionalOptions(this.annotationOptions)}
+      ${!this.showExtended && hasMoreOptions ? this.renderShowMoreOption() : ''}
+      ${this.showExtended ? this.renderAdditionalOptions(this.extendedOptions) : ''}
     `;
   }
 
@@ -697,132 +634,6 @@ class BRSelectMenu extends LitElement {
   toggleExtendedMenu(e) {
     e.preventDefault();
     this.showExtended = !this.showExtended;
-  }
-
-  /**
-   * Returns the closest BRtextLayer element on the page that contains the target node
-   * @param {Node} node
-   * @returns {Element | null}
-   */
-  getNodeTextLayer(node) {
-    if (!node) return null;
-    const element = node instanceof Element ? node : node.parentElement;
-    return element?.closest('.BRtextLayer') ?? null;
-  }
-
-  /**
-   * Retrieves the current selected text on the page and serializes the quote contents + context
-   * The selection is also changed in the DOM to highlight the words
-   */
-  handleHighlightSave() {
-    const currentSelection = window.getSelection();
-    const start = currentSelection.direction === 'backward' ? currentSelection.focusNode.parentElement : currentSelection.anchorNode.parentElement;
-    const textLayer = this.getNodeTextLayer(start);
-    const highlight = BookReaderTextFragment.fromSelection(currentSelection, [textLayer.parentElement]);
-    highlight.highlightColor = this.br.plugins?.textSelection?.textSelectionManager.annotationModal.lastHighlightColorUsed;
-    highlight.uuid = `id-${crypto.randomUUID().split("-")[4]}`;
-    const highlights = loadHighlightsFromLocalStorage();
-    highlights.push(highlight);
-    saveToLocalStorage(highlights);
-    this.renderSavedHighlights();
-    this.activeHighlightNodes = document.querySelectorAll(`.${highlight.uuid}`);
-    this.requestUpdate();
-  }
-
-  /**
-   * @param {MouseEvent} e
-   */
-  handleAddAnnotation (e) {
-    const anchorEl = /** @type {HTMLElement} */ (e.currentTarget);
-    if (!this.activeHighlightNodes) { // highlight selection if not already done
-      this.handleHighlightSave();
-    }
-    this.br.plugins.textSelection?.textSelectionManager.showAnnotationModal(this.activeHighlightNodes, anchorEl);
-    window.getSelection()?.empty();
-    this.clearActiveHighlightNodes();
-  }
-
-  handleDeleteHighlight() {
-    if (this.activeHighlightNodes) {
-      const uuid = retrieveUUID(this.activeHighlightNodes[0]);
-      for (const ele of this.activeHighlightNodes) {
-        const tempText = ele.textContent;
-        const parent = ele.parentElement;
-        if (parent.classList.contains('BRwordElement') || parent.classList.contains('BRspace')) {
-          ele.remove();
-          parent.textContent = tempText;
-        } else {
-          console.log("This element did not match removal criteria:", parent, ele);
-        }
-      }
-      this.deleteHighlight(uuid);
-      this.clearActiveHighlightNodes();
-    } else {
-      console.log("there is nothing to remove");
-    }
-  }
-
-  /**
-   * @param {string} uuid
-   */
-  deleteHighlight(uuid) {
-    const highlights = loadHighlightsFromLocalStorage();
-    for (let idx = 0; idx < highlights.length; idx++) {
-      if (highlights[idx].uuid === uuid) {
-        highlights.splice(idx, 1);
-        saveToLocalStorage(highlights);
-        return;
-      }
-    }
-  }
-
-  renderSavedHighlights() {
-    for (const hl of loadHighlightsFromLocalStorage()) {
-      const textLayer = /** @type {HTMLElement} */ (this.br.$(`.pagediv${hl.pageIndex} .BRtextLayer`)[0]);
-      if (!textLayer) continue;
-      const highlightedRange = renderHighlight(textLayer, hl);
-      const hasExistingAnnotation = document.querySelector(`.icon-${hl.uuid}`) ? true : false;
-      // Attach click behaviour here? Only need one handler per text layer
-      if (hl.annotation && !hasExistingAnnotation) {
-        const iconLocation = findTopRightMostNode(highlightedRange);
-        const hlParagraph = highlightedRange[0].closest(".BRparagraphElement");
-        const annotationIconEle = document.createElement('ia-icon-edit-pencil');
-        annotationIconEle.classList.add('annotationIndicator', `icon-${hl.uuid}`);
-        annotationIconEle.style.top = `${iconLocation.offsetTop - 30}px`;
-        annotationIconEle.style.left = `${iconLocation.offsetLeft + iconLocation.offsetWidth}px`;
-        hlParagraph?.append(annotationIconEle);
-      }
-
-      $(textLayer)
-        .off('mouseup.BRHighlightClick')
-        .on('mouseup.BRHighlightClick', (e) => {
-          if (!e.target.classList.contains("BRhighlight")) return;
-          e.stopPropagation();
-          this.handleHighlightClick(e.target);
-        });
-    }
-  }
-
-  /**
-   * @param {HTMLElement} target
-   */
-  handleHighlightClick(target) {
-    const textLayer = this.getNodeTextLayer(target);
-    const identifier = retrieveUUID(target);
-    const selectedQuoteNodes = textLayer.querySelectorAll(`.${identifier}`);
-    this.activeHighlightNodes = selectedQuoteNodes;
-
-    const firstNode = selectedQuoteNodes[0];
-    const lastNode = selectedQuoteNodes[selectedQuoteNodes.length - 1];
-
-    const highlightRange = document.createRange();
-    highlightRange.setStart(firstNode, 0);
-    highlightRange.setEnd(lastNode, 1);
-
-    const currentSelection = window.getSelection();
-    currentSelection.removeAllRanges();
-    currentSelection.addRange(highlightRange);
-    this.show();
   }
 
   repositionToSelection() {
@@ -874,33 +685,17 @@ class BRSelectMenu extends LitElement {
     window.removeEventListener('scroll', this._onScroll, { capture: true });
     return;
   }
-
-  /**
-   * Remove temporary storage for the currently selected highlight and updates selection menu options
-   */
-  clearActiveHighlightNodes = () => {
-    this.activeHighlightNodes = null;
-    this.requestUpdate();
-  }
 }
 
 /**
- * Find the node that has the top right most position
- * @param {Element[]} nodes
+ * Returns the closest BRtextLayer element on the page that contains the target node
+ * @param {Node} node
+ * @returns {Element | null}
  */
-export function findTopRightMostNode(nodes) {
-  let top = Infinity;
-  let right = -Infinity;
-  let bestPositionNode;
-  for (const node of nodes) {
-    const nodePosition = node.getBoundingClientRect();
-    if (nodePosition.top <= top && nodePosition.right > right) {
-      bestPositionNode = node;
-      top = nodePosition.top;
-      right = nodePosition.right;
-    }
-  }
-  return bestPositionNode;
+export function getNodeTextLayer(node) {
+  if (!node) return null;
+  const element = node instanceof Element ? node : node.parentElement;
+  return element?.closest('.BRtextLayer') ?? null;
 }
 
 /**
@@ -1258,42 +1053,6 @@ function markRange(
   endNodeSubrange.surroundContents(endMark);
 
   return [startMark, ...marks, endMark];
-}
-
-/**
- * Get UUID assigned to the highlight element from class list
- * @param {HTMLElement} ele
- * @returns
- */
-function retrieveUUID(ele) {
-  if (!ele) return null;
-  const findUUID = Array.from(ele?.classList).filter((name) => {
-    if (name.slice(0, 2).includes('id')) {
-      return name;
-    }
-  });
-  if (findUUID.length) {
-    return findUUID[0];
-  }
-  return null;
-}
-
-/**
-   * Saves all the highlights in an array to localStorage
-   * @param {BookReaderSavedHighlight[]} highlights
-   */
-function saveToLocalStorage(highlights) {
-  window.localStorage.setItem(BR_HIGHLIGHTS_LOCAL_STORAGE_KEY, JSON.stringify(
-    highlights.map(hl =>hl.toJSON()),
-  ));
-}
-
-/**
-   * @returns {BookReaderSavedHighlight[]}
-   */
-function loadHighlightsFromLocalStorage() {
-  return JSON.parse(window.localStorage.getItem(BR_HIGHLIGHTS_LOCAL_STORAGE_KEY) || "[]")
-    .map(item => BookReaderTextFragment.fromJSON(item));
 }
 
 /**
