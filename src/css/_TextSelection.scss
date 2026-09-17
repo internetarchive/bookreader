@@ -127,7 +127,7 @@
     overflow-y: auto;
     background: rgba(248, 237, 192, 0.8);
     backdrop-filter: blur(8px);
-    color:black;
+    color: black;
     line-height: 1em;
     text-align: justify;
 }
@@ -185,7 +185,7 @@ $select-menu-extended-radius: 10px;
   background: transparent;
   display: flex;
   align-items: center;
-  border-radius: $select-menu-radius;
+  border-radius: 25px;
   font-family: inherit;
   color: inherit;
   border: 0;
@@ -275,7 +275,7 @@ $select-menu-extended-radius: 10px;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-left: 5px;
+    padding: 3px;
 }
 
 .br-annotate-menu__pipe {
@@ -289,7 +289,7 @@ $select-menu-extended-radius: 10px;
     height: 20px;
     margin: 0 5px 0 1px;
     display: block;
-    border-radius: 5px;
+    border-radius: 8px;
     &.pink {
         background-color: #ffc0cb;
     }
@@ -316,17 +316,18 @@ $select-menu-extended-radius: 10px;
 .br-annotate-menu__footer {
     width: 100%;
     margin-top: 5px;
-    display:flex;
+    display: flex;
     justify-content: space-between;
     height: 30%;
     align-items: center;
 }
 
-.br-annotate-menu__option{
+.br-annotate-menu__option {
     border-radius: 5px;
     margin: 0px 2px 0 2px;
     height: fit-content;
-    width: 50%;
+    border: 0;
+    padding: 4px 8px;
     &.save {
         background-color: #194880;
         color: white;
@@ -346,17 +347,20 @@ $select-menu-extended-radius: 10px;
 }
 
 .br-annotate-menu__body {
-    height: 60%;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    padding: 3px;
+    color-scheme: dark;
 }
 
 .br-annotate-menu__textArea {
     width: 100%;
-    border-radius: 12px;
+    border-radius: 6px;
     resize: none;
-    padding: 3px 3px 0px 3px;
-    margin: 3px;
+    padding: 6px;
+    border: 0;
+    font-family: inherit;
+    box-sizing: border-box;
     &::placeholder {
         font-style: italic;
     }
@@ -368,8 +372,6 @@ $select-menu-extended-radius: 10px;
 
 .br-annotate-menu__editOptions {
     display: flex;
-    margin-right: 5px;
-    width: 30%;
 }
 
 .br-annotate-indicator--icon {

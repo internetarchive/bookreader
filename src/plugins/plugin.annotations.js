@@ -1,12 +1,168 @@
 import { html, LitElement } from "lit";
 import { customElement, property } from 'lit/decorators.js';
 import { live } from "lit/directives/live.js";
-import { BookReaderTextFragment } from "../util/TextSelectionManager.js";
+import { BookReaderTextFragment, getNodeTextLayer, renderHighlight } from "../util/TextSelectionManager.js";
 import '@internetarchive/icon-share';
 // eslint-disable-next-line no-unused-vars
 import { OlPopover } from "../util/OlPopover.js";
+import { BookReaderPlugin } from "../BookReaderPlugin.js";
+
+// @ts-ignore
+const BookReader = /** @type {typeof import('@/src/BookReader.js').default} */(window.BookReader);
 
 const BR_HIGHLIGHTS_LOCAL_STORAGE_KEY = "BRhighlightStorage";
+
+export class AnnotationsPlugin extends BookReaderPlugin {
+  options = {
+    enabled: true,
+  }
+
+  /** @type {AnnotationStorageService} */
+  storageService;
+
+  /** @type {BRSelectMenu} */
+  selectMenu;
+
+  /** @type {BRAnnotationModal} */
+  annotationModal;
+
+  /**
+   * Nodes corresponding to the current text selection
+   *  @type {HTMLElement[]} */
+  activeHighlightNodes;
+
+  constructor(br) {
+    super(br);
+    this.annotationModal = new BRAnnotationModal(br);
+    this.annotationModal.className = "br-annotate-menu__root";
+  }
+
+  /** @override */
+  init() {
+    if (!this.options.enabled) return;
+    this.storageService = new AnnotationStorageService({storageMethod : window.localStorage});
+    this.selectMenu = this.br.plugins?.textSelection?.textSelectionManager?.selectMenu;
+
+    this.selectMenu.annotationOptions.push(
+      {clickFunction: this.handleHighlightSave.bind(this), iconName: "edit-pencil", labelName: "Highlight"},
+      {clickFunction: this.handleAddAnnotation.bind(this), iconName: "edit-pencil", labelName: "Annotate"},
+    );
+    this.selectMenu.extendedOptions.push(
+      {clickFunction: this.renderSavedHighlights.bind(this), iconName: "share", labelName: "Load Highlights"},
+      {clickFunction: this.handleHighlightDelete.bind(this), iconName: "share", labelName: "Delete Current Highlight / Annotation"},
+      {clickFunction: ()=> {window.localStorage.removeItem(BR_HIGHLIGHTS_LOCAL_STORAGE_KEY);}, iconName: "share", labelName: "Clear All Highlights and Annotations"},
+    );
+
+    if (!this.annotationModal.isConnected) {
+      document.body.append(this.annotationModal);
+    }
+  }
+
+  /**
+   * @param {MouseEvent} e
+   */
+  handleAddAnnotation (e) {
+    const anchorEl = /** @type {HTMLElement} */ (e.currentTarget);
+    if (!this.activeHighlightNodes) { // highlight selection if not already done
+      this.handleHighlightSave();
+    }
+    this.annotationModal.show(this.activeHighlightNodes, anchorEl);
+    window.getSelection()?.empty();
+    this.activeHighlightNodes = null;
+  }
+
+  /**
+   * Retrieves the current selected text on the page and serializes the quote contents + context
+   * The selection is also changed in the DOM to highlight the words
+   */
+  handleHighlightSave() {
+    const currentSelection = window.getSelection();
+    const start = currentSelection.direction === 'backward' ? currentSelection.focusNode.parentElement : currentSelection.anchorNode.parentElement;
+    const textLayer = getNodeTextLayer(start);
+    const highlight = BookReaderTextFragment.fromSelection(currentSelection, [textLayer.parentElement]);
+    highlight.highlightColor = this.annotationModal.lastHighlightColorUsed;
+    highlight.uuid = `id-${crypto.randomUUID().split("-")[4]}`;
+    const highlights = this.storageService.load();
+    highlights.push(highlight);
+    this.storageService.save(highlights);
+    this.renderSavedHighlights();
+    this.activeHighlightNodes = document.querySelectorAll(`.${highlight.uuid}`);
+    this.selectMenu.requestUpdate();
+  }
+
+  /**
+   * Removes the highlighted DOM nodes and deletes the associated storage record.
+   * @param {HTMLElement[]} [nodes] defaults to the plugin's currently active highlight nodes
+   */
+  handleHighlightDelete() {
+    if (!this.activeHighlightNodes.length) return;
+    const uuid = retrieveUUID(this.activeHighlightNodes[0]);
+    for (const ele of this.activeHighlightNodes) {
+      const tempText = ele.textContent;
+      const parent = ele.parentElement;
+      if (parent.classList.contains('BRwordElement') || parent.classList.contains('BRspace')) {
+        ele.remove();
+        parent.textContent = tempText;
+      } else {
+        console.log("This element did not match removal criteria:", parent, ele);
+      }
+    }
+    this.storageService.delete(uuid);
+    this.activeHighlightNodes = null;
+  }
+
+  /**
+   * @param {HTMLElement} target
+   */
+  handleHighlightClick(target) {
+    const textLayer = getNodeTextLayer(target);
+    const identifier = retrieveUUID(target);
+    const selectedQuoteNodes = textLayer.querySelectorAll(`.${identifier}`);
+    this.activeHighlightNodes = selectedQuoteNodes;
+
+    const firstNode = selectedQuoteNodes[0];
+    const lastNode = selectedQuoteNodes[selectedQuoteNodes.length - 1];
+
+    const highlightRange = document.createRange();
+    highlightRange.setStart(firstNode, 0);
+    highlightRange.setEnd(lastNode, 1);
+
+    const currentSelection = window.getSelection();
+    currentSelection.removeAllRanges();
+    currentSelection.addRange(highlightRange);
+    this.selectMenu.show();
+  }
+
+
+  renderSavedHighlights() {
+    for (const hl of this.storageService.load()) {
+      const textLayer = /** @type {HTMLElement} */ (this.br.$(`.pagediv${hl.pageIndex} .BRtextLayer`)[0]);
+      if (!textLayer) continue;
+      const highlightedRange = renderHighlight(textLayer, hl);
+      const hasExistingAnnotation = document.querySelector(`.icon-${hl.uuid}`) ? true : false;
+      // Attach click behaviour here? Only need one handler per text layer
+      if (hl.annotation && !hasExistingAnnotation) {
+        const iconLocation = findTopRightMostNode(highlightedRange);
+        const hlParagraph = highlightedRange[0].closest(".BRparagraphElement");
+        const annotationIconEle = document.createElement('ia-icon-edit-pencil');
+        annotationIconEle.classList.add('annotationIndicator', `icon-${hl.uuid}`);
+        annotationIconEle.style.top = `${iconLocation.offsetTop - 30}px`;
+        annotationIconEle.style.left = `${iconLocation.offsetLeft + iconLocation.offsetWidth}px`;
+        hlParagraph?.append(annotationIconEle);
+      }
+
+      $(textLayer)
+        .off('mouseup.BRHighlightClick')
+        .on('mouseup.BRHighlightClick', (e) => {
+          if (!e.target.classList.contains("BRhighlight")) return;
+          e.stopPropagation();
+          this.handleHighlightClick(e.target);
+        });
+    }
+  }
+
+}
+BookReader?.registerPlugin('annotate', AnnotationsPlugin);
 
 @customElement('br-annotation-modal')
 
@@ -73,41 +229,51 @@ export class BRAnnotationModal extends LitElement {
 
   showTextEditArea() {
     return html`
-    <div class="br-annotate-menu__body">
-      <textarea 
-        class="br-annotate-menu__textArea" 
-        id="annotateTextArea" 
-        placeholder="Add note..."
-        >${this.getAnnotationText()}</textarea>
-    </div>
-    <div class="br-annotate-menu__footer">
-        ${this.renderColorOptions()}
-        <div class="br-annotate-menu__editOptions">
-      <button 
-        @click=${this.handleDeleteHighlight}
-        class="br-annotate-menu__option">Delete
-      </button>
-      <button
-      @click=${this.handleSaveAnnotation}
-      class="br-annotate-menu__option save"
-      >Save</button>
+    <div class="br-annotate-menu__body"> 
+      <div class="br-annotate-menu__text">
+        <textarea 
+          class="br-annotate-menu__textArea" 
+          id="annotateTextArea" 
+          placeholder="Add note..."
+          >${this.getAnnotationText()}</textarea>
+      </div>
+      <div class="br-annotate-menu__footer">
+          ${this.renderColorOptions()}
+          <div class="br-annotate-menu__editOptions">
+        <button 
+          @click=${this.handleHighlightDelete}
+          class="br-annotate-menu__option">Delete
+        </button>
+        <button
+        @click=${this.handleSaveAnnotation}
+        class="br-annotate-menu__option save"
+        >Save</button>
+      </div>
     </div>
     `;
   }
 
+  /**
+   * Selectable highlight colors
+   * @returns {{name: string, hex: string}[]}
+   */
+  get highlightColorOptions() {
+    return [
+      {name: 'green', hex: this.HIGHLIGHT_GREEN},
+      {name: 'pink', hex: this.HIGHLIGHT_PINK},
+      {name: 'yellow', hex: this.HIGHLIGHT_YELLOW},
+      {name: 'orange', hex: this.HIGHLIGHT_ORANGE},
+    ];
+  }
+
   renderColorOptions() {
-    const colors = {
-      '#00ff00': 'green',
-      '#ffc0cb': 'pink',
-      '#ffff00': 'yellow',
-      '#ffa500': 'orange',
-    };
     const color = this.getHighlightColor();
+    const colorName = this.highlightColorOptions.find((option) => option.hex === color)?.name;
     return html`
     <div class="br-annotate-menu__colorOptions">
       <button
         @click=${this.handleColorChange}
-        class="br-annotate-menu__color ${colors[color]}"
+        class="br-annotate-menu__color ${colorName}"
         value=${color}
       >
       </button>
@@ -123,22 +289,15 @@ export class BRAnnotationModal extends LitElement {
   }
 
   renderColorDropdown() {
-    const colors = {
-      'green': this.HIGHLIGHT_GREEN,
-      'pink' : this.HIGHLIGHT_PINK,
-      'orange' : this.HIGHLIGHT_ORANGE,
-      'yellow': this.HIGHLIGHT_YELLOW,
-    };
     const currentColor = this.getHighlightColor();
-    const allColorOptions = Array.from(Object.keys(colors)).map((color) => {
-      if (colors[color] === currentColor) return;
-      return html`
+    const allColorOptions = this.highlightColorOptions
+      .filter((option) => option.hex !== currentColor)
+      .map((option) => html`
       <button
         @click=${this.handleColorChange}
-        class="br-annotate-menu__color ${color}"
-        value=${colors[color]}>
-        </button>`;
-    });
+        class="br-annotate-menu__color ${option.name}"
+        value=${option.hex}>
+        </button>`);
     return html`
       <div class="br-annotate-menu__pipe">|</div>
       <div class="br-annotate-menu__colorDropdown">
@@ -154,7 +313,7 @@ export class BRAnnotationModal extends LitElement {
         placement="bottom-start"
         .anchor=${this.anchorEl}
         .open=${live(this.open)}
-        ._position=${this.positionObj}
+        .position=${this.positionObj}
         @ol-popover-close=${this.handleSaveAnnotation}
       >
         ${this.showTextEditArea()}
@@ -173,19 +332,10 @@ export class BRAnnotationModal extends LitElement {
     this.handleShowColor();
   }
 
-  handleDeleteHighlight() {
+  // Pass in AnnotationPlugin during construction
+  handleHighlightDelete() {
     if (this.currentAnnotationNodes) {
-      const currentUUID = retrieveUUID(this.currentAnnotationNodes[0]);
-      this.storageService.delete(currentUUID);
-      for (const ele of this.currentAnnotationNodes) {
-        const tempText = ele.textContent;
-        const parent = ele.parentElement;
-        if (parent.classList.contains('BRwordElement') || parent.classList.contains('BRspace')) {
-          ele.backgroundColor = 'none';
-          ele.remove();
-          parent.textContent = tempText;
-        }
-      }
+      this.br.plugins?.annotations?.handleHighlightDelete(this.currentAnnotationNodes);
       this.hide();
     }
   }
@@ -198,6 +348,7 @@ export class BRAnnotationModal extends LitElement {
    * @returns
    */
   show(nodes, anchorEl) {
+    if (!nodes.length) return;
     this.currentAnnotationNodes = nodes;
     const identifier = retrieveUUID(nodes[0]);
     const selectedQuoteNodes = document.querySelectorAll(`.${identifier}`);
@@ -219,13 +370,14 @@ export class BRAnnotationModal extends LitElement {
     const annotationButtonWidth = pageContainerBoundary.width * 0.93;
     const annotationButtonLeft = pageContainerBoundary.left + 5;
 
-    this.positionObj.top = `${lastNodeBoundary.top + lastNodeBoundary.height + 5}`;
-    this.positionObj.left = `${annotationButtonLeft}`;
-    this.positionObj.width = `${annotationButtonWidth}`;
-    this.positionObj.height = `${Math.max(pageContainerBoundary.height / 7, 80)}`;
+    this.positionObj.top = lastNodeBoundary.top + lastNodeBoundary.height + 5;
+    this.positionObj.left = annotationButtonLeft;
+    this.positionObj.width = annotationButtonWidth;
+    this.positionObj.height = Math.max(pageContainerBoundary.height / 7, 80);
     this.anchorEl = anchorEl ?? lastNode.parentElement;
     this.open = true;
     this.requestUpdate();
+    window.addEventListener('ol-popover-close', this.onPopoverClose, { capture: true, passive: true });
   }
 
   hide() {
@@ -234,11 +386,16 @@ export class BRAnnotationModal extends LitElement {
     this.display = 'none';
     this.open = false;
     this.requestUpdate();
+    window.removeEventListener('ol-popover-close', this.onPopoverClose, { capture: true });
     return;
   }
 
+  onPopoverClose = () => {
+    this.handleSaveAnnotation();
+  }
+
   updateTextArea(text) {
-    const inputEle = document.querySelector("#annotateTextArea");
+    const inputEle = this.querySelector("#annotateTextArea");
     if (!inputEle) return;
     inputEle.value = text;
   }
@@ -369,3 +526,30 @@ export class AnnotationStorageService {
     throw new Error (`Could not find and remove storage object from target id`);
   }
 }
+
+/**
+ * Find the node that has the top right most position
+ * @param {Element[]} nodes
+ */
+export function findTopRightMostNode(nodes) {
+  let top = Infinity;
+  let right = -Infinity;
+  let bestPositionNode;
+  for (const node of nodes) {
+    const nodePosition = node.getBoundingClientRect();
+    if (nodePosition.top <= top && nodePosition.right > right) {
+      bestPositionNode = node;
+      top = nodePosition.top;
+      right = nodePosition.right;
+    }
+  }
+  return bestPositionNode;
+}
+
+// Might make more sense within SelectMenuOption in TextSelectionManager
+/**
+ * @typedef {Object} BookReaderTextSelectionMenuOptions
+ * @property {function} clickFunction
+ * @property {string} labelName
+ * @property {string} iconName
+ */
