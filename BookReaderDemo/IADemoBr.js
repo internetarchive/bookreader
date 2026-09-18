@@ -18,6 +18,8 @@ const ocaid = isDetailsPage ? window.location.pathname.split('/')[2] : urlParams
 const openFullImmersionTheater = urlParams.get('view') === 'theater';
 const ui = urlParams.get('ui');
 const searchTerm = urlParams.get('q');
+/** @type {import('@/src/util/ocr/index.js').OCRFormat} */
+const ocrFormat = getFromUrl('ocr', 'DjVuXML');
 
 if (isDetailsPage) {
   /** @type {NodeListOf<HTMLAnchorElement>} */
@@ -56,6 +58,15 @@ iaBookReader.modal = modal;
 BookReader.optionOverrides = BookReader.optionOverrides || {};
 BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
 
+/**
+ * IA serves OCR a page at a time out of whichever derive the url names, so the
+ * hOCR is reachable by rewriting the djvu xml url the manifest gives us.
+ */
+const singlePageHocrUrl = (brManifest) =>
+  brManifest.data.brOptions.plugins?.textSelection?.singlePageDjvuXmlUrl
+    ?.replace('_djvu.xml', '_hocr.html')
+    ?.replace('mode=djvu_xml', 'mode=hocr');
+
 const initializeBookReader = (brManifest) => {
   console.log('initializeBookReader', brManifest);
 
@@ -87,6 +98,12 @@ const initializeBookReader = (brManifest) => {
       search: {
         initialSearchTerm: searchTerm,
       },
+      ...(ocrFormat === 'hOCR' && singlePageHocrUrl(brManifest) ? {
+        textSelection: {
+          format: 'hOCR',
+          singlePageDjvuXmlUrl: singlePageHocrUrl(brManifest),
+        },
+      } : {}),
     },
   };
 

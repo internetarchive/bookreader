@@ -14,6 +14,7 @@ import {
   getLastMostNode,
 } from '@/src/util/TextSelectionManager.js';
 import { genFilter } from '@/src/util/generators.js';
+import { DjVuXMLBook } from '@/src/util/ocr/DjVuXML.js';
 
 // djvu.xml copied from https://ia803103.us.archive.org/14/items/goodytwoshoes00newyiala/goodytwoshoes00newyiala_djvu.xml
 const FAKE_XML_MULT_LINES = `
@@ -223,7 +224,7 @@ describe("Generic tests", () => {
     const $container = br.refs.$brContainer;
     br.plugins.textSelection.textSelectionManager.options.maxProtectedWords = 5;
     sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
+      .returns(DjVuXMLBook.parse(FAKE_XML_MULT_LINES).pages[0]);
     await br.plugins.textSelection.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
 
     const rangeBefore = document.createRange();
@@ -248,7 +249,7 @@ describe("Generic tests", () => {
     br.plugins.textSelection.textSelectionManager.options.maxProtectedWords = 5;
 
     sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
+      .returns(DjVuXMLBook.parse(FAKE_XML_MULT_LINES).pages[0]);
 
     await br.plugins.textSelection.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
 
@@ -294,14 +295,14 @@ describe("BookReaderTextFragment.fromSelection", () => {
 
   test("Text fragment generation accounts for text at the end of the first page/beginning of second page", async () => {
     sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(PAGE_ONE, "text/xml")));
+      .returns(DjVuXMLBook.parse(PAGE_ONE).pages[0]);
     const $pageContainer1 = $("<div class='BRpagecontainer' data-page-num='12' data-index='15'></div>").appendTo(br.refs.$brContainer);
     await br.plugins.textSelection.createTextLayer({ $container: $pageContainer1, page: {index: 1, width: 100, height: 100 }});
 
     sinon.restore();
 
     sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(PAGE_TWO, "text/xml")));
+      .returns(DjVuXMLBook.parse(PAGE_TWO).pages[0]);
     const $pageContainer2 = $("<div class='BRpagecontainer' data-page-num='13' data-index='16'></div>").appendTo(br.refs.$brContainer);
     await br.plugins.textSelection.createTextLayer({ $container: $pageContainer2, page: {index: 2, width: 100, height: 100 }});
 
@@ -335,7 +336,7 @@ describe("BookReaderTextFragment.fromSelection", () => {
   test("Forward and Backward selection without prefix", async () => {
     const $container = $("<div class='BRpagecontainer' data-page-num='12' data-index='15'></div>").appendTo(br.refs.$brContainer);
     sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
+      .returns(DjVuXMLBook.parse(FAKE_XML_MULT_LINES).pages[0]);
     await br.plugins.textSelection.createTextLayer({ $container, page: {index: 3, width: 100, height: 100 }});
 
     const forwardRange = document.createRange();
@@ -363,7 +364,7 @@ describe("BookReaderTextFragment.fromSelection", () => {
   test("Forward and Backward selection without suffix", async () => {
     const $container = $("<div class='BRpagecontainer' data-page-num='12' data-index='15'></div>").appendTo(br.refs.$brContainer);
     sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
+      .returns(DjVuXMLBook.parse(FAKE_XML_MULT_LINES).pages[0]);
     await br.plugins.textSelection.createTextLayer({ $container, page: {index: 3, width: 100, height: 100 }});
 
     const forwardRange = document.createRange();
@@ -392,7 +393,7 @@ describe("BookReaderTextFragment.fromSelection", () => {
   test("Handle start/end word with space before/after meaningful text content", async () => {
     const $container = $("<div class='BRpagecontainer' data-page-num='12' data-index='15'></div>").appendTo(br.refs.$brContainer);
     sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
+      .returns(DjVuXMLBook.parse(FAKE_XML_MULT_LINES).pages[0]);
     await br.plugins.textSelection.createTextLayer({ $container, page: {index: 1, width: 100, height: 100 }});
 
     const startWordRange = document.createRange();
@@ -419,7 +420,7 @@ describe("BookReaderTextFragment.fromSelection", () => {
   test("Handle range end node not text node", async () => {
     const $container = $("<div class='BRpagecontainer' data-page-num='12' data-index='15'></div>").appendTo(br.refs.$brContainer);
     sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
+      .returns(DjVuXMLBook.parse(FAKE_XML_MULT_LINES).pages[0]);
     await br.plugins.textSelection.createTextLayer({ $container, page: {index: 1, width: 100, height: 100 }});
 
     const range = document.createRange();
@@ -436,7 +437,7 @@ describe("BookReaderTextFragment.fromSelection", () => {
   test("Quote and comma included in text selection should be URI encoded", async () => {
     const $container = $("<div class='BRpagecontainer' data-page-num='12' data-index='15'></div>").appendTo(br.refs.$brContainer);
     sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(MULTIPLE_REPEAT_LINES, "text/xml")));
+      .returns(DjVuXMLBook.parse(MULTIPLE_REPEAT_LINES).pages[0]);
     await br.plugins.textSelection.createTextLayer({ $container, page: {index: 1, width: 100, height: 100 }});
 
     const rangeIncludesComma = document.createRange();
@@ -455,7 +456,7 @@ describe("BookReaderTextFragment.fromSelection", () => {
   test("Should be able to differentiate overlapping matches", async () => {
     const $container = $("<div class='BRpagecontainer' data-page-num='12' data-index='15'></div>").appendTo(br.refs.$brContainer);
     sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(MULTIPLE_REPEAT_LINES, "text/xml")));
+      .returns(DjVuXMLBook.parse(MULTIPLE_REPEAT_LINES).pages[0]);
     await br.plugins.textSelection.createTextLayer({ $container, page: {index: 1, width: 100, height: 100 }});
 
     const rangeBefore = document.createRange();
@@ -482,7 +483,7 @@ describe("BookReaderTextFragment.fromSelection", () => {
   test("Create text fragment without spanning multiple new lines", async () => {
     const $container = $("<div class='BRpagecontainer' data-page-num='12' data-index='15'></div>").appendTo(br.refs.$brContainer);
     sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(FAKE_DIALOGUE, "text/xml")));
+      .returns(DjVuXMLBook.parse(FAKE_DIALOGUE).pages[0]);
     await br.plugins.textSelection.createTextLayer({ $container, page: {index: 1, width: 100, height: 100 }});
 
     const rangeBefore = document.createRange();
@@ -502,7 +503,7 @@ describe("BookReaderTextFragment.fromSelection", () => {
   test("Prefix extended when < 3 words for suffix", async () => {
     const $container = $("<div class='BRpagecontainer' data-page-num='12' data-index='15'></div>").appendTo(br.refs.$brContainer);
     sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(FAKE_DIALOGUE, "text/xml")));
+      .returns(DjVuXMLBook.parse(FAKE_DIALOGUE).pages[0]);
     await br.plugins.textSelection.createTextLayer({ $container, page: {index: 1, width: 100, height: 100 }});
 
     const rangeBefore = document.createRange();
@@ -522,7 +523,7 @@ describe("BookReaderTextFragment.fromSelection", () => {
   test("Able to match one non-unique highlighted word", async() => {
     const $container = $("<div class='BRpagecontainer' data-page-num='12' data-index='15'></div>").appendTo(br.refs.$brContainer);
     sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(FAKE_DIALOGUE, "text/xml")));
+      .returns(DjVuXMLBook.parse(FAKE_DIALOGUE).pages[0]);
     await br.plugins.textSelection.createTextLayer({ $container, page: {index: 1, width: 100, height: 100 }});
 
     const rangeBefore = document.createRange();
@@ -823,7 +824,7 @@ describe('BookReaderTextFragment.toRegExp and findRangeForRegExp', () => {
   test('finds single quote matches as ranges', async () => {
     const $container = $("<div class='BRpagecontainer' data-page-num='12' data-index='15'></div>").appendTo(br.refs.$brContainer);
     sinon.stub(br.plugins.textSelection, 'getPageText')
-      .returns($(new DOMParser().parseFromString(FAKE_DIALOGUE, 'text/xml')));
+      .returns(DjVuXMLBook.parse(FAKE_DIALOGUE).pages[0]);
     await br.plugins.textSelection.createTextLayer({ $container, page: {index: 1, width: 100, height: 100 }});
 
     const normalize = replaceTextFragmentDelimiters;
