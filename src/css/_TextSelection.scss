@@ -227,6 +227,16 @@ $select-menu-extended-radius: 10px;
   width: 17px;
   height: 17px;
   padding: 2px;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .fill-color {
+    fill: var(--iconFillColor);
+  }
 }
 
 .br-select-menu__label {
