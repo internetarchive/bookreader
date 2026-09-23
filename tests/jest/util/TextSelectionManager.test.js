@@ -849,3 +849,32 @@ describe('BookReaderTextFragment.toRegExp and findRangeForRegExp', () => {
     expect(range[0].toString().replace(/\s+/g, ' ').trim()).toBe('“My own seal.”');
   });
 });
+
+describe('br-menu-option icons', () => {
+  test('does not register the ia-icon-* elements', () => {
+    expect(customElements.get('ia-icon-share')).toBeUndefined();
+    expect(customElements.get('ia-icon-edit-pencil')).toBeUndefined();
+    expect(customElements.get('ia-icon-ellipses')).toBeUndefined();
+  });
+
+  test.each(['share', 'edit-pencil', 'ellipses'])('renders the %s icon as an inline svg', async (icon) => {
+    const option = document.createElement('br-menu-option');
+    option.icon = icon;
+    option.label = 'Label';
+    document.body.append(option);
+    await option.updateComplete;
+
+    expect(option.querySelector('.br-select-menu__icon svg')).toBeTruthy();
+    option.remove();
+  });
+
+  test('renders no icon for an unknown name', async () => {
+    const option = document.createElement('br-menu-option');
+    option.icon = 'nope';
+    document.body.append(option);
+    await option.updateComplete;
+
+    expect(option.querySelector('.br-select-menu__icon')).toBeNull();
+    option.remove();
+  });
+});
