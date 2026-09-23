@@ -230,6 +230,10 @@ $select-menu-extended-radius: 10px;
 
   svg {
     display: block;
+  }
+
+  // Some icon SVGs carry their own width/height; the rest fill the box.
+  svg:not([width]) {
     width: 100%;
     height: 100%;
   }
