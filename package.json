@@ -20,9 +20,11 @@
     ".": "./src/ia-bookreader/ia-bookreader.js",
     "./core": "./src/BookReader.js",
     "./jquery": "./src/jquery-wrapper.js",
-    "./plugins/*": "./src/plugins/*",
     "./styles": "./BookReader/BookReader.css",
-    "./BookReader/*": "./BookReader/*"
+    "./BookReader/*": "./BookReader/*",
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./jsconfig.json": "./jsconfig.json"
   },
   "keywords": [
     "online",
