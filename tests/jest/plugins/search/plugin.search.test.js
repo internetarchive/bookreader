@@ -60,6 +60,15 @@ describe('Plugin: Search', () => {
       .toHaveProperty('suppressFragmentChange', false);
   });
 
+  test('On init with #focus=search in URL hash, it opens the search panel without searching', () => {
+    br.plugins.search.search = jest.fn();
+    br.urlPlugin = { pullFromAddressBar: jest.fn(), getUrlParam: jest.fn(() => 'search') };
+    br.init();
+
+    expect(br.plugins.search.searchView.toggleSidebar).toHaveBeenCalled();
+    expect(br.plugins.search.search).not.toHaveBeenCalled();
+  });
+
   test('calling `search` fires ajax call`', () => {
     br.init();
     br.search('foo');
