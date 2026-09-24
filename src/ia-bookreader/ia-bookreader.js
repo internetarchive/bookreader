@@ -197,6 +197,11 @@ export class IaBookReader extends LitElement {
     if (!startBrWidth && this._brWidth) {
       // loading up, let's update side menus
       this.initializeBookSubmenus();
+      // Search results that arrived before the first resize, eg while the tab
+      // was hidden, could not open the search menu, so open it now
+      if (this.isWideEnoughToOpenMenu && this.bookreader.plugins?.search?.searchResults) {
+        this.updateSideMenu('search', 'open');
+      }
     }
 
     const widthChange = startBrWidth !== this._brWidth;

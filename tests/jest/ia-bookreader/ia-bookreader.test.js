@@ -318,6 +318,32 @@ describe('<ia-bookreader>', () => {
             expect(el.updateSideMenu.callCount).toEqual(1);
             expect(el.updateSideMenu.getCall(0).args).toEqual(['search', 'toggle']);
           });
+          test('opens search side panel on first resize if results arrived before it', async () => {
+            const el = fixtureSync(container());
+            const brStub = {
+              resize: sinon.fake(),
+              options: { plugins: { search: { enabled: true } } },
+              plugins: { search: { searchResults: null } },
+              refs: {},
+            };
+            el.bookreader = brStub;
+            await elementUpdated(el);
+            el.initializeBookSubmenus();
+            await elementUpdated(el);
+
+            // Results come back while the tab is hidden, so the width is still unknown
+            const results = { q: 'foo', matches: [] };
+            brStub.plugins.search.searchResults = results;
+            el.menuProviders.search.onSearchResultsChange({ detail: { props: { results, instance: brStub } } });
+            await promise0();
+            expect(el.openMenuName).toEqual('');
+
+            // Tab is shown again and the resize observer reports the width
+            el.handleResize({ contentRect: { width: 900, height: 500 }, target: el.mainBRContainer });
+            await elementUpdated(el);
+            await promise0();
+            expect(el.openMenuName).toEqual('search');
+          });
         });
       });
     });
