@@ -208,18 +208,18 @@ export class BRAnnotationModal extends LitElement {
   /** @override */
   connectedCallback() {
     super.connectedCallback();
-    window.addEventListener('ol-popover-open', this.focusTextArea);
+    window.addEventListener('ol-popover-open', this.focusTextarea);
   }
 
   /** @override */
   disconnectedCallback() {
     super.disconnectedCallback();
-    window.removeEventListener('ol-popover-open', this.focusTextArea);
+    window.removeEventListener('ol-popover-open', this.focusTextarea);
   }
 
-  focusTextArea() {
-    const textArea = document.querySelector('#annotateTextArea');
-    textArea?.focus();
+  focusTextarea() {
+    const textarea = document.querySelector('#annotateTextarea');
+    textarea?.focus();
   }
 
   /** @override */
@@ -230,24 +230,23 @@ export class BRAnnotationModal extends LitElement {
   showTextEditArea() {
     return html`
     <div class="br-annotate-menu__body"> 
-      <div class="br-annotate-menu__text">
-        <textarea 
-          class="br-annotate-menu__textArea" 
-          id="annotateTextArea" 
-          placeholder="Add note..."
-          >${this.getAnnotationText()}</textarea>
-      </div>
+      <textarea 
+        class="br-annotate-menu__textarea" 
+        id="annotateTextarea" 
+        placeholder="Add note..."
+      >${this.getAnnotationText()}</textarea>
       <div class="br-annotate-menu__footer">
-          ${this.renderColorOptions()}
-          <div class="br-annotate-menu__editOptions">
-        <button 
-          @click=${this.handleHighlightDelete}
-          class="br-annotate-menu__option">Delete
-        </button>
-        <button
-        @click=${this.handleSaveAnnotation}
-        class="br-annotate-menu__option save"
-        >Save</button>
+        ${this.renderColorOptions()}
+        <div class="br-annotate-menu__editOptions">
+          <button 
+            @click=${this.handleHighlightDelete}
+            class="br-annotate-menu__option">Delete
+          </button>
+          <button
+            @click=${this.handleSaveAnnotation}
+            class="br-annotate-menu__option save"
+          >Save</button>
+        </div>
       </div>
     </div>
     `;
@@ -270,16 +269,18 @@ export class BRAnnotationModal extends LitElement {
     const color = this.getHighlightColor();
     const colorName = this.highlightColorOptions.find((option) => option.hex === color)?.name;
     return html`
-    <div class="br-annotate-menu__colorOptions">
+    <div class="br-annotate-color-selector">
       <button
         @click=${this.handleColorChange}
-        class="br-annotate-menu__color ${colorName}"
+        class="br-annotate-color-selector__color ${colorName}"
         value=${color}
       >
       </button>
       ${this.showColorOptions ? this.renderColorDropdown() : ""}
-      <button class="br-annotate-menu__carot"
-      @click=${this.handleShowColor}>${this.showColorOptions ? '<' : '>'}</button>
+      <button class="br-annotate-color-selector__chevron ${this.showColorOptions ? 'open' : ''}"
+      aria-label=${this.showColorOptions ? 'Hide colors' : 'Show colors'}
+      aria-expanded=${this.showColorOptions}
+      @click=${this.handleShowColor}></button>
     </div>
     `;
   }
@@ -295,12 +296,12 @@ export class BRAnnotationModal extends LitElement {
       .map((option) => html`
       <button
         @click=${this.handleColorChange}
-        class="br-annotate-menu__color ${option.name}"
+        class="br-annotate-color-selector__color ${option.name}"
         value=${option.hex}>
         </button>`);
     return html`
-      <div class="br-annotate-menu__pipe">|</div>
-      <div class="br-annotate-menu__colorDropdown">
+      <div class="br-annotate-color-selector__pipe"></div>
+      <div class="br-annotate-color-selector__colorDropdown">
         ${allColorOptions}
       </div>
     `;
@@ -364,7 +365,7 @@ export class BRAnnotationModal extends LitElement {
     currentSelection?.removeAllRanges();
     currentSelection?.addRange(highlightRange);
 
-    this.updateTextArea(this.getAnnotationText());
+    this.updateTextarea(this.getAnnotationText());
     const lastNodeBoundary = lastNode.getBoundingClientRect();
     const pageContainerBoundary = lastNode.closest(".BRpagecontainer")?.getBoundingClientRect();
     const annotationButtonWidth = pageContainerBoundary.width * 0.93;
@@ -394,14 +395,14 @@ export class BRAnnotationModal extends LitElement {
     this.handleSaveAnnotation();
   }
 
-  updateTextArea(text) {
-    const inputEle = this.querySelector("#annotateTextArea");
+  updateTextarea(text) {
+    const inputEle = this.querySelector("#annotateTextarea");
     if (!inputEle) return;
     inputEle.value = text;
   }
 
   handleSaveAnnotation() {
-    const inputEle = document.querySelector("#annotateTextArea");
+    const inputEle = document.querySelector("#annotateTextarea");
     if (!inputEle || !this.currentAnnotationNodes) return;
     if (inputEle.value) {
       const currentUUID = retrieveUUID(this.currentAnnotationNodes[0]);
