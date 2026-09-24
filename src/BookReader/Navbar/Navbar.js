@@ -217,17 +217,11 @@ export class Navbar {
    * NOTE: `this.minimumControls`, `this.maximumControls`, and .BRnavMobile switch on resize
    */
   showMobileControls() {
-    // Scope queries to the navbar's own jQuery-wrapped root instead of
-    // `document`. `document.querySelector` can't cross shadow DOM
-    // boundaries, so when BookReader is hosted inside a shadow tree
-    // (e.g. offshoot's details-page), every lookup here returns null
-    // and no `.hide` toggling happens — leaving both the mobile-only
-    // viewmode button and the three desktop view-mode buttons visible
-    // at the same time.
-    //
-    // `this.$nav` is built from a fragment with two top-level sibling
-    // divs (.BRnavMobile + .BRnavMain), so `.filter()` (not `.find()`)
-    // is required for the outer classes.
+    // Controls are looked up through `this.$nav` so this works when
+    // BookReader is mounted inside a shadow root, which
+    // `document.querySelector` can't reach. `.BRnavMobile` and `.BRnavMain`
+    // are top-level elements of `this.$nav`, so they're matched with
+    // `.filter()`.
     const $main = this.$nav?.filter('.BRnavMain');
     this.minimumControls.forEach((control) => {
       $main?.find(`.controls .${control}`).removeClass('hide');
