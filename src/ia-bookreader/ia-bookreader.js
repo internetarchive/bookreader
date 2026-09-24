@@ -618,10 +618,15 @@ export class IaBookReader extends LitElement {
         min-height: unset;
       }
 
-      div[slot="header"],
+      div[slot="header"] {
+        display: flex;
+        width: 100%;
+      }
+
       div[slot="main"] {
         display: flex;
         width: 100%;
+        height: 100%;
       }
 
       slot {
@@ -632,7 +637,7 @@ export class IaBookReader extends LitElement {
       slot,
       slot > * {
         display: block;
-        height: inherit;
+        height: 100%;
         width: inherit;
       }
       .placeholder {
