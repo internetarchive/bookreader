@@ -682,7 +682,9 @@ export class Mode2UpLit extends LitElement {
     // `br.left()` / `br.right()` and clobber the selection. The text
     // selection plugin's own mouseup handler stops propagation when the
     // mouseup lands on a word, but not when it lands in blank space
-    // between words or on the page margin.
+    // between words or on the page margin. This checks the selected
+    // text, not `isCollapsed`, since Chrome reports a selection inside
+    // shadow DOM as collapsed even when it has text.
     if (window.getSelection?.()?.toString().trim()) return;
 
     const $page = $(ev.target).closest('.BRpagecontainer');

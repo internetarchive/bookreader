@@ -188,3 +188,41 @@ describe("computePositions", () => {
     expect(mode.computePositions(book.getPage(-1), null)).toEqual(RIGHT_COVER_EXPECTED);
   });
 });
+
+describe("handlePageClick", () => {
+  function makeModeAndPage(side) {
+    const br = make_dummy_br({ left: sinon.spy(), right: sinon.spy() });
+    const mode = new Mode2UpLit(null, br);
+    const page = document.createElement("div");
+    page.classList.add("BRpagecontainer");
+    page.dataset.side = side;
+    const child = document.createElement("span");
+    page.append(child);
+    return { br, mode, target: child };
+  }
+
+  test("flips right when there is no selection", () => {
+    sinon.stub(window, "getSelection").returns(/** @type {any} */({ toString: () => "", isCollapsed: true }));
+    const { br, mode, target } = makeModeAndPage("R");
+    mode.handlePageClick(/** @type {any} */({ which: 1, target }));
+    expect(br.right.callCount).toBe(1);
+    expect(br.left.callCount).toBe(0);
+  });
+
+  test("flips left when the selection is only whitespace", () => {
+    sinon.stub(window, "getSelection").returns(/** @type {any} */({ toString: () => " \n", isCollapsed: false }));
+    const { br, mode, target } = makeModeAndPage("L");
+    mode.handlePageClick(/** @type {any} */({ which: 1, target }));
+    expect(br.left.callCount).toBe(1);
+    expect(br.right.callCount).toBe(0);
+  });
+
+  test("does not flip when there is a text selection", () => {
+    // Chrome reports isCollapsed for selections inside shadow DOM
+    sinon.stub(window, "getSelection").returns(/** @type {any} */({ toString: () => "some words", isCollapsed: true }));
+    const { br, mode, target } = makeModeAndPage("R");
+    mode.handlePageClick(/** @type {any} */({ which: 1, target }));
+    expect(br.right.callCount).toBe(0);
+    expect(br.left.callCount).toBe(0);
+  });
+});
