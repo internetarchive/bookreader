@@ -26,6 +26,7 @@ import 'jquery-ui-touch-punch';
 
 import PACKAGE_JSON from '../package.json';
 import * as utils from './BookReader/utils.js';
+import { singleScrollIntoView } from './util/dom.js';
 import { exposeOverrideable } from './BookReader/utils/classes.js';
 import { Navbar } from './BookReader/Navbar/Navbar.js';
 import { DEFAULT_OPTIONS, OptionsParseError } from './BookReader/options.js';
@@ -111,6 +112,8 @@ BookReader.PLUGINS = {
   chapters: null,
   /** @type {typeof import('./plugins/plugin.experiments.js').ExperimentsPlugin | null}*/
   experiments: null,
+  /** @type {typeof import('./plugins/plugin.iframe.js').IframePlugin | null}*/
+  iframe: null,
   /** @type {typeof import('./plugins/plugin.resume.js').ResumePlugin | null}*/
   resume: null,
   /** @type {typeof import('./plugins/search/plugin.search.js').SearchPlugin | null}*/
@@ -150,11 +153,12 @@ BookReader.defaultOptions = DEFAULT_OPTIONS;
  * @type {BookReaderOptions}
  * This is here, just in case you need to absolutely override an option.
  */
-BookReader.optionOverrides = {};
+BookReader.optionOverrides = BookReader.optionOverrides || {};
 
 /**
  * Setup
  * It is separate from the constructor, so plugins can extend.
+ * @constructor
  * @param {BookReaderOptions} options
  */
 BookReader.prototype.setup = function(options) {
@@ -180,6 +184,7 @@ BookReader.prototype.setup = function(options) {
     autoplay: BookReader.PLUGINS.autoplay ? new BookReader.PLUGINS.autoplay(this) : null,
     chapters: BookReader.PLUGINS.chapters ? new BookReader.PLUGINS.chapters(this) : null,
     experiments: BookReader.PLUGINS.experiments ? new BookReader.PLUGINS.experiments(this) : null,
+    iframe: BookReader.PLUGINS.iframe ? new BookReader.PLUGINS.iframe(this) : null,
     search: BookReader.PLUGINS.search ? new BookReader.PLUGINS.search(this) : null,
     resume: BookReader.PLUGINS.resume ? new BookReader.PLUGINS.resume(this) : null,
     textSelection: BookReader.PLUGINS.textSelection ? new BookReader.PLUGINS.textSelection(this) : null,
@@ -644,7 +649,7 @@ BookReader.prototype.init = function() {
   this.pageScale = this.reduce; // preserve current reduce
 
   const params = this.initParams();
-
+  this.urlPlugin?.pullFromAddressBar();
   this.firstIndex = params.index ? params.index : 0;
 
   // Setup Navbars and other UI
@@ -852,6 +857,7 @@ BookReader.prototype.setupKeyListeners = function () {
 
     // Ignore if modifiers are active.
     if (e.getModifierState('Control') ||
+      e.getModifierState('Shift') ||
       e.getModifierState('Alt') ||
       e.getModifierState('Meta') ||
       e.getModifierState('Win') /* hack for IE */) {
@@ -1027,6 +1033,18 @@ BookReader.prototype.resizeBRcontainer = function(animate) {
       bottom: this.getFooterHeight(),
     });
   }
+};
+
+/**
+ * Scrolls the given element into view within the active mode's scroll container.
+ * @param {Element} el
+ * @param {object} [options]
+ * @param {'auto' | 'smooth'} [options.behavior]
+ * @param {'start' | 'center' | 'end' | 'nearest'} [options.block]
+ * @param {'start' | 'center' | 'end' | 'nearest'} [options.inline]
+ */
+BookReader.prototype.scrollIntoView = function(el, options) {
+  singleScrollIntoView(el, { ...options, scrollContainer: this.activeMode.scrollContainer });
 };
 
 BookReader.prototype.centerPageView = function() {
@@ -1959,6 +1977,10 @@ BookReader.prototype.queryStringFromParams = function(
 ) {
   const newParams = new URLSearchParams(currQueryString);
 
+  // Never write back UI-only params that are consumed on load
+  // TODO: Should ideally stick around until next URL change
+  newParams.delete('focus');
+
   if (params.view) {
     // Set ?view=theater when fullscreen
     newParams.set('view', params.view);
@@ -1971,24 +1993,8 @@ BookReader.prototype.queryStringFromParams = function(
     newParams.set('q', params.search);
   }
 
-  let textFragmentParam = '';
-  // Need to pull out text separately to avoid the spaces becoming encoded as +, which
-  // the browser seems not to handle with the text fragment
-  if (newParams.get('text')) {
-    newParams.delete('text');
-    textFragmentParam = `text=${this.urlPlugin.retrieveTextFragment(currQueryString)}`;
-  }
-
-  // https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/toString
-  // Note: This method returns the query string without the question mark.
-  let result = newParams.toString();
-  if (textFragmentParam) {
-    if (result) result += '&';
-    result += textFragmentParam;
-  }
-  if (result) result = '?' + result;
-
-  return result;
+  const result = newParams.toString();
+  return result ? `?${result}` : '';
 };
 
 /**
