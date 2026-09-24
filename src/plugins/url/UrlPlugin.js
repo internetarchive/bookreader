@@ -163,9 +163,10 @@ export class UrlPlugin {
     }
 
     if (this.urlMode == 'hash') {
-      // Use location.hash instead of location.replace('#...') to preserve
-      // the current pathname in SPA contexts.
-      window.location.hash = concatenatedPath;
+      // Built from location.href so a <base href> on the page can't change
+      // the pathname, and replace() so page flips don't add history entries.
+      const [baseHref] = window.location.href.split('#');
+      window.location.replace(`${baseHref}#${concatenatedPath}`);
     }
     this.oldLocationHash = urlStrPath;
   }
