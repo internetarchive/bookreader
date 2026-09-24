@@ -217,16 +217,19 @@ export class Navbar {
    * NOTE: `this.minimumControls`, `this.maximumControls`, and .BRnavMobile switch on resize
    */
   showMobileControls() {
+    // Controls are looked up through `this.$nav` so this works when
+    // BookReader is mounted inside a shadow root, which
+    // `document.querySelector` can't reach. `.BRnavMobile` and `.BRnavMain`
+    // are top-level elements of `this.$nav`, so they're matched with
+    // `.filter()`.
+    const $main = this.$nav?.filter('.BRnavMain');
     this.minimumControls.forEach((control) => {
-      const element = document.querySelector(`.BRnavMain .controls .${control}`);
-      if (element) element.classList.remove('hide');
+      $main?.find(`.controls .${control}`).removeClass('hide');
     });
     this.maximumControls.forEach((control) => {
-      const element = document.querySelector(`.BRnavMain .controls .${control}`);
-      if (element) element.classList.add('hide');
+      $main?.find(`.controls .${control}`).addClass('hide');
     });
-    const mobileNav = document.querySelector(`.BRnavMobile`);
-    if (mobileNav) mobileNav.classList.remove('hide');
+    this.$nav?.filter('.BRnavMobile').removeClass('hide');
   }
 
   /**
@@ -234,16 +237,14 @@ export class Navbar {
    * NOTE: `this.minimumControls`, `this.maximumControls`, and .BRnavMobile switch on resize
    */
   showDesktopControls() {
+    const $main = this.$nav?.filter('.BRnavMain');
     this.maximumControls.forEach((control) => {
-      const element = document.querySelector(`.BRnavMain .controls .${control}`);
-      if (element) element.classList.remove('hide');
+      $main?.find(`.controls .${control}`).removeClass('hide');
     });
     this.minimumControls.forEach((control) => {
-      const element = document.querySelector(`.BRnavMain .controls .${control}`);
-      if (element) element.classList.add('hide');
+      $main?.find(`.controls .${control}`).addClass('hide');
     });
-    const mobileNav = document.querySelector(`.BRnavMobile`);
-    if (mobileNav) mobileNav.classList.add('hide');
+    this.$nav?.filter('.BRnavMobile').addClass('hide');
   }
 
   /**

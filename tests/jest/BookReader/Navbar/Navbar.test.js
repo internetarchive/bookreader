@@ -1,5 +1,5 @@
 import sinon from 'sinon';
-import { getNavPageNumHtml } from '@/src/BookReader/Navbar/Navbar.js';
+import { getNavPageNumHtml, Navbar } from '@/src/BookReader/Navbar/Navbar.js';
 import BookReader from '@/src/BookReader.js';
 
 describe('getNavPageNumHtml', () => {
@@ -178,5 +178,64 @@ describe('Navbar controls overrides', () => {
 
     expect(navbar.$root.find('.viewmode').length).toBe(1);
     expect(navbar.$root.find('.onepg').length).toBe(0);
+  });
+});
+
+describe('Navbar responsive controls', () => {
+  /** @param {JQuery} $nav @param {string} control */
+  const isHidden = ($nav, control) => (
+    $nav.filter('.BRnavMain').find(`.controls .${control}`).hasClass('hide')
+  );
+
+  const createBRInShadowRoot = () => {
+    document.body.innerHTML = '<div id="host"></div>';
+    const shadowRoot = document.querySelector('#host').attachShadow({ mode: 'open' });
+    shadowRoot.innerHTML = '<div id="BookReader"></div>';
+    br = new BookReader(BookReader.extendOptions(br.options, {
+      el: shadowRoot.querySelector('#BookReader'),
+      controls: { viewmode: { visible: true } },
+    }));
+    br.init();
+    navbar = br._components.navbar;
+    return shadowRoot;
+  };
+
+  test('showDesktopControls hides mobile controls inside a shadow root', () => {
+    const shadowRoot = createBRInShadowRoot();
+    expect(document.querySelector('.BRnavMain')).toBeNull();
+    expect(shadowRoot.querySelector('.BRnavMain')).not.toBeNull();
+
+    navbar.showDesktopControls();
+
+    const { $nav } = navbar;
+    expect($nav.filter('.BRnavMobile').hasClass('hide')).toBe(true);
+    for (const control of ['toggle_slider', 'viewmode']) {
+      expect(isHidden($nav, control)).toBe(true);
+    }
+    for (const control of ['BRnavpos', 'book_left', 'book_right', 'zoom_in', 'zoom_out']) {
+      expect(isHidden($nav, control)).toBe(false);
+    }
+  });
+
+  test('showMobileControls hides desktop controls inside a shadow root', () => {
+    createBRInShadowRoot();
+    navbar.showDesktopControls();
+
+    navbar.showMobileControls();
+
+    const { $nav } = navbar;
+    expect($nav.filter('.BRnavMobile').hasClass('hide')).toBe(false);
+    for (const control of ['toggle_slider', 'viewmode']) {
+      expect(isHidden($nav, control)).toBe(false);
+    }
+    for (const control of ['BRnavpos', 'book_left', 'book_right', 'zoom_in', 'zoom_out']) {
+      expect(isHidden($nav, control)).toBe(true);
+    }
+  });
+
+  test('does not throw before the navbar is initialized', () => {
+    const uninitialized = new Navbar(br);
+    expect(() => uninitialized.showDesktopControls()).not.toThrow();
+    expect(() => uninitialized.showMobileControls()).not.toThrow();
   });
 });
