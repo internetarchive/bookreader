@@ -52,6 +52,15 @@ export function isIOS() {
 }
 
 /**
+ * Checks whether the current browser is on android
+ * @param {string} [userAgent]
+ * @return {boolean}
+ */
+export function isAndroid(userAgent = navigator.userAgent) {
+  return /android/i.test(userAgent);
+}
+
+/**
  * Checks whether the current browser is Samsung Internet
  * https://stackoverflow.com/a/40684162/2317712
  * @param {string} [userAgent]

@@ -1,16 +1,15 @@
 {
   "compilerOptions": {
     "target": "es6",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "experimentalDecorators": true,
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
     }
   },
   "include": [
     "src/**/*.js",
-    "tests/**/*.js",
+    "tests/jest/**/*.js",
   ],
   "exclude": [
     "node_modules",

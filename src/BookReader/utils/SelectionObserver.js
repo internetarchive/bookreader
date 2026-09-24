@@ -4,12 +4,12 @@ export class SelectionObserver {
   startedInSelector = false;
   /** @type {HTMLElement} */
   target = null;
-  /** @type {Node} */
+  /** @type {Node | null} */
   lastKnownFocusNode = null;
 
   /**
    * @param {string} selector
-   * @param {function('started' | 'cleared' | 'focusChanged', HTMLElement): any} handler
+   * @param {function('started' | 'cleared' | 'changed', HTMLElement): any} handler
    */
   constructor(selector, handler) {
     this.selector = selector;
@@ -30,6 +30,7 @@ export class SelectionObserver {
 
   _onSelectionChange = () => {
     const sel = window.getSelection();
+    if (!sel) return;
 
     if (!this.selecting && sel.toString()) {
       const target = $(sel.anchorNode).closest(this.selector)[0];
@@ -40,13 +41,14 @@ export class SelectionObserver {
       this.handler('started', this.target);
     }
 
-    if (this.selecting && (this.lastKnownFocusNode != sel.focusNode || sel.toString() && !sel.isCollapsed)) {
+    if (this.selecting && this.lastKnownFocusNode != sel.focusNode && sel.toString() && !sel.isCollapsed) {
       this.lastKnownFocusNode = sel.focusNode;
-      this.handler('focusChanged', this.target);
+      this.handler('changed', this.target);
     }
 
     if (this.selecting && (sel.isCollapsed || !sel.toString() || !$(sel.anchorNode).closest(this.selector)[0])) {
       this.selecting = false;
+      this.lastKnownFocusNode = null;
       this.handler('cleared', this.target);
     }
   };

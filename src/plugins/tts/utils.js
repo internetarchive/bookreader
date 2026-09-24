@@ -1,25 +1,6 @@
 // @ts-check
 import langs from 'iso-language-codes';
 
-/**
- * Use regex to approximate word count in a string
- * @param {string} text
- * @return {number}
- */
-export function approximateWordCount(text) {
-  const m = text.match(/\S+/g);
-  return m ? m.length : 0;
-}
-
-/**
- * Checks whether the current browser is on android
- * @param {string} [userAgent]
- * @return {boolean}
- */
-export function isAndroid(userAgent = navigator.userAgent) {
-  return /android/i.test(userAgent);
-}
-
 /** @type {{[lang: string]: string}} */
 // Handle odd one-off language pairs that might show up over time
 const specialLangs =  {
@@ -53,7 +34,7 @@ export function toISO6391(language) {
 /**
  *
  * @param {string} language
- * @returns {string}
+ * @returns {string | null}
  */
 export function toNativeName(language) {
   if (!language) return null;
