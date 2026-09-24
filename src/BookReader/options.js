@@ -146,6 +146,8 @@ export const DEFAULT_OPTIONS = {
    * but going forward we'll keep them here.
    **/
   plugins: {
+    /** @type {Partial<import('../plugins/plugin.annotations.js').AnnotationsPlugin['options']>} */
+    annotations: {},
     /** @type {Partial<import('../plugins/plugin.archive_analytics.js').ArchiveAnalyticsPlugin['options'>]}*/
     archiveAnalytics: {},
     /** @type {Partial<import('../plugins/plugin.autoplay.js').AutoplayPlugin['options'>]}*/
