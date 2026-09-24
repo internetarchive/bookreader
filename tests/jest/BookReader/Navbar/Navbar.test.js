@@ -6,15 +6,27 @@ describe('getNavPageNumHtml', () => {
   const f = getNavPageNumHtml;
 
   test('handle n-prefixed page numbers', () => {
-    expect(f(3, 40, 'n3', '', 40)).toBe('Page — (4/40)');
+    expect(f(3, 40, 'n3', '', 40)).toBe('Page — (3/39)');
   });
 
   test('handle regular page numbers', () => {
-    expect(f(3, 40, '14', '', 40)).toBe('Page 14 (4/40)');
+    expect(f(3, 40, '14', '', 40)).toBe('Page 14 (3/39)');
   });
 
   test('handle no max page', () => {
-    expect(f(3, 40, '14', '', null)).toBe('Page 14 (4/40)');
+    expect(f(3, 40, '14', '', null)).toBe('Page 14 (3/39)');
+  });
+
+  test('first leaf renders as 0', () => {
+    expect(f(0, 40, '1', '', 40)).toBe('Page 1 (0/39)');
+  });
+
+  test('last leaf renders as numLeafs - 1', () => {
+    expect(f(39, 40, '40', '', 40)).toBe('Page 40 (39/39)');
+  });
+
+  test('zero-leaf book renders as 0/0', () => {
+    expect(f(0, 0, 'n0', '', null)).toBe('Page — (0/0)');
   });
 });
 

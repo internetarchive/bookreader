@@ -3,13 +3,19 @@ import { BookReaderPlugin } from '../BookReaderPlugin.js';
 
 const BookReader = /** @type {typeof import('../BookReader').default} */(window.BookReader);
 
+/**
+ * @extends BookReaderPlugin<IiifPlugin['options']>
+ */
 export class IiifPlugin extends BookReaderPlugin {
   options = {
     enabled: true,
-    /** @type {import('@iiif/presentation-3').Manifest | import('@iiif/presentation-2').Manifest} */
+    /** @type {import('@iiif/presentation-3').Manifest | import('@iiif/presentation-2').Manifest | null} */
     manifest: null,
   }
 
+  /**
+   * @param {IiifPlugin['options']} options
+   */
   setup(options) {
     super.setup(options);
     this.manifest = this.options.manifest;
