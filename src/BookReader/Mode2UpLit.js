@@ -677,14 +677,10 @@ export class Mode2UpLit extends LitElement {
     if (ev.which != 1) return;
 
     // Don't flip the page if the user is completing a text-selection
-    // drag. The page-flip handler runs on `mouseup`, so releasing the
-    // mouse at the end of a selection would otherwise trigger
-    // `br.left()` / `br.right()` and clobber the selection. The text
-    // selection plugin's own mouseup handler stops propagation when the
-    // mouseup lands on a word, but not when it lands in blank space
-    // between words or on the page margin. This checks the selected
-    // text, not `isCollapsed`, since Chrome reports a selection inside
-    // shadow DOM as collapsed even when it has text.
+    // drag. The text selection plugin normally stops this mouseup, but it
+    // relies on `isCollapsed`, and Chrome reports a selection inside
+    // shadow DOM as collapsed even when it has text. So this checks the
+    // selected text itself.
     if (window.getSelection?.()?.toString().trim()) return;
 
     const $page = $(ev.target).closest('.BRpagecontainer');
