@@ -4,7 +4,9 @@ import { BookReaderPlugin } from '../BookReaderPlugin.js';
 import { applyVariables } from '../util/strings.js';
 import { Cache } from '../util/cache.js';
 import { toISO6391 } from './tts/utils.js';
-import { TextSelectionManager } from '../util/TextSelectionManager.js';
+import { BookReaderTextFragment, renderHighlight, TextSelectionManager } from '../util/TextSelectionManager.js';
+import { genMap, lookAroundWindow, zip } from '../util/generators.js';
+import textSelectionCss from '../css/_TextSelection.scss';
 /** @typedef {import('../util/strings.js').StringWithVars} StringWithVars */
 /** @typedef {import('../BookReader/PageContainer.js').PageContainer} PageContainer */
 
@@ -36,6 +38,15 @@ export class TextSelectionPlugin extends BookReaderPlugin {
    */
   maxWordRendered = 2500;
 
+  _jumpedToHighlight = false;
+
+  /**
+   * Isolated document/layout used to performantly measure OCR text-layer
+   * elements.
+   * @type {Document}
+   */
+  _measurementDocument;
+
   /**
    * @param {import('../BookReader.js').default} br
    */
@@ -46,26 +57,54 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     // now we do make that assumption.
     /** Whether the book is right-to-left */
     this.rtl = this.br.pageProgression === 'rl';
-    this.textSelectionManager = new TextSelectionManager('.BRtextLayer', this.br, {selectionElement: ['.BRwordElement', '.BRspace']}, this.options.maxProtectedWords);
+    this.textSelectionManager = new TextSelectionManager('.BRtextLayer', this.br, {selectionElement: ['.BRwordElement', '.BRspace', 'mark']}, this.options.maxProtectedWords);
   }
 
   /** @override */
   init() {
     if (!this.options.enabled) return;
 
+    // Setup measurement iframe for OCR
+    const measurementIframe = document.createElement('iframe');
+    measurementIframe.setAttribute('aria-hidden', 'true');
+    measurementIframe.tabIndex = -1;
+    measurementIframe.style.cssText = 'position:fixed; top:-99999px; left:-99999px; width:2000px; height:4000px; border:0; visibility:hidden;';
+    document.body.appendChild(measurementIframe);
+    this._measurementDocument = measurementIframe.contentDocument;
+    // Injects _TextSelection.scss so measurements match the real
+    // rendering
+    const style = this._measurementDocument.createElement('style');
+    style.textContent = textSelectionCss;
+    this._measurementDocument.head.appendChild(style);
+
     this.br.on('pageVisible', (_, {pageContainerEl}) => {
-      if (pageContainerEl.querySelector('.BRtextLayer')) {
-        this.br.trigger('textLayerVisible', {pageContainerEl});
+      const textLayer = pageContainerEl.querySelector('.BRtextLayer');
+      if (textLayer) {
+        this.br.trigger('textLayerVisible', {pageContainerEl, textLayer});
       }
     });
 
     this.loadData();
     this.textSelectionManager.init();
-  }
 
-  enableSelectionMenu() {
-    this.textSelectionManager.selectionMenuEnabled = true;
-    this.textSelectionManager.renderSelectionMenu();
+    // Init text fragment
+    const textParam = new URLSearchParams(location.search).get('text');
+    if (textParam) {
+      this.targetTextFragment = BookReaderTextFragment.fromString(textParam, this.br.book, this.br.firstIndex);
+      const targetTextFragment = this.targetTextFragment;
+      this.br.on('textLayerVisible', async (_, {pageContainerEl, textLayer}) => {
+        const pageIndex = targetTextFragment.pageIndex;
+        const hasTargetText = pageIndex === parseFloat(pageContainerEl.getAttribute('data-index'));
+        if (hasTargetText) {
+          const markEls = renderHighlight(textLayer, targetTextFragment, 'BRhighlight--target-text');
+          // Only jump once; presumably on first page load.
+          if (!this._jumpedToHighlight) {
+            this.br.scrollIntoView(markEls[0], {behavior: 'smooth', block: 'center'});
+            this._jumpedToHighlight = true;
+          }
+        }
+      });
+    }
   }
 
   /**
@@ -76,7 +115,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
   _configurePageContainer(pageContainer) {
     // Disable if thumb mode; it's too janky
     // .page can be null for "pre-cover" region
-    if (this.br.mode !== this.br.constModeThumb && pageContainer.page) {
+    if (this.options.enabled && this.br.mode !== this.br.constModeThumb && pageContainer.page?.isViewable) {
       this.createTextLayer(pageContainer);
     }
     return pageContainer;
@@ -186,7 +225,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     });
 
     // Fix up paragraph positions
-    const paragraphRects = determineRealRects(textLayer, '.BRparagraphElement');
+    const paragraphRects = determineRealRects(textLayer, '.BRparagraphElement', this._measurementDocument);
     let yAdded = 0;
     for (const [ocrParagraph, paragEl] of zip(ocrParagraphs, paragEls)) {
       const ocrParagBounds = $(ocrParagraph).attr("coords").split(",").map(parseFloat);
@@ -210,7 +249,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
 
     // Check if page is visible
     if ($container.hasClass('BRpage-visible')) {
-      this.br.trigger('textLayerVisible', {pageContainerEl: $container[0]});
+      this.br.trigger('textLayerVisible', {pageContainerEl: $container[0], textLayer});
     }
   }
 
@@ -294,7 +333,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     paragEl.style.fontSize = `${paragWordHeight}px`;
 
     // Fix up sizes - stretch/crush words as necessary using letter spacing
-    let wordRects = determineRealRects(paragEl, '.BRwordElement');
+    let wordRects = determineRealRects(paragEl, '.BRwordElement', this._measurementDocument);
     const ocrWords = $(ocrParagraph).find("WORD").toArray();
     const wordEls = paragEl.querySelectorAll('.BRwordElement');
     for (const [ocrWord, wordEl] of zip(ocrWords, wordEls)) {
@@ -315,8 +354,8 @@ export class TextSelectionPlugin extends BookReaderPlugin {
 
     // Stretch/crush lines as necessary using line spacing
     // Recompute rects after letter spacing
-    wordRects = determineRealRects(paragEl, '.BRwordElement');
-    const spaceRects = determineRealRects(paragEl, '.BRspace');
+    wordRects = determineRealRects(paragEl, '.BRwordElement', this._measurementDocument);
+    const spaceRects = determineRealRects(paragEl, '.BRspace', this._measurementDocument);
 
     const ocrLines = $(ocrParagraph).find("LINE[coords]").toArray();
     const lineEls = Array.from(paragEl.querySelectorAll('.BRlineElement'));
@@ -366,9 +405,11 @@ BookReader?.registerPlugin('textSelection', TextSelectionPlugin);
 /**
  * @param {HTMLElement} parentEl
  * @param {string} selector
+ * @param {Document} measurementDocument Isolated document to measure within
+ *   (see TextSelectionPlugin#_measurementDocument for why).
  * @returns {Map<Element, Rect>}
  */
-function determineRealRects(parentEl, selector) {
+function determineRealRects(parentEl, selector, measurementDocument) {
   const initals = {
     position: parentEl.style.position,
     visibility: parentEl.style.visibility,
@@ -381,21 +422,23 @@ function determineRealRects(parentEl, selector) {
   parentEl.style.top = '0';
   parentEl.style.left = '0';
   parentEl.style.transform = 'none';
-  document.body.appendChild(parentEl);
+  measurementDocument.body.appendChild(parentEl);
   const rects = new Map(
     Array.from(parentEl.querySelectorAll(selector))
       .map(wordEl => {
         const origRect = wordEl.getBoundingClientRect();
         return [wordEl, new Rect(
-          origRect.left + window.scrollX,
-          origRect.top + window.scrollY,
+          origRect.left + measurementDocument.defaultView.scrollX,
+          origRect.top + measurementDocument.defaultView.scrollY,
           origRect.width,
           origRect.height,
         )];
       }),
   );
-  document.body.removeChild(parentEl);
+  measurementDocument.body.removeChild(parentEl);
   Object.assign(parentEl.style, initals);
+  // Need to restore the document to the main window document
+  document.adoptNode(parentEl);
   return rects;
 }
 
@@ -410,94 +453,6 @@ function augmentLine(line) {
     firstWord: words[0],
     lastWord: words[words.length - 1],
   };
-}
-
-/**
- * @template T
- * Get the i-th element of an iterable
- * @param {Iterable<T>} iterable
- * @param {number} index
- */
-export function genAt(iterable, index) {
-  let i = 0;
-  for (const x of iterable) {
-    if (i == index) return x;
-    i++;
-  }
-  return undefined;
-}
-
-/**
- * @template T
- * Generator version of filter
- * @param {Iterable<T>} iterable
- * @param {function(T): boolean} fn
- */
-export function* genFilter(iterable, fn) {
-  for (const x of iterable) {
-    if (fn(x)) yield x;
-  }
-}
-
-/**
- * @template TFrom, TTo
- * Generator version of map
- * @param {Iterable<TFrom>} gen
- * @param {function(TFrom): TTo} fn
- * @returns {Iterable<TTo>}
- */
-export function* genMap(gen, fn) {
-  for (const x of gen) yield fn(x);
-}
-
-/**
- * @template T
- * Generator that provides a sliding window of 3 elements,
- * prev, current, and next.
- * @param {Iterable<T>} gen
- * @returns {Iterable<[T | undefined, T, T | undefined]>}
- */
-export function* lookAroundWindow(gen) {
-  let prev = undefined;
-  let cur = undefined;
-  let next = undefined;
-  for (const x of gen) {
-    if (typeof cur !== 'undefined') {
-      next = x;
-      yield [prev, cur, next];
-    }
-    prev = cur;
-    cur = x;
-    next = undefined;
-  }
-
-  if (typeof cur !== 'undefined') {
-    yield [prev, cur, next];
-  }
-}
-
-/**
- * @template T1, T2
- * Lazy zip implementation to avoid importing lodash
- * Expects iterators to be of the same length
- * @param {Iterable<T1>} gen1
- * @param {Iterable<T2>} gen2
- * @returns {Iterable<[T1, T2]>}
- */
-export function* zip(gen1, gen2) {
-  const it1 = gen1[Symbol.iterator]();
-  const it2 = gen2[Symbol.iterator]();
-  while (true) {
-    const r1 = it1.next();
-    const r2 = it2.next();
-    if (r1.done && r2.done) {
-      return;
-    }
-    if (r1.done || r2.done) {
-      throw new Error('zip: one of the iterators is done');
-    }
-    yield [r1.value, r2.value];
-  }
 }
 
 /**
@@ -574,50 +529,4 @@ class Rect {
   get bottom() { return this.y + this.height; }
   get top() { return this.y; }
   get left() { return this.x; }
-}
-
-/**
- * Depth traverse the DOM tree starting at `start`, and ending at `end`.
- * @param {Node} start
- * @param {Node} end
- * @returns {Generator<Node>}
- */
-export function* walkBetweenNodes(start, end) {
-  let done = false;
-
-  /**
-   * @param {Node} node
-   */
-  function* walk(node, {children = true, parents = true, siblings = true} = {}) {
-    if (node === end) {
-      done = true;
-      yield node;
-      return;
-    }
-
-    // yield self
-    yield node;
-
-    // First iterate children (depth-first traversal)
-    if (children && node.firstChild) {
-      yield* walk(node.firstChild, {children: true, parents: false, siblings: true});
-      if (done) return;
-    }
-
-    // Then iterate siblings
-    if (siblings) {
-      for (let sib = node.nextSibling; sib; sib = sib.nextSibling) {
-        yield* walk(sib, {children: true, parents: false, siblings: false});
-        if (done) return;
-      }
-    }
-
-    // Finally, move up the tree
-    if (parents && node.parentNode) {
-      yield* walk(node.parentNode, {children: false, parents: true, siblings: true});
-      if (done) return;
-    }
-  }
-
-  yield* walk(start);
 }

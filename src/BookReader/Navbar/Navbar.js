@@ -321,7 +321,7 @@ export class Navbar {
     const $sliders = this.$root.find('.BRpager').slider({
       animate: true,
       min: 0,
-      max: br.book.getNumLeafs() - 1,
+      max: Math.max(0, br.book.getNumLeafs() - 1),
       value: br.currentIndex(),
       range: "min",
     });
@@ -331,8 +331,8 @@ export class Navbar {
     $sliders.find('.ui-slider-handle').attr({
       'role': 'slider',
       'aria-label': 'Page navigation slider',
-      'aria-valuemin': 1,
-      'aria-valuemax': br.book.getNumLeafs(),
+      'aria-valuemin': 0,
+      'aria-valuemax': Math.max(0, br.book.getNumLeafs() - 1),
     });
 
     // Ignore up/down arrow keys and page up/down keys, since they're confusingly different
@@ -403,7 +403,6 @@ export class Navbar {
   */
   getNavPageNumString(index) {
     const { br } = this;
-    // Accessible index starts at 0 (alas) so we add 1 to make human
     const pageNum = br.book.getPageNum(index);
     const pageType = br.book.getPageProp(index, 'pageType');
     const numLeafs = br.book.getNumLeafs();
@@ -432,7 +431,7 @@ export class Navbar {
   updateNavPageNum(index) {
     this.$root.find('.BRcurrentpage').html(this.getNavPageNumString(index));
     this.$root.find('.ui-slider-handle').attr({
-      'aria-valuenow': index + 1,
+      'aria-valuenow': index,
       'aria-valuetext': this.getNavPageNumString(index),
     });
   }
@@ -453,19 +452,19 @@ export class Navbar {
 
 /**
  * Renders the html for the page string
- * @param {number} index
- * @param {number} numLeafs
+ * @param {PageIndex} index 0-indexed page index (0..numLeafs-1)
+ * @param {number} numLeafs total number of leaves
  * @param {number|string} pageNum
  * @param {*} pageType - Deprecated
  * @param {number} maxPageNum
- * @return {string}
+ * @return {string} e.g. "Page 14 (3/39)"
  */
 export function getNavPageNumHtml(index, numLeafs, pageNum, pageType, maxPageNum) {
   const pageIsAsserted = pageNum[0] != 'n';
-  const pageIndex = index + 1;
 
   if (!pageIsAsserted) {
     pageNum = '—';
   }
-  return `Page ${pageNum} (${pageIndex}/${numLeafs})`;
+  const lastIndex = Math.max(0, numLeafs - 1);
+  return `Page ${pageNum} (${index}/${lastIndex})`;
 }
