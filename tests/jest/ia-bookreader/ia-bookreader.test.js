@@ -323,6 +323,38 @@ describe('<ia-bookreader>', () => {
     });
   });
 
+  describe('mainBRContainer', () => {
+    test('is undefined before BookReader has initialized', async () => {
+      const el = fixtureSync(container());
+      await elementUpdated(el);
+      expect(el.mainBRContainer).toBeUndefined();
+
+      el.bookreader = { options: {}, refs: {} };
+      await elementUpdated(el);
+      expect(el.mainBRContainer).toBeUndefined();
+    });
+
+    test('is the element BookReader mounted to', async () => {
+      const el = fixtureSync(container());
+      const brEl = document.querySelector('#BookReader');
+      el.bookreader = { options: {}, refs: { $br: $(brEl) } };
+      await elementUpdated(el);
+      expect(el.mainBRContainer).toBe(brEl);
+    });
+
+    test('is the mounted element when it lives inside a shadow root', async () => {
+      const el = fixtureSync(container());
+      const host = document.createElement('div');
+      document.body.append(host);
+      const brEl = document.createElement('div');
+      host.attachShadow({ mode: 'open' }).append(brEl);
+
+      el.bookreader = { options: {}, refs: { $br: $(brEl) } };
+      await elementUpdated(el);
+      expect(el.mainBRContainer).toBe(brEl);
+    });
+  });
+
   describe('Resizing',() => {
     test('keeps track of `_brWidth` and `_brHeight`', async () => {
       const el = fixtureSync(container());
