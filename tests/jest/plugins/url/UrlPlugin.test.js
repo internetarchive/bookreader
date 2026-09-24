@@ -139,6 +139,26 @@ describe('UrlPlugin tests', () => {
       urlPlugin.pushToAddressBar();
       expect(window.location.hash).toEqual('#page/12?q=hello&view=theater');
     });
+
+    test('keeps the pathname when the page has a base href', () => {
+      const base = document.createElement('base');
+      base.href = '/some/other/path/';
+      document.head.appendChild(base);
+      const { pathname } = window.location;
+      const historyLength = window.history.length;
+
+      try {
+        urlPlugin.urlState = { page: '12' };
+        urlPlugin.urlMode = 'hash';
+        urlPlugin.pushToAddressBar();
+
+        expect(window.location.pathname).toEqual(pathname);
+        expect(window.location.hash).toEqual('#page/12');
+        expect(window.history.length).toEqual(historyLength);
+      } finally {
+        base.remove();
+      }
+    });
   });
 
   describe('pullFromAddressBar and pushToAddressBar - history mode', () => {

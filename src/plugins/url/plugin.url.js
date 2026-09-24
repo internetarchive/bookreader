@@ -173,7 +173,10 @@ BookReader.prototype.urlUpdateFragment = function() {
 
   if (this.options.urlMode === 'hash')  {
     const newQueryStringSearch = this.urlParamsFiltersOnlySearch(this.readQueryString());
-    window.location.replace('#' + newFragment + newQueryStringSearch);
+    // Built from location.href so a <base href> on the page can't change
+    // the pathname, and replace() so page flips don't add history entries.
+    const [baseHref] = window.location.href.split('#');
+    window.location.replace(`${baseHref}#${newFragment}${newQueryStringSearch}`);
     this.oldLocationHash = newFragment + newQueryStringSearch;
   }
 };
