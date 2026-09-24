@@ -340,7 +340,7 @@ export class IaBookReader extends LitElement {
 
   /** gets element that houses the bookreader in light dom */
   get mainBRContainer() {
-    return document.querySelector(this.bookreader?.el);
+    return this.bookreader?.refs?.$br?.[0];
   }
 
   get baseProviderConfig() {

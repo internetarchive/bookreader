@@ -128,4 +128,31 @@ describe('View: Plugin: Search', () => {
       });
     });
   });
+
+  describe('renderModalMessage', () => {
+    test('appends the modal to the BookReader element', () => {
+      br.init();
+      br.plugins.search.searchView.renderModalMessage('No matches were found.');
+
+      const modal = document.querySelector('#BookReader > .search_modal');
+      expect(modal).not.toBeNull();
+      expect(modal.textContent).toEqual('No matches were found.');
+    });
+
+    test('appends the modal when `el` is an element inside a shadow root', () => {
+      document.body.innerHTML = '<div id="host"></div>';
+      const shadowRoot = document.querySelector('#host').attachShadow({ mode: 'open' });
+      const brEl = document.createElement('div');
+      shadowRoot.append(brEl);
+
+      br = new BookReader({ el: brEl });
+      br.initToolbar = jest.fn();
+      br.showProgressPopup = jest.fn();
+      br.init();
+      br.plugins.search.searchView.renderModalMessage('No matches were found.');
+
+      expect(document.querySelector('.search_modal')).toBeNull();
+      expect(brEl.querySelector(':scope > .search_modal').textContent).toEqual('No matches were found.');
+    });
+  });
 });
