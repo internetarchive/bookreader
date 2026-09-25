@@ -1,7 +1,7 @@
 //@ts-check
 import { createDIVPageLayer } from '../BookReader/PageContainer.js';
 import { BookReaderPlugin } from '../BookReaderPlugin.js';
-import { BatchFetcher } from '../util/debouncer.js';
+import { BatchFetcher } from '../util/scheduling.js';
 import { applyVariables } from '../util/strings.js';
 import { Cache } from '../util/cache.js';
 import { toISO6391 } from './tts/utils.js';

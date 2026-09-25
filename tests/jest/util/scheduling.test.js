@@ -1,5 +1,5 @@
 import sinon from 'sinon';
-import { BatchFetcher, OpenPromise } from '@/src/util/debouncer.js';
+import { BatchFetcher, OpenPromise } from '@/src/util/scheduling.js';
 
 /** Resolves each requested input to `"v{input}"` , recording the batches it was called with */
 function recordingFetchMany() {
