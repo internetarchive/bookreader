@@ -75,9 +75,15 @@ export class BatchFetcher {
     this.timeWindow = timeWindow;
     /** @type {function(TInput): TOutput | null} */
     this.getFromCache = getFromCache;
-    /** @type {{ input: TInput, promise: OpenPromise<TOutput> }[]} */
-    this.queue = [];
-    /** @type {TInput[]} */
+    /**
+     * Every input that has been requested but not yet settled, including those already
+     * being fetched. Entries outlive the batch they were dispatched in, so that an input
+     * requested again while in flight joins the existing request instead of starting a
+     * second one.
+     * @type {Map<TInput, OpenPromise<TOutput>>}
+     */
+    this.pending = new Map();
+    /** @type {TInput[]} Inputs waiting to be dispatched in the next batch */
     this.batch = [];
 
     this.timeout = null;
@@ -92,21 +98,22 @@ export class BatchFetcher {
     this.timeout = null;
 
     // sort numerically
-    const toFetch = Array.from(this.batch.sort((a, b) => a - b));
+    const toFetch = Array.from(this.batch).sort((a, b) => a - b);
     this.batch.length = 0;
+    if (!toFetch.length) return;
+
+    /** @param {function(OpenPromise<TOutput>, TInput): void} settleOne */
+    const settle = (settleOne) => {
+      for (const input of toFetch) {
+        const promise = this.pending.get(input);
+        this.pending.delete(input);
+        settleOne(promise, input);
+      }
+    };
+
     this.fetchMany(toFetch)
-      .then((results) => {
-        /** @type {{ input: TInput, promise: OpenPromise<TOutput> }[]} */
-        const handled = this.queue.filter(x => toFetch.includes(x.input));
-        this.queue = this.queue.filter(x => !handled.includes(x));
-        handled.forEach(req => req.promise.resolve(results[req.input]));
-      })
-      .catch((e) => {
-        /** @type {{ input: TInput, promise: OpenPromise<TOutput> }[]} */
-        const handled = this.queue.filter(x => toFetch.includes(x.input));
-        this.queue = this.queue.filter(x => !handled.includes(x));
-        handled.forEach(req => req.promise.reject(e));
-      });
+      .then((results) => settle((promise, input) => promise.resolve(results[input])))
+      .catch((e) => settle((promise) => promise.reject(e)));
   }
 
   /**
@@ -121,18 +128,14 @@ export class BatchFetcher {
       return Promise.resolve(cachedValue);
     }
 
-    const request = {
-      input,
-      /** @type {OpenPromise<TOutput>} */
-      promise: new OpenPromise(),
-    };
-    this.queue.push(request);
+    // Share the in-progress request rather than fetching the same input twice
+    const pending = this.pending.get(input);
+    if (pending) return pending.promise;
 
-    if (this.batch.includes(input)) {
-      return request.promise.promise;
-    } else {
-      this.batch.push(input);
-    }
+    /** @type {OpenPromise<TOutput>} */
+    const promise = new OpenPromise();
+    this.pending.set(input, promise);
+    this.batch.push(input);
 
     if (this.batch.length >= this.batchSize) {
       this.drainBatch();
@@ -144,6 +147,6 @@ export class BatchFetcher {
       }
     }
 
-    return request.promise.promise;
+    return promise.promise;
   }
 }

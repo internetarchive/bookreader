@@ -197,23 +197,41 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     const indicesToFetch = indices.filter(i => !(i in results));
     if (!indicesToFetch.length) return results;
 
-    const res = await $.ajax({
-      type: "GET",
-      url: applyVariables(this.options.singlePageDjvuXmlUrl, this.br.options.vars, { pageIndex: indices.join(',') }),
-      dataType: this.options.jsonp ? "jsonp" : "html",
-      cache: true,
-      xhrFields: {
-        withCredentials: this.br.protected,
-      },
-      error: (e) => undefined,
-    });
+    let res;
+    try {
+      res = await $.ajax({
+        type: "GET",
+        url: applyVariables(this.options.singlePageDjvuXmlUrl, this.br.options.vars, { pageIndex: indicesToFetch.join(',') }),
+        dataType: this.options.jsonp ? "jsonp" : "html",
+        cache: true,
+        xhrFields: {
+          withCredentials: this.br.protected,
+        },
+      });
+    } catch (e) {
+      // Resolve the pages we do have; the rest simply render without a text layer
+      return results;
+    }
 
-    const xmlDoc = $.parseXML(res);
-    if (xmlDoc) {
-      for (const [index, xmlObject] of zip(indices, $(xmlDoc).find("OBJECT").toArray())) {
-        this.pageTextCache.add({ index, response: xmlObject });
-        results[index] = xmlObject;
-      }
+    /** @type {HTMLElement[]} */
+    let xmlObjects;
+    try {
+      const xmlDoc = $.parseXML(res);
+      xmlObjects = xmlDoc ? $(xmlDoc).find("OBJECT").toArray() : [];
+    } catch (e) {
+      return results;
+    }
+
+    // Pages are matched to the response by position, so a response of any other length
+    // would attach text to the wrong pages.
+    if (xmlObjects.length !== indicesToFetch.length) {
+      console.warn(`Expected OCR for ${indicesToFetch.length} page(s) (${indicesToFetch}), got ${xmlObjects.length}`);
+      return results;
+    }
+
+    for (const [index, xmlObject] of zip(indicesToFetch, xmlObjects)) {
+      this.pageTextCache.add({ index, response: xmlObject });
+      results[index] = xmlObject;
     }
     return results;
   }

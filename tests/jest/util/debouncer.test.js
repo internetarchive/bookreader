@@ -149,7 +149,56 @@ describe("BatchFetcher", () => {
     await expect(succeeding).resolves.toBe('v2');
   });
 
-  test('Queue and batch are emptied once a batch settles', async () => {
+  test('Requesting an input already in flight does not fetch it again', async () => {
+    let resolveFetch;
+    const calls = [];
+    const bf = new BatchFetcher(
+      (inputs) => {
+        calls.push(inputs);
+        return new Promise(resolve => resolveFetch = resolve);
+      },
+      { batchSize: 5, timeWindow: 250 },
+    );
+
+    const first = bf.fetchOne(3);
+    await clock.tickAsync(250);
+    expect(calls).toEqual([[3]]);
+
+    // The fetch for 3 is still in flight, and nothing has been cached yet
+    const second = bf.fetchOne(3);
+    await clock.tickAsync(250);
+    expect(calls).toEqual([[3]]);
+
+    resolveFetch({ 3: 'v3' });
+    await expect(Promise.all([first, second])).resolves.toEqual(['v3', 'v3']);
+  });
+
+  test('An input requested again after its fetch settles is fetched afresh', async () => {
+    const fetchMany = recordingFetchMany();
+    const bf = new BatchFetcher(fetchMany, { batchSize: 5, timeWindow: 250 });
+
+    const first = bf.fetchOne(3);
+    await clock.tickAsync(250);
+    await expect(first).resolves.toBe('v3');
+
+    const second = bf.fetchOne(3);
+    await clock.tickAsync(250);
+    await expect(second).resolves.toBe('v3');
+
+    // No cache configured, so the second request has to go out again
+    expect(fetchMany.calls).toEqual([[3], [3]]);
+  });
+
+  test('A batch that is drained while empty does not fetch', async () => {
+    const fetchMany = recordingFetchMany();
+    const bf = new BatchFetcher(fetchMany, { batchSize: 5, timeWindow: 250 });
+
+    bf.drainBatch();
+    await clock.tickAsync(250);
+    expect(fetchMany.calls).toEqual([]);
+  });
+
+  test('Pending and batch are emptied once a batch settles', async () => {
     const fetchMany = recordingFetchMany();
     const bf = new BatchFetcher(fetchMany, { batchSize: 5, timeWindow: 250 });
 
@@ -158,7 +207,7 @@ describe("BatchFetcher", () => {
     await clock.tickAsync(250);
 
     expect(bf.batch).toEqual([]);
-    expect(bf.queue).toEqual([]);
+    expect(bf.pending.size).toBe(0);
     expect(bf.timeout).toBeNull();
   });
 });
