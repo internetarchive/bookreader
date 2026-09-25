@@ -1,7 +1,8 @@
 import sinon from 'sinon';
 
 import BookReader from '@/src/BookReader.js';
-import '@/src/plugins/plugin.text_selection.js';
+import { TextSelectionPlugin } from '@/src/plugins/plugin.text_selection.js';
+import { Cache } from '@/src/util/cache.js';
 
 // djvu.xml book infos copied from https://ia803103.us.archive.org/14/items/goodytwoshoes00newyiala/goodytwoshoes00newyiala_djvu.xml
 const FAKE_XML_1WORD = `
@@ -215,5 +216,109 @@ describe("Generic tests", () => {
     expect($container.find(".BRtextLayer").length).toBe(1);
     expect($container.find("p").length).toBe(0);
     expect($container.find(".BRwordElement").length).toBe(0);
+  });
+});
+
+/** A djvu.xml response containing one OBJECT per requested page */
+const fakeMultiPageXml = (count) =>
+  `<BOOK>${Array.from({ length: count }, (_, i) => `
+    <OBJECT data="page.djvu" height="3192" type="image/x.djvu" usemap="page_000${i}.djvu" width="2454">
+      <PARAGRAPH><LINE><WORD coords="1216,2768,1256,2640">page${i}</WORD></LINE></PARAGRAPH>
+    </OBJECT>`).join('')}</BOOK>`;
+
+describe("fetchPageTextMany", () => {
+  // Built off the prototype rather than a real BookReader: fetchPageTextMany only needs
+  // its options, its cache, and br.options.vars / br.protected.
+  /** @type {TextSelectionPlugin} */
+  let plugin;
+  beforeEach(() => {
+    plugin = Object.create(TextSelectionPlugin.prototype);
+    plugin.options = {
+      singlePageDjvuXmlUrl: 'https://example.com/djvu.xml?pageIndex={{pageIndex}}',
+      jsonp: false,
+    };
+    plugin.br = { options: { vars: {} }, protected: false };
+    plugin.pageTextCache = new Cache();
+  });
+  afterEach(() => sinon.restore());
+
+  /** @returns {string[]} the pageIndex param of each request made */
+  const stubAjax = (responder) => {
+    const requested = [];
+    sinon.stub($, 'ajax').callsFake((opts) => {
+      requested.push(new URL(opts.url).searchParams.get('pageIndex'));
+      return responder(requested.length);
+    });
+    return requested;
+  };
+
+  test("Requests only the pages that are not already cached", async () => {
+    plugin.pageTextCache.add({ index: 0, response: 'cached0' });
+    const requested = stubAjax(() => Promise.resolve(fakeMultiPageXml(1)));
+
+    const results = await plugin.fetchPageTextMany([0, 1]);
+
+    expect(requested).toEqual(['1']);
+    expect(results[0]).toBe('cached0');
+    expect(results[1]).toBeTruthy();
+  });
+
+  test("Fetched pages are matched to the right index", async () => {
+    const requested = stubAjax(() => Promise.resolve(fakeMultiPageXml(2)));
+
+    const results = await plugin.fetchPageTextMany([3, 4]);
+
+    expect(requested).toEqual(['3,4']);
+    expect($(results[3]).find('WORD').text()).toBe('page0');
+    expect($(results[4]).find('WORD').text()).toBe('page1');
+  });
+
+  test("Skips a cached page without shifting the others onto the wrong index", async () => {
+    plugin.pageTextCache.add({ index: 3, response: 'cached3' });
+    // The server is asked for 4 and 5 only, so its two OBJECTs are page 4 and page 5
+    const requested = stubAjax(() => Promise.resolve(fakeMultiPageXml(2)));
+
+    const results = await plugin.fetchPageTextMany([3, 4, 5]);
+
+    expect(requested).toEqual(['4,5']);
+    expect(results[3]).toBe('cached3');
+    expect($(results[4]).find('WORD').text()).toBe('page0');
+    expect($(results[5]).find('WORD').text()).toBe('page1');
+  });
+
+  test("Makes no request at all when every page is cached", async () => {
+    plugin.pageTextCache.add({ index: 0, response: 'cached0' });
+    plugin.pageTextCache.add({ index: 1, response: 'cached1' });
+    const requested = stubAjax(() => Promise.resolve(fakeMultiPageXml(2)));
+
+    const results = await plugin.fetchPageTextMany([0, 1]);
+
+    expect(requested).toEqual([]);
+    expect(results).toEqual({ 0: 'cached0', 1: 'cached1' });
+  });
+
+  test("A short response is discarded rather than mismatched onto pages", async () => {
+    sinon.stub(console, 'warn');
+    // Two pages requested, but the server only returns OCR for one
+    stubAjax(() => Promise.resolve(fakeMultiPageXml(1)));
+
+    const results = await plugin.fetchPageTextMany([3, 4]);
+
+    expect(results).toEqual({});
+    expect(plugin.pageTextCache.entries).toEqual([]);
+  });
+
+  test("A failed request resolves rather than rejecting", async () => {
+    stubAjax(() => Promise.reject(new Error('network down')));
+
+    await expect(plugin.fetchPageTextMany([3, 4])).resolves.toEqual({});
+    expect(plugin.pageTextCache.entries).toEqual([]);
+  });
+
+  test("Unparseable xml resolves rather than rejecting", async () => {
+    stubAjax(() => Promise.resolve('<not xml'));
+
+    await expect(plugin.fetchPageTextMany([3, 4])).resolves.toEqual({});
+    expect(plugin.pageTextCache.entries).toEqual([]);
   });
 });
