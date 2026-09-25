@@ -198,6 +198,17 @@ describe("BatchFetcher", () => {
     expect(fetchMany.calls).toEqual([]);
   });
 
+  test('A fetchMany that resolves nothing settles callers instead of hanging', async () => {
+    // e.g. an async fetchMany that forgets to return on some path
+    const bf = new BatchFetcher(async () => undefined, { batchSize: 2, timeWindow: 250 });
+
+    const promises = [bf.fetchOne(1), bf.fetchOne(2)];
+    await clock.tickAsync(250);
+
+    await expect(Promise.all(promises)).resolves.toEqual([undefined, undefined]);
+    expect(bf.pending.size).toBe(0);
+  });
+
   test('Pending and batch are emptied once a batch settles', async () => {
     const fetchMany = recordingFetchMany();
     const bf = new BatchFetcher(fetchMany, { batchSize: 5, timeWindow: 250 });

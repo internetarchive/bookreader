@@ -111,9 +111,12 @@ export class BatchFetcher {
       }
     };
 
-    this.fetchMany(toFetch)
-      .then((results) => settle((promise, input) => promise.resolve(results[input])))
-      .catch((e) => settle((promise) => promise.reject(e)));
+    // Two-arg then, so that a throw while resolving cannot re-enter settle for
+    // inputs it has already removed from `pending`
+    this.fetchMany(toFetch).then(
+      (results) => settle((promise, input) => promise.resolve(results?.[input])),
+      (e) => settle((promise) => promise.reject(e)),
+    );
   }
 
   /**
