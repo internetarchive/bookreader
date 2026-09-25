@@ -1,7 +1,7 @@
 //@ts-check
 import { createDIVPageLayer } from '../BookReader/PageContainer.js';
 import { BookReaderPlugin } from '../BookReaderPlugin.js';
-import { ManyToOne } from '../util/debouncer.js';
+import { BatchFetcher } from '../util/debouncer.js';
 import { applyVariables } from '../util/strings.js';
 import { Cache } from '../util/cache.js';
 import { toISO6391 } from './tts/utils.js';
@@ -69,8 +69,8 @@ export class TextSelectionPlugin extends BookReaderPlugin {
   setup(options) {
     super.setup(options);
 
-    /** @type {ManyToOne<number, HTMLElement>} */
-    this.fetchManyToOne = new ManyToOne(
+    /** @type {BatchFetcher<number, HTMLElement>} */
+    this.batchFetcher = new BatchFetcher(
       this.fetchPageTextMany.bind(this),
       {
         batchSize: this.options.supportsBatches ? this.options.maxBatchSize : 1,
@@ -81,7 +81,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
         },
       },
     );
-    this.fetchPageText = this.fetchManyToOne.fetchOne;
+    this.fetchPageText = this.batchFetcher.fetchOne;
   }
 
   /** @override */

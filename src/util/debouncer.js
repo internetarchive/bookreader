@@ -46,15 +46,19 @@ export class OpenPromise {
 }
 
 /**
- * Given a function that can take in an array of inputs, this returns a new function
- * that takes a single input, and which will batch up requests to the original function.
+ * Wraps a function that fetches many inputs at once, exposing a `fetchOne` that takes a
+ * single input. Calls to `fetchOne` are grouped into batches, so that fetching e.g. each
+ * page of a spread separately still results in one request.
+ *
+ * A batch is dispatched once it reaches `batchSize`, or once `timeWindow` ms have passed
+ * since the batch was started, whichever comes first.
  *
  * @template {number} TInput
  * @template TOutput
  */
-export class ManyToOne {
+export class BatchFetcher {
   /**
-   * @param {function(TInput[]): Promise<Record<TInput, TOutput>>} manyFn
+   * @param {function(TInput[]): Promise<Record<TInput, TOutput>>} fetchMany
    * @param {object} options
    * @param {number} [options.batchSize] How many items at a time should be fetched
    * @param {number} [options.timeWindow] How many ms to wait to group requests
@@ -62,9 +66,9 @@ export class ManyToOne {
    * can use this to return a value immediately and avoid unnecessary requests
    */
 
-  constructor(manyFn, { batchSize = 5, timeWindow = 250, getFromCache = null } = {}) {
+  constructor(fetchMany, { batchSize = 5, timeWindow = 250, getFromCache = null } = {}) {
     /** @type {function(TInput[]): Promise<Record<TInput, TOutput>>} */
-    this.manyFn = manyFn;
+    this.fetchMany = fetchMany;
     /** @type {number} */
     this.batchSize = batchSize;
     /** @type {number} */
@@ -90,7 +94,7 @@ export class ManyToOne {
     // sort numerically
     const toFetch = Array.from(this.batch.sort((a, b) => a - b));
     this.batch.length = 0;
-    this.manyFn(toFetch)
+    this.fetchMany(toFetch)
       .then((results) => {
         /** @type {{ input: TInput, promise: OpenPromise<TOutput> }[]} */
         const handled = this.queue.filter(x => toFetch.includes(x.input));
