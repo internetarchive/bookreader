@@ -202,8 +202,8 @@ export class Navbar {
    * Switch navbar controls on mobile and desktop
    */
   switchNavbarControls() {
-    // `$nav` is null when `showNavbar` is off
-    if (!this.$nav) return;
+    // `$root` is null when `showNavbar` is off
+    if (!this.$root) return;
     // we don't want navbar controls switching with liner-notes
     if (this.br.options.bookType !== 'linerNotes') {
       if (this.br.refs.$brContainer.prop('clientWidth') < 640) {
@@ -220,12 +220,12 @@ export class Navbar {
    */
   showMobileControls() {
     this.minimumControls.forEach((control) => {
-      this.$nav.filter('.BRnavMain').find(`.controls .${control}`).removeClass('hide');
+      this.$root.find(`.BRnavMain .controls .${control}`).removeClass('hide');
     });
     this.maximumControls.forEach((control) => {
-      this.$nav.filter('.BRnavMain').find(`.controls .${control}`).addClass('hide');
+      this.$root.find(`.BRnavMain .controls .${control}`).addClass('hide');
     });
-    this.$nav.filter('.BRnavMobile').removeClass('hide');
+    this.$root.find('.BRnavMobile').removeClass('hide');
   }
 
   /**
@@ -234,12 +234,12 @@ export class Navbar {
    */
   showDesktopControls() {
     this.maximumControls.forEach((control) => {
-      this.$nav.filter('.BRnavMain').find(`.controls .${control}`).removeClass('hide');
+      this.$root.find(`.BRnavMain .controls .${control}`).removeClass('hide');
     });
     this.minimumControls.forEach((control) => {
-      this.$nav.filter('.BRnavMain').find(`.controls .${control}`).addClass('hide');
+      this.$root.find(`.BRnavMain .controls .${control}`).addClass('hide');
     });
-    this.$nav.filter('.BRnavMobile').addClass('hide');
+    this.$root.find('.BRnavMobile').addClass('hide');
   }
 
   /**
