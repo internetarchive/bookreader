@@ -202,6 +202,8 @@ export class Navbar {
    * Switch navbar controls on mobile and desktop
    */
   switchNavbarControls() {
+    // `$nav` is null when `showNavbar` is off
+    if (!this.$nav) return;
     // we don't want navbar controls switching with liner-notes
     if (this.br.options.bookType !== 'linerNotes') {
       if (this.br.refs.$brContainer.prop('clientWidth') < 640) {
@@ -217,19 +219,13 @@ export class Navbar {
    * NOTE: `this.minimumControls`, `this.maximumControls`, and .BRnavMobile switch on resize
    */
   showMobileControls() {
-    // Controls are looked up through `this.$nav` so this works when
-    // BookReader is mounted inside a shadow root, which
-    // `document.querySelector` can't reach. `.BRnavMobile` and `.BRnavMain`
-    // are top-level elements of `this.$nav`, so they're matched with
-    // `.filter()`.
-    const $main = this.$nav?.filter('.BRnavMain');
     this.minimumControls.forEach((control) => {
-      $main?.find(`.controls .${control}`).removeClass('hide');
+      this.$nav.filter('.BRnavMain').find(`.controls .${control}`).removeClass('hide');
     });
     this.maximumControls.forEach((control) => {
-      $main?.find(`.controls .${control}`).addClass('hide');
+      this.$nav.filter('.BRnavMain').find(`.controls .${control}`).addClass('hide');
     });
-    this.$nav?.filter('.BRnavMobile').removeClass('hide');
+    this.$nav.filter('.BRnavMobile').removeClass('hide');
   }
 
   /**
@@ -237,14 +233,13 @@ export class Navbar {
    * NOTE: `this.minimumControls`, `this.maximumControls`, and .BRnavMobile switch on resize
    */
   showDesktopControls() {
-    const $main = this.$nav?.filter('.BRnavMain');
     this.maximumControls.forEach((control) => {
-      $main?.find(`.controls .${control}`).removeClass('hide');
+      this.$nav.filter('.BRnavMain').find(`.controls .${control}`).removeClass('hide');
     });
     this.minimumControls.forEach((control) => {
-      $main?.find(`.controls .${control}`).addClass('hide');
+      this.$nav.filter('.BRnavMain').find(`.controls .${control}`).addClass('hide');
     });
-    this.$nav?.filter('.BRnavMobile').addClass('hide');
+    this.$nav.filter('.BRnavMobile').addClass('hide');
   }
 
   /**
