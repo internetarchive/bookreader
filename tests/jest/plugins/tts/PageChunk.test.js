@@ -100,6 +100,11 @@ describe('_chunkOcrPage', () => {
     expect(_chunkOcrPage(page)).toEqual([['Body', [10, 150, 100, 100]]]);
   });
 
+  test('Keeps paragraphs with other roles', () => {
+    const page = parsePage(`<PARAGRAPH x-role="other">${line(0, ['Body'])}</PARAGRAPH>`);
+    expect(_chunkOcrPage(page)).toEqual([['Body', [10, 50, 100, 0]]]);
+  });
+
   test('Skips words without usable coords', () => {
     const page = parsePage(`<PARAGRAPH><LINE>
       <WORD coords="0,50,90,0">Bad</WORD>

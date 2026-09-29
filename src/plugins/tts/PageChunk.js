@@ -121,7 +121,7 @@ export default class PageChunk {
     };
 
     for (const line of ocrPage.querySelectorAll('LINE')) {
-      if (line.closest('PARAGRAPH')?.getAttribute('x-role')) continue;
+      if (line.closest('PARAGRAPH')?.getAttribute('x-role') == 'header-footer') continue;
 
       for (const word of line.querySelectorAll('WORD')) {
         const [left, bottom, right, top] = (word.getAttribute('coords') ?? '').split(',').map(parseFloat);
