@@ -2,6 +2,7 @@ import sinon from 'sinon';
 
 import BookReader from '@/src/BookReader.js';
 import '@/src/plugins/plugin.text_selection.js';
+import { parseOCRBook } from '@/src/util/ocr/index.js';
 
 // djvu.xml book infos copied from https://ia803103.us.archive.org/14/items/goodytwoshoes00newyiala/goodytwoshoes00newyiala_djvu.xml
 const FAKE_XML_1WORD = `
@@ -74,11 +75,107 @@ const FAKE_XML_5COORDS = `
       </LINE>
     </PARAGRAPH>
   </OBJECT>`;
-const FAKE_XML_EMPTY = '';
+const FAKE_XML_EMPTY = `
+  <OBJECT data="file://localhost//tmp/derive/goodytwoshoes00newyiala//goodytwoshoes00newyiala.djvu" height="3192" type="image/x.djvu" usemap="goodytwoshoes00newyiala_0001.djvu" width="2454">
+  </OBJECT>`;
 
-describe("Generic tests", () => {
-  document.body.innerHTML = '<div id="BookReader">';
-  const br = window.br = new BookReader({
+// hOCR equivalents of the above; cf https://ia903103.us.archive.org/14/items/goodytwoshoes00newyiala/goodytwoshoes00newyiala_hocr.html
+const FAKE_HOCR_1WORD = `
+  <div class='ocr_page' id='page_1' title='image "goodytwoshoes00newyiala_0001.jpg"; bbox 0 0 2454 3192; ppageno 0'>
+    <div class='ocr_carea' id='block_1_1' title='bbox 1216 2640 1256 2768'>
+      <p class='ocr_par' id='par_1_1_1' lang='eng' title='bbox 1216 2640 1256 2768'>
+        <span class='ocr_line' id='line_1_1_1' title='bbox 1216 2640 1256 2768; baseline 0 -9'>
+          <span class='ocrx_word' id='word_1_1_1_1' title='bbox 1216 2640 1256 2768; x_wconf 29'>test</span>
+        </span>
+      </p>
+    </div>
+  </div>`;
+const FAKE_HOCR_MULT_WORDS = `
+  <div class='ocr_page' id='page_1' title='image "goodytwoshoes00newyiala_0001.jpg"; bbox 0 0 2454 3192; ppageno 0'>
+    <div class='ocr_carea' id='block_1_1' title='bbox 1216 2640 1700 2768'>
+      <p class='ocr_par' id='par_1_1_1' lang='eng' title='bbox 1216 2640 1700 2768'>
+        <span class='ocr_line' id='line_1_1_1' title='bbox 1216 2640 1700 2768; baseline 0 -9'>
+          <span class='ocrx_word' id='word_1_1_1_1' title='bbox 1216 2640 1256 2768; x_wconf 29'>test1</span>
+          <span class='ocrx_word' id='word_1_1_1_2' title='bbox 1400 2640 1500 2768; x_wconf 29'>test2</span>
+          <span class='ocrx_word' id='word_1_1_1_3' title='bbox 1600 2640 1700 2768; x_wconf 29'>test3</span>
+        </span>
+      </p>
+    </div>
+  </div>`;
+const FAKE_HOCR_MULT_LINES = `
+  <div class='ocr_page' id='page_1' title='image "goodytwoshoes00newyiala_0001.jpg"; bbox 0 0 2454 3192; ppageno 0'>
+    <div class='ocr_carea' id='block_1_1' title='bbox 118 2001 1435 2171'>
+      <p class='ocr_par' id='par_1_1_1' lang='eng' title='bbox 118 2001 1435 2171'>
+        <span class='ocr_line' id='line_1_1_1' title='bbox 119 2001 1433 2051; baseline 0 -9'>
+          <span class='ocrx_word' id='word_1_1_1_1' title='bbox 119 2014 230 2050; x_wconf 29'>way </span>
+          <span class='ocrx_word' id='word_1_1_1_2' title='bbox 230 2002 320 2038; x_wconf 29'>can </span>
+          <span class='ocrx_word' id='word_1_1_1_3' title='bbox 320 2002 433 2039; x_wconf 29'>false </span>
+          <span class='ocrx_word' id='word_1_1_1_4' title='bbox 433 2003 658 2051; x_wconf 29'>judgment </span>
+          <span class='ocrx_word' id='word_1_1_1_5' title='bbox 658 2002 728 2039; x_wconf 29'>be </span>
+          <span class='ocrx_word' id='word_1_1_1_6' title='bbox 658 2002 728 2039; x_wconf 29'>-</span>
+          <span class='ocrx_word' id='word_1_1_1_7' title='bbox 728 2001 939 2039; x_wconf 29'>formed. </span>
+          <span class='ocrx_word' id='word_1_1_1_8' title='bbox 939 2001 1087 2039; x_wconf 29'>There </span>
+          <span class='ocrx_word' id='word_1_1_1_9' title='bbox 1087 2002 1187 2039; x_wconf 29'>still </span>
+          <span class='ocrx_word' id='word_1_1_1_10' title='bbox 1187 2003 1370 2038; x_wconf 29'>remains </span>
+          <span class='ocrx_word' id='word_1_1_1_11' title='bbox 1370 2014 1433 2037; x_wconf 29'>an-</span>
+        </span>
+        <span class='ocr_line' id='line_1_1_2' title='bbox 244 2062 1435 2112; baseline 0 -9'>
+          <span class='ocrx_word' id='word_1_1_2_1' title='bbox 244 2063 370 2099; x_wconf 29'>other mode </span>
+          <span class='ocrx_word' id='word_1_1_2_2' title='bbox 370 2064 427 2100; x_wconf 29'>in </span>
+          <span class='ocrx_word' id='word_1_1_2_3' title='bbox 427 2063 566 2100; x_wconf 29'>which </span>
+          <span class='ocrx_word' id='word_1_1_2_4' title='bbox 566 2063 670 2100; x_wconf 29'>false </span>
+          <span class='ocrx_word' id='word_1_1_2_5' title='bbox 670 2063 907 2112; x_wconf 29'>judgments </span>
+          <span class='ocrx_word' id='word_1_1_2_6' title='bbox 907 2064 1006 2112; x_wconf 29'>may </span>
+          <span class='ocrx_word' id='word_1_1_2_7' title='bbox 1006 2063 1071 2100; x_wconf 29'>be </span>
+          <span class='ocrx_word' id='word_1_1_2_8' title='bbox 1071 2062 1266 2100; x_wconf 29'>formed. </span>
+          <span class='ocrx_word' id='word_1_1_2_9' title='bbox 1266 2062 1435 2110; x_wconf 29'>Suppose</span>
+        </span>
+        <span class='ocr_line' id='line_1_1_3' title='bbox 118 2122 1434 2171; baseline 0 -9'>
+          <span class='ocrx_word' id='word_1_1_3_1' title='bbox 118 2123 217 2160; x_wconf 29'>that </span>
+          <span class='ocrx_word' id='word_1_1_3_2' title='bbox 217 2124 289 2160; x_wconf 29'>we </span>
+          <span class='ocrx_word' id='word_1_1_3_3' title='bbox 289 2124 400 2160; x_wconf 29'>have </span>
+          <span class='ocrx_word' id='word_1_1_3_4' title='bbox 400 2124 456 2160; x_wconf 29'>in </span>
+          <span class='ocrx_word' id='word_1_1_3_5' title='bbox 456 2136 542 2161; x_wconf 29'>our </span>
+          <span class='ocrx_word' id='word_1_1_3_6' title='bbox 542 2124 660 2161; x_wconf 29'>souls </span>
+          <span class='ocrx_word' id='word_1_1_3_7' title='bbox 660 2136 700 2160; x_wconf 29'>a </span>
+          <span class='ocrx_word' id='word_1_1_3_8' title='bbox 700 2129 847 2160; x_wconf 29'>waxen </span>
+          <span class='ocrx_word' id='word_1_1_3_9' title='bbox 847 2123 983 2160; x_wconf 29'>tablet </span>
+          <span class='ocrx_word' id='word_1_1_3_10' title='bbox 983 2124 1045 2160; x_wconf 29'>of </span>
+          <span class='ocrx_word' id='word_1_1_3_11' title='bbox 1045 2124 1211 2160; x_wconf 29'>various </span>
+          <span class='ocrx_word' id='word_1_1_3_12' title='bbox 1211 2122 1398 2171; x_wconf 29'>qualities </span>
+          <span class='ocrx_word' id='word_1_1_3_13' title='bbox 1398 2122 1434 2157; x_wconf 29'>lastWord</span>
+        </span>
+      </p>
+    </div>
+  </div>`;
+const FAKE_HOCR_EMPTY = `
+  <div class='ocr_page' id='page_1' title='image "goodytwoshoes00newyiala_0001.jpg"; bbox 0 0 2454 3192; ppageno 0'>
+  </div>`;
+
+/** The same page of OCR, expressed in each format the plugin supports */
+const FIXTURES = {
+  DjVuXML: {
+    ONE_WORD: FAKE_XML_1WORD,
+    MULT_WORDS: FAKE_XML_MULT_WORDS,
+    MULT_LINES: FAKE_XML_MULT_LINES,
+    EMPTY: FAKE_XML_EMPTY,
+    /** Matches a single word in ONE_WORD, so that it can be duplicated */
+    WORD_PATTERN: /<WORD[^>]*>.*?<\/WORD>/,
+  },
+  hOCR: {
+    ONE_WORD: FAKE_HOCR_1WORD,
+    MULT_WORDS: FAKE_HOCR_MULT_WORDS,
+    MULT_LINES: FAKE_HOCR_MULT_LINES,
+    EMPTY: FAKE_HOCR_EMPTY,
+    WORD_PATTERN: /<span class='ocrx_word'[^>]*>.*?<\/span>/,
+  },
+};
+
+const FORMATS = /** @type {const} */ (['DjVuXML', 'hOCR']);
+
+document.body.innerHTML = '<div id="BookReader">';
+const br = window.br = (() => {
+  const br = new BookReader({
     data: [
       [
         { width: 800, height: 1200,
@@ -99,16 +196,19 @@ describe("Generic tests", () => {
     ],
   });
   br.init();
+  return br;
+})();
 
-  afterEach(() => {
-    sinon.restore();
-    $('.BRtextLayer').remove();
-  });
+afterEach(() => {
+  sinon.restore();
+  $('.BRtextLayer').remove();
+});
 
+describe("Generic tests", () => {
   test("_createPageContainer overridden function still creates a BRpagecontainer element", () => {
     const spy = sinon.spy(br.plugins.textSelection, 'createTextLayer');
     sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(FAKE_XML_1WORD, "text/xml")));
+      .returns(parseOCRBook('DjVuXML', FAKE_XML_1WORD).pages[0]);
     const container = br._createPageContainer(1, {});
     expect(container).toBeTruthy();
     expect(spy.callCount).toBe(1);
@@ -128,10 +228,49 @@ describe("Generic tests", () => {
     expect(spy.callCount).toBe(0);
   });
 
-  test("createTextLayer will render the last page and create text layer properly", async () => {
+  test("createTextLayer does nothing if the page has no OCR", async () => {
+    const $container = br.refs.$brContainer;
+    sinon.stub(br.plugins.textSelection, "getPageText").returns(undefined);
+    await br.plugins.textSelection.createTextLayer({ $container, page: { index: 0, width: 100, height: 100 }});
+    expect($container.find(".BRtextLayer").length).toBe(0);
+  });
+
+  test("createTextLayer creates text layer with paragraph with word with 5 params coordinates", async () => {
     const $container = br.refs.$brContainer;
     sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(FAKE_XML_1WORD, "text/xml")));
+      .returns(parseOCRBook('DjVuXML', FAKE_XML_5COORDS).pages[0]);
+    await br.plugins.textSelection.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
+    expect($container.find(".BRtextLayer").length).toBe(1);
+    expect($container.find("p").length).toBe(1);
+    expect($container.find(".BRwordElement").length).toBe(1);
+  });
+
+  test.each(FORMATS)("getPageText parses a single page of %s", async (format) => {
+    const textSelection = br.plugins.textSelection;
+    textSelection.pageTextCache.entries = [];
+    textSelection.options.format = format;
+    textSelection.options.singlePageDjvuXmlUrl = 'https://archive.org/ocr?page={{pageIndex}}';
+    sinon.stub($, 'ajax').returns(Promise.resolve(FIXTURES[format].MULT_WORDS));
+    try {
+      const ocrPage = await textSelection.getPageText(0);
+      expect(ocrPage.words.map(w => w.text.trim())).toEqual(['test1', 'test2', 'test3']);
+    } finally {
+      textSelection.options.format = 'DjVuXML';
+      textSelection.options.singlePageDjvuXmlUrl = null;
+    }
+  });
+});
+
+describe.each(FORMATS)("%s text layer", (format) => {
+  const fixtures = FIXTURES[format];
+
+  /** @param {string} rawOcr */
+  const stubPageText = (rawOcr) => sinon.stub(br.plugins.textSelection, "getPageText")
+    .returns(parseOCRBook(format, rawOcr).pages[0]);
+
+  test("createTextLayer will render the last page and create text layer properly", async () => {
+    const $container = br.refs.$brContainer;
+    stubPageText(fixtures.ONE_WORD);
     const pageIndex = br.data.length - 1;
     await br.plugins.textSelection.createTextLayer({ $container, page: { index: pageIndex, width: 100, height: 100 }});
     expect($container.find(".BRtextLayer").length).toBe(1);
@@ -140,9 +279,8 @@ describe("Generic tests", () => {
 
   test("createTextLayer will not create text layer if there are too many words", async () => {
     const $container = br.refs.$brContainer;
-    const xml = FAKE_XML_1WORD.replace(/<WORD.*<\/WORD>/, FAKE_XML_1WORD.match(/<WORD.*<\/WORD>/)[0].repeat(3000));
-    sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(xml, "text/xml")));
+    const wordEl = fixtures.ONE_WORD.match(fixtures.WORD_PATTERN)[0];
+    stubPageText(fixtures.ONE_WORD.replace(wordEl, wordEl.repeat(3000)));
     await br.plugins.textSelection.createTextLayer({ $container, page: { index: 0, width: 100, height: 100 }});
     expect($container.find(".BRtextLayer").length).toBe(0);
     expect($container.find("p").length).toBe(0);
@@ -151,8 +289,7 @@ describe("Generic tests", () => {
 
   test("createTextLayer creates text layer with paragraph with 1 word element", async () => {
     const $container = br.refs.$brContainer;
-    sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(FAKE_XML_1WORD, "text/xml")));
+    stubPageText(fixtures.ONE_WORD);
     await br.plugins.textSelection.createTextLayer({ $container, page: { index: 1, width: 100, height: 100 }});
     expect($container.find(".BRtextLayer").length).toBe(1);
     expect($container.find("p").length).toBe(1);
@@ -162,8 +299,7 @@ describe("Generic tests", () => {
 
   test("createTextLayer creates text layer with paragraph with multiple word elements", async () => {
     const $container = br.refs.$brContainer;
-    sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_WORDS, "text/xml")));
+    stubPageText(fixtures.MULT_WORDS);
     await br.plugins.textSelection.createTextLayer({ $container, page: { index: 2, width: 100, height: 100 }});
     expect($container.find(".BRtextLayer").length).toBe(1);
     expect($container.find("p").length).toBe(1);
@@ -171,20 +307,9 @@ describe("Generic tests", () => {
     expect($container.find(".BRspace").length).toBe(2);
   });
 
-  test("createTextLayer creates text layer with paragraph with word with 5 params coordinates", async () => {
-    const $container = br.refs.$brContainer;
-    sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(FAKE_XML_5COORDS, "text/xml")));
-    await br.plugins.textSelection.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
-    expect($container.find(".BRtextLayer").length).toBe(1);
-    expect($container.find("p").length).toBe(1);
-    expect($container.find(".BRwordElement").length).toBe(1);
-  });
-
   test("createTextLayer handles multiple lines", async () => {
     const $container = br.refs.$brContainer;
-    sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
+    stubPageText(fixtures.MULT_LINES);
     await br.plugins.textSelection.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
     expect($container.find(".BRtextLayer").length).toBe(1);
     expect($container.find("p").length).toBe(1);
@@ -198,8 +323,7 @@ describe("Generic tests", () => {
 
   test("createTextLayer repairs trailing hyphens", async () => {
     const $container = br.refs.$brContainer;
-    sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(FAKE_XML_MULT_LINES, "text/xml")));
+    stubPageText(fixtures.MULT_LINES);
     await br.plugins.textSelection.createTextLayer({ $container, page: { index: 3, width: 100, height: 100 }});
 
     expect($container.find(".BRwordElement--hyphen").length).toBe(1);
@@ -207,10 +331,9 @@ describe("Generic tests", () => {
     expect($container.find(".BRwordElement--hyphen").closest(".BRlineElement").text().endsWith('-')).toBe(false);
   });
 
-  test("createTextLayer can handle empty xml", async () => {
+  test("createTextLayer can handle a page with no text", async () => {
     const $container = br.refs.$brContainer;
-    sinon.stub(br.plugins.textSelection, "getPageText")
-      .returns($(new DOMParser().parseFromString(FAKE_XML_EMPTY, "text/xml")));
+    stubPageText(fixtures.EMPTY);
     await br.plugins.textSelection.createTextLayer({ $container, page: { index: 4, width: 100, height: 100 }});
     expect($container.find(".BRtextLayer").length).toBe(1);
     expect($container.find("p").length).toBe(0);

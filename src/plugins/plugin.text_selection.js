@@ -5,10 +5,14 @@ import { applyVariables } from '../util/strings.js';
 import { Cache } from '../util/cache.js';
 import { toISO6391 } from './tts/utils.js';
 import { BookReaderTextFragment, renderHighlight, TextSelectionManager } from '../util/TextSelectionManager.js';
-import { genMap, lookAroundWindow, zip } from '../util/generators.js';
+import { lookAroundWindow, zip } from '../util/generators.js';
+import { parseOCRBook } from '../util/ocr/index.js';
+import { Rect } from '../util/rect.js';
 import textSelectionCss from '../css/_TextSelection.scss';
 /** @typedef {import('../util/strings.js').StringWithVars} StringWithVars */
 /** @typedef {import('../BookReader/PageContainer.js').PageContainer} PageContainer */
+/** @typedef {import('../util/ocr/OCR.js').OCRPage} OCRPage */
+/** @typedef {import('../util/ocr/OCR.js').OCRParagraph} OCRParagraph */
 
 const BookReader = /** @type {typeof import('../BookReader').default} */(window.BookReader);
 
@@ -16,9 +20,11 @@ const BookReader = /** @type {typeof import('../BookReader').default} */(window.
 export class TextSelectionPlugin extends BookReaderPlugin {
   options = {
     enabled: true,
-    /** @type {StringWithVars} The URL to fetch the entire DJVU xml. Supports options.vars */
+    /** @type {import('../util/ocr/index.js').OCRFormat} Format of the OCR the URLs below point at */
+    format: 'DjVuXML',
+    /** @type {StringWithVars} The URL to fetch the entire OCR file. Supports options.vars */
     fullDjvuXmlUrl: null,
-    /** @type {StringWithVars} The URL to fetch a single page of the DJVU xml. Supports options.vars. Also has {{pageIndex}} */
+    /** @type {StringWithVars} The URL to fetch a single page of the OCR file. Supports options.vars. Also has {{pageIndex}} */
     singlePageDjvuXmlUrl: null,
     /** Whether to fetch the XML as a jsonp */
     jsonp: false,
@@ -26,10 +32,10 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     maxProtectedWords: 200,
   }
 
-  /**@type {PromiseLike<JQuery<HTMLElement>|undefined>} */
-  djvuPagesPromise = null;
+  /**@type {PromiseLike<OCRPage[]|undefined>} */
+  ocrPagesPromise = null;
 
-  /** @type {Cache<{index: number, response: any}>} */
+  /** @type {Cache<{index: number, response: OCRPage}>} */
   pageTextCache = new Cache();
 
   /**
@@ -122,9 +128,9 @@ export class TextSelectionPlugin extends BookReaderPlugin {
   }
 
   loadData() {
-    // Only fetch the full djvu xml if the single page url isn't there
+    // Only fetch the full OCR file if the single page url isn't there
     if (this.options.singlePageDjvuXmlUrl) return;
-    this.djvuPagesPromise = $.ajax({
+    this.ocrPagesPromise = $.ajax({
       type: "GET",
       url: applyVariables(this.options.fullDjvuXmlUrl, this.br.options.vars),
       dataType: this.options.jsonp ? "jsonp" : "html",
@@ -135,8 +141,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
       error: (e) => undefined,
     }).then((res) => {
       try {
-        const xmlMap = $.parseXML(res);
-        return xmlMap && $(xmlMap).find("OBJECT");
+        return parseOCRBook(this.options.format, res).pages;
       } catch (e) {
         return undefined;
       }
@@ -145,7 +150,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
 
   /**
    * @param {number} index
-   * @returns {Promise<HTMLElement|undefined>}
+   * @returns {Promise<OCRPage|undefined>}
    */
   async getPageText(index) {
     if (this.options.singlePageDjvuXmlUrl) {
@@ -164,16 +169,15 @@ export class TextSelectionPlugin extends BookReaderPlugin {
         error: (e) => undefined,
       });
       try {
-        const xmlDoc = $.parseXML(res);
-        const result = xmlDoc && $(xmlDoc).find("OBJECT")[0];
+        const result = parseOCRBook(this.options.format, res).pages[0];
         this.pageTextCache.add({ index, response: result });
         return result;
       } catch (e) {
         return undefined;
       }
     } else {
-      const XMLpagesArr = await this.djvuPagesPromise;
-      if (XMLpagesArr) return XMLpagesArr[index];
+      const ocrPages = await this.ocrPagesPromise;
+      if (ocrPages) return ocrPages[index];
     }
   }
 
@@ -185,20 +189,10 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     const $container = pageContainer.$container;
     const $textLayers = $container.find('.BRtextLayer');
     if ($textLayers.length) return;
-    const XMLpage = await this.getPageText(pageIndex);
-    if (!XMLpage) return;
-    // Seeing some 0 left and 0 top coordinates in OCR, remove it entirely to prevent odd rendering
-    // eg https://archive.org/details/illustratedbooko00robe/page/n11/mode/2up
-    $(XMLpage).find("WORD").filter((_, ele) => {
-      const [left, , , top] = ele.getAttribute('coords').split(",").map(parseFloat);
-      if (left == 0 && top == 0) {
-        console.error("Found invalid ocr word coordinates");
-        return true;
-      }
-    }).remove();
-    recursivelyAddCoords(XMLpage);
+    const ocrPage = await this.getPageText(pageIndex);
+    if (!ocrPage) return;
 
-    const totalWords = $(XMLpage).find("WORD").length;
+    const totalWords = ocrPage.words.length;
     if (totalWords > this.maxWordRendered) {
       console.log(`Page ${pageIndex} has too many words (${totalWords} > ${this.maxWordRendered}). Not rendering text layer.`);
       return;
@@ -217,7 +211,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     }
     textLayer.setAttribute("dir", this.rtl ? "rtl" : "ltr");
 
-    const ocrParagraphs = $(XMLpage).find("PARAGRAPH[coords]").toArray();
+    const ocrParagraphs = ocrPage.paragraphs;
     const paragEls = ocrParagraphs.map(p => {
       const el = this.renderParagraph(p);
       textLayer.appendChild(el);
@@ -228,9 +222,8 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     const paragraphRects = determineRealRects(textLayer, '.BRparagraphElement', this._measurementDocument);
     let yAdded = 0;
     for (const [ocrParagraph, paragEl] of zip(ocrParagraphs, paragEls)) {
-      const ocrParagBounds = $(ocrParagraph).attr("coords").split(",").map(parseFloat);
       const realRect = paragraphRects.get(paragEl);
-      const [ocrLeft, , ocrRight, ocrTop] = ocrParagBounds;
+      const { left: ocrLeft, right: ocrRight, top: ocrTop } = ocrParagraph.box;
       const newStartMargin = this.rtl ? (realRect.right - ocrRight) : (ocrLeft - realRect.left);
       const newTop = ocrTop - (realRect.top + yAdded);
 
@@ -254,44 +247,43 @@ export class TextSelectionPlugin extends BookReaderPlugin {
   }
 
   /**
-   * @param {HTMLElement} ocrParagraph
+   * @param {OCRParagraph} ocrParagraph
    * @returns {HTMLParagraphElement}
    */
   renderParagraph(ocrParagraph) {
     const paragEl = document.createElement('p');
     paragEl.classList.add('BRparagraphElement');
-    if (ocrParagraph.getAttribute("x-role")) {
+    if (ocrParagraph.isHeaderFooter) {
       paragEl.classList.add('ocr-role-header-footer');
       paragEl.ariaHidden = "true";
     }
-    const [paragLeft, paragBottom, paragRight, paragTop] = $(ocrParagraph).attr("coords").split(",").map(parseFloat);
+    const { left: paragLeft, bottom: paragBottom, right: paragRight, top: paragTop } = ocrParagraph.box;
     const wordHeightArr = [];
-    const lines = $(ocrParagraph).find("LINE[coords]").toArray();
+    const lines = ocrParagraph.lines;
     if (!lines.length) return paragEl;
 
-
-    for (const [prevLine, line, nextLine] of lookAroundWindow(genMap(lines, augmentLine))) {
-      const isLastLineOfParagraph = line.ocrElement == lines[lines.length - 1];
+    for (const [prevLine, line, nextLine] of lookAroundWindow(lines)) {
+      const isLastLineOfParagraph = line == lines[lines.length - 1];
       const lineEl = document.createElement('span');
       lineEl.classList.add('BRlineElement');
 
       for (const [wordIndex, currWord] of line.words.entries()) {
-        const [, bottom, right, top] = $(currWord).attr("coords").split(',').map(parseFloat);
+        const { bottom, right, top } = currWord.box;
         const wordHeight = bottom - top;
         wordHeightArr.push(wordHeight);
 
-        if (wordIndex == 0 && prevLine?.lastWord.textContent.trim().endsWith('-')) {
+        if (wordIndex == 0 && prevLine?.lastWord.text.trim().endsWith('-')) {
           // ideally prefer the next line to determine the left position,
           // since the previous line could be the first line of the paragraph
           // and hence have an incorrectly indented first word.
           // E.g. https://archive.org/details/driitaleofdaring00bachuoft/page/360/mode/2up
-          const [newLeft, , , ] = $((nextLine || prevLine).firstWord).attr("coords").split(',').map(parseFloat);
-          $(currWord).attr("coords", `${newLeft},${bottom},${right},${top}`);
+          const newLeft = (nextLine || prevLine).firstWord.box.left;
+          currWord.box = Rect.fromEdges(newLeft, top, right, bottom);
         }
 
         const wordEl = document.createElement('span');
         wordEl.setAttribute("class", "BRwordElement");
-        wordEl.textContent = currWord.textContent.trim();
+        wordEl.textContent = currWord.text.trim();
 
         if (wordIndex > 0) {
           const space = document.createElement('span');
@@ -310,7 +302,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
         lineEl.appendChild(wordEl);
       }
 
-      const hasHyphen = line.lastWord.textContent.trim().endsWith('-');
+      const hasHyphen = line.lastWord.text.trim().endsWith('-');
       const lastWordEl = lineEl.children[lineEl.children.length - 1];
       if (hasHyphen && !isLastLineOfParagraph) {
         lastWordEl.textContent = lastWordEl.textContent.trim().slice(0, -1);
@@ -334,22 +326,21 @@ export class TextSelectionPlugin extends BookReaderPlugin {
 
     // Fix up sizes - stretch/crush words as necessary using letter spacing
     let wordRects = determineRealRects(paragEl, '.BRwordElement', this._measurementDocument);
-    const ocrWords = $(ocrParagraph).find("WORD").toArray();
+    const ocrWords = ocrParagraph.words;
     const wordEls = paragEl.querySelectorAll('.BRwordElement');
     for (const [ocrWord, wordEl] of zip(ocrWords, wordEls)) {
       const realRect = wordRects.get(wordEl);
-      const [left, , right ] = $(ocrWord).attr("coords").split(',').map(parseFloat);
-      let ocrWidth = right - left;
+      let ocrWidth = ocrWord.box.width;
       // Some books (eg theworksofplato01platiala) have a space _inside_ the <WORD>
       // element. That makes it impossible to determine the correct positining
       // of everything, but to avoid the BRspace's being width 0, which makes selection
       // janky on Chrome Android, assume the space is the same width as one of the
       // letters.
-      if (ocrWord.textContent.endsWith(' ')) {
-        ocrWidth = ocrWidth * (ocrWord.textContent.length - 1) / ocrWord.textContent.length;
+      if (ocrWord.text.endsWith(' ')) {
+        ocrWidth = ocrWidth * (ocrWord.text.length - 1) / ocrWord.text.length;
       }
       const diff = ocrWidth - realRect.width;
-      wordEl.style.letterSpacing = `${diff / (ocrWord.textContent.length - 1)}px`;
+      wordEl.style.letterSpacing = `${diff / (ocrWord.text.length - 1)}px`;
     }
 
     // Stretch/crush lines as necessary using line spacing
@@ -357,19 +348,18 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     wordRects = determineRealRects(paragEl, '.BRwordElement', this._measurementDocument);
     const spaceRects = determineRealRects(paragEl, '.BRspace', this._measurementDocument);
 
-    const ocrLines = $(ocrParagraph).find("LINE[coords]").toArray();
+    const ocrLines = ocrParagraph.lines;
     const lineEls = Array.from(paragEl.querySelectorAll('.BRlineElement'));
 
     let ySoFar = paragTop;
     for (const [ocrLine, lineEl] of zip(ocrLines, lineEls)) {
       // shift words using marginLeft to align with the correct x position
-      const words = $(ocrLine).find("WORD").toArray();
-      // const ocrLineLeft = Math.min(...words.map(w => parseFloat($(w).attr("coords").split(',')[0])));
+      const words = ocrLine.words;
       let xSoFar = this.rtl ? paragRight : paragLeft;
       for (const [ocrWord, wordEl] of zip(words, lineEl.querySelectorAll('.BRwordElement'))) {
         // start of line, need to compute the offset relative to the OCR words
         const wordRect = wordRects.get(wordEl);
-        const [ocrLeft, , ocrRight ] = $(ocrWord).attr("coords").split(',').map(parseFloat);
+        const { left: ocrLeft, right: ocrRight } = ocrWord.box;
         const diff = (this.rtl ? -(ocrRight - xSoFar) : ocrLeft - xSoFar);
 
         if (wordEl.previousElementSibling) {
@@ -382,7 +372,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
         else xSoFar += diff + wordRect.width;
       }
       // And also fix y position
-      const ocrLineTop = Math.min(...words.map(w => parseFloat($(w).attr("coords").split(',')[3])));
+      const ocrLineTop = Math.min(...words.map(w => w.box.top));
       const diff = ocrLineTop - ySoFar;
       if (lineEl.previousElementSibling) {
         lineEl.previousElementSibling.style.lineHeight = `${diff}px`;
@@ -440,93 +430,4 @@ function determineRealRects(parentEl, selector, measurementDocument) {
   // Need to restore the document to the main window document
   document.adoptNode(parentEl);
   return rects;
-}
-
-/**
- * @param {HTMLElement} line
- */
-function augmentLine(line) {
-  const words = $(line).find("WORD").toArray();
-  return {
-    ocrElement: line,
-    words,
-    firstWord: words[0],
-    lastWord: words[words.length - 1],
-  };
-}
-
-/**
- * [left, bottom, right, top]
- * @param {Array<[number, number, number, number]>} bounds
- * @returns {[number, number, number, number]}
- */
-function determineBounds(bounds) {
-  let leftMost = Infinity;
-  let bottomMost = -Infinity;
-  let rightMost = -Infinity;
-  let topMost = Infinity;
-
-  for (const [left, bottom, right, top] of bounds) {
-    leftMost = Math.min(leftMost, left);
-    bottomMost = Math.max(bottomMost, bottom);
-    rightMost = Math.max(rightMost, right);
-    topMost = Math.min(topMost, top);
-  }
-
-  return [leftMost, bottomMost, rightMost, topMost];
-}
-
-/**
- * Recursively traverses the XML tree and adds coords
- * which are the bounding box of all child coords
- * @param {Element} xmlEl
- */
-function recursivelyAddCoords(xmlEl) {
-  if ($(xmlEl).attr('coords') || !xmlEl.children) {
-    return;
-  }
-
-  const children = $(xmlEl).children().toArray();
-  if (children.length === 0) {
-    return;
-  }
-
-  for (const child of children) {
-    recursivelyAddCoords(child);
-  }
-
-  const childCoords = [];
-
-  for (const child of children) {
-    if (!$(child).attr('coords')) continue;
-    childCoords.push($(child).attr('coords').split(',').map(parseFloat));
-  }
-
-  const boundingCoords = determineBounds(childCoords);
-  if (Math.abs(boundingCoords[0]) != Infinity) {
-    $(xmlEl).attr('coords', boundingCoords.join(','));
-  }
-}
-
-/**
- * Basically a polyfill for the native DOMRect class
- */
-class Rect {
-  /**
-   * @param {number} x
-   * @param {number} y
-   * @param {number} width
-   * @param {number} height
-   */
-  constructor(x, y, width, height) {
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
-  }
-
-  get right() { return this.x + this.width; }
-  get bottom() { return this.y + this.height; }
-  get top() { return this.y; }
-  get left() { return this.x; }
 }
