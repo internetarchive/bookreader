@@ -1,10 +1,11 @@
+// @ts-check
 import { html, LitElement } from "lit";
 import { customElement, property } from 'lit/decorators.js';
 import { live } from "lit/directives/live.js";
 import { BookReaderTextFragment, getNodeTextLayer, renderHighlight } from "../util/TextSelectionManager.js";
 import '@internetarchive/icon-share';
 // eslint-disable-next-line no-unused-vars
-import { OlPopover } from "../util/OlPopover.js";
+import "../util/OlPopover.js";
 import { BookReaderPlugin } from "../BookReaderPlugin.js";
 
 // @ts-ignore
@@ -23,8 +24,8 @@ export class AnnotationsPlugin extends BookReaderPlugin {
   /** @type {BRSelectMenu} */
   selectMenu;
 
-  /** @type {BRAnnotationModal} */
-  annotationModal;
+  /** @type {BRAnnotationPopover} */
+  annotationPopover;
 
   /**
    * Nodes corresponding to the current text selection
@@ -33,40 +34,46 @@ export class AnnotationsPlugin extends BookReaderPlugin {
 
   constructor(br) {
     super(br);
-    this.annotationModal = new BRAnnotationModal(br);
-    this.annotationModal.className = "br-annotate-menu__root";
+    this.annotationPopover = new BRAnnotationPopover(br);
+    this.annotationPopover.className = "br-annotation-popover__root";
   }
 
   /** @override */
   init() {
     if (!this.options.enabled) return;
     this.storageService = new AnnotationStorageService({storageMethod : window.localStorage});
-    this.selectMenu = this.br.plugins?.textSelection?.textSelectionManager?.selectMenu;
 
-    this.selectMenu.annotationOptions.push(
-      {clickFunction: this.handleHighlightSave.bind(this), iconName: "edit-pencil", labelName: "Highlight"},
-      {clickFunction: this.handleAddAnnotation.bind(this), iconName: "edit-pencil", labelName: "Annotate"},
-    );
-    this.selectMenu.extendedOptions.push(
-      {clickFunction: this.renderSavedHighlights.bind(this), iconName: "share", labelName: "Load Highlights"},
-      {clickFunction: this.handleHighlightDelete.bind(this), iconName: "share", labelName: "Delete Current Highlight / Annotation"},
-      {clickFunction: ()=> {window.localStorage.removeItem(BR_HIGHLIGHTS_LOCAL_STORAGE_KEY);}, iconName: "share", labelName: "Clear All Highlights and Annotations"},
-    );
+    // This isn't essential for init to be considered completed, so don't make init itself async
+    (async () => {
+      await this.br.waitForPluginInit('textSelection');
+      this.selectMenu = this.br.plugins.textSelection.textSelectionManager.selectMenu;
 
-    if (!this.annotationModal.isConnected) {
-      document.body.append(this.annotationModal);
+      this.selectMenu.primaryOptions.push(
+        {handler: this.handleHighlightSave.bind(this), icon: "edit-pencil", label: "Highlight"},
+        {handler: this.handleAddAnnotation.bind(this), icon: "edit-pencil", label: "Annotate"},
+      );
+      this.selectMenu.secondaryOptions.push(
+        {handler: this.renderSavedHighlights.bind(this), icon: "share", label: "Load Highlights"},
+        {handler: this.handleHighlightDelete.bind(this), icon: "share", label: "Delete Current Highlight / Annotation"},
+        {handler: ()=> {window.localStorage.removeItem(BR_HIGHLIGHTS_LOCAL_STORAGE_KEY);}, icon: "share", label: "Clear All Highlights and Annotations"},
+      );
+    })();
+
+
+    if (!this.annotationPopover.isConnected) {
+      document.body.append(this.annotationPopover);
     }
   }
 
   /**
    * @param {MouseEvent} e
    */
-  handleAddAnnotation (e) {
+  handleAddAnnotation(e) {
     const anchorEl = /** @type {HTMLElement} */ (e.currentTarget);
     if (!this.activeHighlightNodes) { // highlight selection if not already done
       this.handleHighlightSave();
     }
-    this.annotationModal.show(this.activeHighlightNodes, anchorEl);
+    this.annotationPopover.show(this.activeHighlightNodes, anchorEl);
     window.getSelection()?.empty();
     this.activeHighlightNodes = null;
   }
@@ -80,19 +87,16 @@ export class AnnotationsPlugin extends BookReaderPlugin {
     const start = currentSelection.direction === 'backward' ? currentSelection.focusNode.parentElement : currentSelection.anchorNode.parentElement;
     const textLayer = getNodeTextLayer(start);
     const highlight = BookReaderTextFragment.fromSelection(currentSelection, [textLayer.parentElement]);
-    highlight.highlightColor = this.annotationModal.lastHighlightColorUsed;
-    highlight.uuid = `id-${crypto.randomUUID().split("-")[4]}`;
-    const highlights = this.storageService.load();
-    highlights.push(highlight);
-    this.storageService.save(highlights);
+    highlight.highlightColor = this.annotationPopover.lastHighlightColorUsed;
+    highlight.uuid = crypto.randomUUID().split("-")[4];
+    this.storageService.create(highlight);
     this.renderSavedHighlights();
-    this.activeHighlightNodes = document.querySelectorAll(`.${highlight.uuid}`);
-    this.selectMenu.requestUpdate();
+    this.activeHighlightNodes = this.br.refs.$br[0].querySelectorAll(`.id-${highlight.uuid}`);
+    this.selectMenu?.requestUpdate();
   }
 
   /**
    * Removes the highlighted DOM nodes and deletes the associated storage record.
-   * @param {HTMLElement[]} [nodes] defaults to the plugin's currently active highlight nodes
    */
   handleHighlightDelete() {
     if (!this.activeHighlightNodes.length) return;
@@ -116,8 +120,8 @@ export class AnnotationsPlugin extends BookReaderPlugin {
    */
   handleHighlightClick(target) {
     const textLayer = getNodeTextLayer(target);
-    const identifier = retrieveUUID(target);
-    const selectedQuoteNodes = textLayer.querySelectorAll(`.${identifier}`);
+    const uuid = retrieveUUID(target);
+    const selectedQuoteNodes = textLayer.querySelectorAll(`.id-${uuid}`);
     this.activeHighlightNodes = selectedQuoteNodes;
 
     const firstNode = selectedQuoteNodes[0];
@@ -130,9 +134,7 @@ export class AnnotationsPlugin extends BookReaderPlugin {
     const currentSelection = window.getSelection();
     currentSelection.removeAllRanges();
     currentSelection.addRange(highlightRange);
-    this.selectMenu.show();
   }
-
 
   renderSavedHighlights() {
     for (const hl of this.storageService.load()) {
@@ -162,11 +164,11 @@ export class AnnotationsPlugin extends BookReaderPlugin {
   }
 
 }
-BookReader?.registerPlugin('annotate', AnnotationsPlugin);
+BookReader?.registerPlugin('annotations', AnnotationsPlugin);
 
 @customElement('br-annotation-modal')
 
-export class BRAnnotationModal extends LitElement {
+export class BRAnnotationPopover extends LitElement {
   /** @type {import('../BookReader.js').default} */
   br;
 
@@ -229,22 +231,22 @@ export class BRAnnotationModal extends LitElement {
 
   showTextEditArea() {
     return html`
-    <div class="br-annotate-menu__body"> 
+    <div class="br-annotation-popover__body"> 
       <textarea 
-        class="br-annotate-menu__textarea" 
+        class="br-annotation-popover__textarea" 
         id="annotateTextarea" 
         placeholder="Add note..."
       >${this.getAnnotationText()}</textarea>
-      <div class="br-annotate-menu__footer">
+      <div class="br-annotation-popover__footer">
         ${this.renderColorOptions()}
-        <div class="br-annotate-menu__editOptions">
+        <div class="br-annotation-popover__editOptions">
           <button 
             @click=${this.handleHighlightDelete}
-            class="br-annotate-menu__option">Delete
+            class="br-annotation-popover__option">Delete
           </button>
           <button
             @click=${this.handleSaveAnnotation}
-            class="br-annotate-menu__option save"
+            class="br-annotation-popover__option save"
           >Save</button>
         </div>
       </div>
@@ -437,16 +439,9 @@ export class BRAnnotationModal extends LitElement {
  * @returns
  */
 function retrieveUUID(ele) {
-  if (!ele) return null;
-  const findUUID = Array.from(ele?.classList).filter((name) => {
-    if (name.slice(0, 2).includes('id')) {
-      return name;
-    }
-  });
-  if (findUUID.length) {
-    return findUUID[0];
-  }
-  return null;
+  if (!ele) return undefined;
+  return Array.from(ele?.classList)
+    .find((name) => name.startsWith("id-"))?.slice(3);
 }
 
 /**
@@ -458,23 +453,25 @@ export class AnnotationStorageService {
    * @param {object} params
    * @param {Storage | null} params.storageMethod
    */
-
   constructor({storageMethod}) {
     /**@type {Storage | null} */
     this.storageMethod = storageMethod;
   }
+
   /**
- * Retrieve bookreader saved highlights as a list of BookReaderTextFragment
- * @returns {BookReaderSavedHighlight[]}
- */
-  load () {
+   * Reads annotations from storage service
+   * @returns {BookReaderSavedHighlight[]}
+   */
+  load() {
     return JSON.parse(this.storageMethod.getItem(BR_HIGHLIGHTS_LOCAL_STORAGE_KEY) || "[]")
       .map(item => BookReaderTextFragment.fromJSON(item));
   }
 
-  save (highlights) {
-    this.storageMethod.setItem(BR_HIGHLIGHTS_LOCAL_STORAGE_KEY, JSON.stringify(highlights.map(hl => hl.toJSON()),
-    ));
+  /**
+   * @param {BookReaderSavedHighlight[]} highlights
+   */
+  save(highlights) {
+    this.storageMethod.setItem(BR_HIGHLIGHTS_LOCAL_STORAGE_KEY, JSON.stringify(highlights.map(hl => hl.toJSON())));
   }
 
   /**
@@ -491,6 +488,16 @@ export class AnnotationStorageService {
     }
     return null;
   }
+
+  /**
+   * @param {BookReaderSavedHighlight} newHighlight
+   */
+  create(newHighlight) {
+    const highlights = this.load();
+    highlights.push(newHighlight);
+    this.save(highlights);
+  }
+
   /**
    * Changes an entry's key:pair value by UUID, throws an Error if the UUID cannot be found from storage.
    * @param {string} targetUUID
@@ -498,7 +505,7 @@ export class AnnotationStorageService {
    * @param {string} value
    * @returns
    */
-  edit (targetUUID, key, value) {
+  edit(targetUUID, key, value) {
     const storage = this.load();
     for (const idx in storage) {
       if (storage[idx].uuid === targetUUID) {
@@ -512,19 +519,17 @@ export class AnnotationStorageService {
 
   /**
    * Deletes an entry by UUID, throws an Error if the UUID cannot be found from storage
-   * @param {string} targetUUID
-   * @returns
+   * @param {string} uuid
    */
-  delete(targetUUID) {
+  delete(uuid) {
     const storage = this.load();
-    for (const idx in storage) {
-      if (storage[idx].uuid === targetUUID) {
-        storage.splice(idx, 1);
-        this.save(storage);
-        return;
-      }
+    const indexToDelete = storage.findIndex((item) => item.uuid === uuid);
+    if (indexToDelete === -1) {
+      throw new Error (`Could not find and remove storage object from target id`);
     }
-    throw new Error (`Could not find and remove storage object from target id`);
+
+    storage.splice(indexToDelete, 1);
+    this.save(storage);
   }
 }
 
@@ -550,7 +555,7 @@ export function findTopRightMostNode(nodes) {
 // Might make more sense within SelectMenuOption in TextSelectionManager
 /**
  * @typedef {Object} BookReaderTextSelectionMenuOptions
- * @property {function} clickFunction
- * @property {string} labelName
- * @property {string} iconName
+ * @property {function} handler
+ * @property {string} label
+ * @property {string} icon
  */

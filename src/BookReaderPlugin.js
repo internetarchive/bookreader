@@ -5,6 +5,8 @@
  * @template TOptions
  */
 export class BookReaderPlugin {
+  initialized = false;
+
   /**
    * @param {BookReader} br
    */

@@ -394,11 +394,25 @@ BookReader.prototype.initializePlugin = function(pluginName) {
 
   try {
     plugin.init();
+    plugin.initialized = true;
+    this.trigger(BookReader.eventNames.PluginInit, { pluginName, plugin });
   } catch (e) {
     console.error(`Error initializing plugin ${pluginName} outside of regular cycle`, e);
     throw e;
   }
 };
+
+BookReader.prototype.waitForPluginInit = async function(pluginName) {
+  if (pluginName in this.plugins) return this.plugins[pluginName];
+
+  await new Promise(res => {
+    this.br.on(BookReader.eventNames.PluginInit, (ev, evData) => {
+      if (evData.pluginName != 'textSelection') return;
+      res();
+    });
+  });
+};
+
 /**
  * Get all the HTML Elements that are being/can be rendered.
  * Includes cached elements which might be rendered again.
@@ -744,6 +758,8 @@ BookReader.prototype.init = function() {
   for (const [pluginName, plugin] of Object.entries(this.plugins)) {
     try {
       plugin.init();
+      plugin.initialized = true;
+      this.trigger(BookReader.eventNames.PluginInit, { pluginName, plugin });
     }
     catch (e) {
       console.error(`Error initializing plugin ${pluginName}`, e);

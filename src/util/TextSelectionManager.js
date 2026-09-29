@@ -481,9 +481,9 @@ class BRSelectMenu extends LitElement {
   copyLinkOption;
 
   /** @type {import('../plugins/plugin.annotations.js').BookReaderTextSelectionMenuOptions[]} */
-  annotationOptions = [];
+  primaryOptions = [];
   /** @type {import('../plugins/plugin.annotations.js').BookReaderTextSelectionMenuOptions[]} */
-  extendedOptions = [];
+  secondaryOptions = [];
 
   @property({type: Boolean, reflect: true})
   open = false;
@@ -577,9 +577,9 @@ class BRSelectMenu extends LitElement {
     for (const option of options) {
       output.push(html`
         <br-menu-option
-          @click=${option.clickFunction}
-          icon=${option.iconName}
-          label=${option.labelName}
+          @click=${option.handler}
+          icon=${option.icon}
+          label=${option.label}
         ></br-menu-option>
       `);
     }
@@ -591,9 +591,9 @@ class BRSelectMenu extends LitElement {
     // TODO change the second button to use a different icon
     return html`
       ${this.renderDefaultOptions()}
-      ${this.renderAdditionalOptions(this.annotationOptions)}
+      ${this.renderAdditionalOptions(this.primaryOptions)}
       ${!this.showExtended && hasMoreOptions ? this.renderShowMoreOption() : ''}
-      ${this.showExtended ? this.renderAdditionalOptions(this.extendedOptions) : ''}
+      ${this.showExtended ? this.renderAdditionalOptions(this.secondaryOptions) : ''}
     `;
   }
 
@@ -968,7 +968,7 @@ export function renderHighlight(textLayer, textFragment, cssClassName = null) {
     const mark = document.createElement("mark");
     mark.classList.add("BRhighlight");
     if (cssClassName) mark.classList.add(cssClassName);
-    if (textFragment.uuid) mark.classList.add(textFragment.uuid);
+    if (textFragment.uuid) mark.classList.add(`id-${textFragment.uuid}`);
     mark.style.backgroundColor = textFragment.highlightColor;
     return mark;
   });
