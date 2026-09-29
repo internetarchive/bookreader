@@ -244,84 +244,23 @@ $select-menu-extended-radius: 10px;
 
 body {
     --br-popover-radius: 10px;
-    --br-annotate-menu-padding: 4px;
+    --br-annotation-popover-padding: 4px;
     --ol-popover-radius: var(--br-popover-radius);
 }
 
-.br-annotate-menu__root {
+.br-annotation-popover__root {
     display: contents;
 
-    .br-annotate-color-selector {
-        align-content: center;
-        background-color: #333;
-        border-radius: 10px;
-        height: fit-content;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 3px;
-        gap: 4px;
-
-        &__pipe {
-            border-left: 1px solid rgba(255,255,255,0.5);
-            height: 12px;
-        }
-    
-        &__color {
-            border: 0;
-            width: 20px;
-            height: 20px;
-            display: block;
-            border-radius: 8px;
-            &.pink {
-                background-color: #ffc0cb;
-            }
-            &.yellow {
-                background-color: #ffff00;
-            }
-            &.orange {
-                background-color: #ffa500;
-            }
-            &.green {
-                background-color: #00ff00;
-            }
-        }
-    
-        &__chevron {
-            border: none;
-            padding: 0;
-            display: block;
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-            background-color: rgba(255, 255, 255, 0.85);
-            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 6l6 6-6 6'/%3E%3C/svg%3E") center / 16px no-repeat;
-            transition: transform 0.15s ease, background-color 0.15s ease;
-
-            &:hover {
-                background-color: white;
-            }
-            &.open {
-                transform: rotate(180deg);
-            }
-        }
-
-        &__colorDropdown {
-            display: flex;
-            gap: 4px;
-        }
-    }
-
-    .br-annotate-menu__footer {
+    &__footer {
         width: 100%;
-        margin-top: var(--br-annotate-menu-padding);
+        margin-top: var(--br-annotation-popover-padding);
         display: flex;
         justify-content: space-between;
         height: 30%;
         align-items: center;
     }
 
-    .br-annotate-menu__option {
+    &__option {
         border-radius: 5px;
         margin: 0px 2px 0 2px;
         height: fit-content;
@@ -334,27 +273,16 @@ body {
         }
     }
 
-    .br-annotate-menu__comment {
-        margin: 5px 5px 5px 0;
-        padding: 5px 0 5px 5px;
-        width: 97%;
-        height: 50%;
-        max-width: 100%;
-        background-color: #c8af91;
-        font-size: 12px;
-        border-radius: 5px;
-    }
-
-    .br-annotate-menu__body {
+    &__body {
         display: flex;
         flex-direction: column;
-        padding: var(--br-annotate-menu-padding);
+        padding: var(--br-annotation-popover-padding);
         color-scheme: dark;
     }
 
-    .br-annotate-menu__textarea {
+    &__textarea {
         width: 100%;
-        border-radius: calc(var(--br-popover-radius) - var(--br-annotate-menu-padding));
+        border-radius: calc(var(--br-popover-radius) - var(--br-annotation-popover-padding));
         resize: none;
         padding: 6px;
         border: 0;
@@ -366,8 +294,69 @@ body {
         }
     }
 
-    .br-annotate-menu__editOptions {
+    &__editOptions {
         display: flex;
+    }
+}
+
+.br-annotate-color-selector {
+    align-content: center;
+    background-color: #333;
+    border-radius: 10px;
+    height: fit-content;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 3px;
+    gap: 4px;
+
+    &__pipe {
+        border-left: 1px solid rgba(255,255,255,0.5);
+        height: 12px;
+    }
+
+    &__color {
+        border: 0;
+        width: 20px;
+        height: 20px;
+        display: block;
+        border-radius: 8px;
+        &.pink {
+            background-color: #ffc0cb;
+        }
+        &.yellow {
+            background-color: #ffff00;
+        }
+        &.orange {
+            background-color: #ffa500;
+        }
+        &.green {
+            background-color: #00ff00;
+        }
+    }
+
+    &__chevron {
+        border: none;
+        padding: 0;
+        display: block;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        background-color: rgba(255, 255, 255, 0.85);
+        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 6l6 6-6 6'/%3E%3C/svg%3E") center / 16px no-repeat;
+        transition: transform 0.15s ease, background-color 0.15s ease;
+
+        &:hover {
+            background-color: white;
+        }
+        &.open {
+            transform: rotate(180deg);
+        }
+    }
+
+    &__colorDropdown {
+        display: flex;
+        gap: 4px;
     }
 }
 
