@@ -53,7 +53,7 @@ export class ExperimentsPlugin extends BookReaderPlugin {
     localStorageKey: 'BrExperiments',
 
     /** @type {ExperimentName[]} Experiments shown in the experiments panel */
-    availableExperiments: ['translate', 'copyLinkToHighlight'],
+    availableExperiments: ['translate', 'copyLinkToHighlight', 'annotateHighlight'],
 
     /** @type {ExperimentName[]} Experiments enabled by default */
     autoEnabledExperiments: [],
@@ -83,9 +83,12 @@ export class ExperimentsPlugin extends BookReaderPlugin {
       icon = null;
       enabled = false;
       async enable ({ manual = false }) {
-        if (manual) {
-          this.br.plugins.textSelection.textSelectionManager.selectMenu.highlightAnnotationEnabled = true;
+        if (!BookReader.PLUGINS.annotations) {
+          await importAsScript(this.buildAssetPath('plugins/plugin.annotations.js'));
         }
+        this.br.initializePlugin('annotate');
+        this.br.plugins.textSelection.textSelectionManager.selectMenu.highlightAnnotationEnabled = true;
+
       }
       async disable() {
         sleep(0).then(() => {
