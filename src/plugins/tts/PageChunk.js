@@ -121,13 +121,13 @@ export default class PageChunk {
     };
 
     for (const line of ocrPage.querySelectorAll('LINE')) {
-      if (line.closest('PARAGRAPH')?.getAttribute('x-role') == 'header-footer') continue;
+      if (line.closest('PARAGRAPH')?.getAttribute('x-role') === 'header-footer') continue;
 
       for (const word of line.querySelectorAll('WORD')) {
         const [left, bottom, right, top] = (word.getAttribute('coords') ?? '').split(',').map(parseFloat);
         const text = word.textContent.trim();
         // Same words the text layer drops as unpositionable
-        if (!text || isNaN(top) || (left == 0 && top == 0)) continue;
+        if (!text || isNaN(top) || (left === 0 && top === 0)) continue;
 
         lineRect = lineRect ? [
           Math.min(lineRect[0], left),
