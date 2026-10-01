@@ -5,9 +5,9 @@ import { clamp } from "../BookReader/utils.js";
 import { html, LitElement } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import '@internetarchive/icon-share';
-import '@internetarchive/icon-edit-pencil/icon-edit-pencil.js';
-import '@internetarchive/icon-ellipses';
+import iconShare from '@internetarchive/icon-share/index.js';
+import iconEditPencil from '@internetarchive/icon-edit-pencil/index.js';
+import iconEllipses from '@internetarchive/icon-ellipses/index.js';
 import { isIOS, isAndroid } from './browserSniffing.js';
 import { genAt, genFilter } from './generators.js';
 
@@ -407,16 +407,17 @@ export class BRSelectMenuOption extends LitElement {
   }
 
   renderIcon() {
-    if (this.icon === 'share') {
-      return html`<ia-icon-share class="br-select-menu__icon" aria-hidden="true"></ia-icon-share>`;
-    }
-    if (this.icon === 'edit-pencil') {
-      return html`<ia-icon-edit-pencil class="br-select-menu__icon" aria-hidden="true"></ia-icon-edit-pencil>`;
-    }
-    if (this.icon === 'ellipses') {
-      return html`<ia-icon-ellipses class="br-select-menu__icon" aria-hidden="true"></ia-icon-ellipses>`;
-    }
-    return '';
+    // Renders the icon packages' SVG templates directly. This file ships in more
+    // than one prebuilt plugin bundle, and the icon packages call
+    // customElements.define with no guard, so importing the elements here would
+    // throw on any page that already registered them.
+    const icon = {
+      'share': iconShare,
+      'edit-pencil': iconEditPencil,
+      'ellipses': iconEllipses,
+    }[this.icon];
+    if (!icon) return '';
+    return html`<span class="br-select-menu__icon" aria-hidden="true">${icon}</span>`;
   }
 
   render() {
