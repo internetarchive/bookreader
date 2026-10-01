@@ -16,6 +16,16 @@
     "access": "public"
   },
   "module": "src/ia-bookreader/ia-bookreader.js",
+  "exports": {
+    ".": "./src/ia-bookreader/ia-bookreader.js",
+    "./core": "./src/BookReader.js",
+    "./jquery": "./src/jquery-wrapper.js",
+    "./styles": "./BookReader/BookReader.css",
+    "./BookReader/*": "./BookReader/*",
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./jsconfig.json": "./jsconfig.json"
+  },
   "keywords": [
     "online",
     "bookreader",
