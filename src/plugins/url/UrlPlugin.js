@@ -163,7 +163,10 @@ export class UrlPlugin {
     }
 
     if (this.urlMode == 'hash') {
-      window.location.replace('#' + concatenatedPath);
+      // Built from location.href so a <base href> on the page can't change
+      // the pathname, and replace() so page flips don't add history entries.
+      const [baseHref] = window.location.href.split('#');
+      window.location.replace(`${baseHref}#${concatenatedPath}`);
     }
     this.oldLocationHash = urlStrPath;
   }

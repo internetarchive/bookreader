@@ -1,5 +1,10 @@
 import { applyVariables } from "../../util/strings.js";
 
+/** A chunk ends at the first sentence end after this many words */
+const MIN_WORDS_IN_CHUNK = 25;
+/** A chunk with no sentence end is cut at the first line end after this many words */
+const MAX_WORDS_IN_CHUNK = 50;
+
 /**
  * Class to manage a 'chunk' (approximately a paragraph) of text on a page.
  */
@@ -40,16 +45,38 @@ export default class PageChunk {
         pageChunks.push(placeholder);
       }
       return pageChunks;
-    } else {
-      const chunks = await $.ajax({
-        type: 'GET',
-        url: applyVariables(pageChunkUrl, { pageIndex: leafIndex }),
-        cache: true,
-        xhrFields: {
-          withCredentials: window.br.protected,
-        },
-      });
-      return PageChunk._fromTextWrapperResponse(leafIndex, chunks);
+    }
+
+    const ocrPage = await PageChunk._getTextSelectionOcrPage(leafIndex);
+    if (ocrPage) {
+      return PageChunk._fromTextWrapperResponse(leafIndex, PageChunk._chunkOcrPage(ocrPage));
+    }
+
+    const chunks = await $.ajax({
+      type: 'GET',
+      url: applyVariables(pageChunkUrl, { pageIndex: leafIndex }),
+      cache: true,
+      xhrFields: {
+        withCredentials: window.br.protected,
+      },
+    });
+    return PageChunk._fromTextWrapperResponse(leafIndex, chunks);
+  }
+
+  /**
+   * The text selection plugin's OCR for the page, if it has any. It's cached
+   * and shared with the text layer, so using it avoids requesting the page's
+   * text a second time.
+   * @param {number} leafIndex
+   * @return {Promise<Element | undefined>}
+   */
+  static async _getTextSelectionOcrPage(leafIndex) {
+    const textSelection = window.br.plugins.textSelection;
+    if (!textSelection?.options.enabled) return undefined;
+    try {
+      return await textSelection.getPageText(leafIndex);
+    } catch (e) {
+      return undefined;
     }
   }
 
@@ -65,6 +92,61 @@ export default class PageChunk {
       const correctedText = PageChunk._removeDanglingHyphens(c[0]);
       return new PageChunk(leafIndex, i, correctedText, correctedLineRects);
     });
+  }
+
+  /**
+   * Split a page of djvu xml OCR into roughly paragraph-sized chunks, in the
+   * same shape as BookReaderGetTextWrapper.php's response: each chunk is its
+   * text followed by a box per line (or part of a line) it covers. Running
+   * headers/footers are skipped.
+   * @param {Element} ocrPage djvu xml `OBJECT` element
+   * @return {Array<[String, ...DJVURect[]]>}
+   */
+  static _chunkOcrPage(ocrPage) {
+    /** @type {Array<[String, ...DJVURect[]]>} */
+    const chunks = [];
+    /** @type {string[]} */
+    let words = [];
+    /** @type {DJVURect[]} */
+    let rects = [];
+    /** @type {DJVURect | null} bounds of the current line's words in this chunk */
+    let lineRect = null;
+
+    const endChunk = () => {
+      if (lineRect) rects.push(lineRect);
+      chunks.push([words.join(' '), ...rects]);
+      words = [];
+      rects = [];
+      lineRect = null;
+    };
+
+    for (const line of ocrPage.querySelectorAll('LINE')) {
+      if (line.closest('PARAGRAPH')?.getAttribute('x-role') === 'header-footer') continue;
+
+      for (const word of line.querySelectorAll('WORD')) {
+        const [left, bottom, right, top] = (word.getAttribute('coords') ?? '').split(',').map(parseFloat);
+        const text = word.textContent.trim();
+        // Same words the text layer drops as unpositionable
+        if (!text || isNaN(top) || (left === 0 && top === 0)) continue;
+
+        lineRect = lineRect ? [
+          Math.min(lineRect[0], left),
+          Math.max(lineRect[1], bottom),
+          Math.max(lineRect[2], right),
+          Math.min(lineRect[3], top),
+        ] : [left, bottom, right, top];
+        words.push(text);
+
+        if (text.endsWith('.') && words.length > MIN_WORDS_IN_CHUNK) endChunk();
+      }
+
+      if (lineRect) rects.push(lineRect);
+      lineRect = null;
+      if (words.length > MAX_WORDS_IN_CHUNK) endChunk();
+    }
+
+    if (words.length) endChunk();
+    return chunks;
   }
 
   /**

@@ -47,5 +47,15 @@ module.exports = {
     "prefer-const": ["error"],
     "space-infix-ops": ["error", { "int32Hint": false }],
     "eol-last": ["error", "always"],
+    "no-restricted-properties": ["warn",
+      { "object": "document", "property": "querySelector", "message": "Doesn't reach into shadow roots; query from a scoped element (e.g. br.refs.$br) instead." },
+      { "object": "document", "property": "querySelectorAll", "message": "Doesn't reach into shadow roots; query from a scoped element (e.g. br.refs.$br) instead." },
+    ],
   },
+  "overrides": [
+    {
+      "files": ["tests/**"],
+      "rules": { "no-restricted-properties": "off" },
+    },
+  ],
 };
