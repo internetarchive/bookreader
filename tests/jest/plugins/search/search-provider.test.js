@@ -8,7 +8,7 @@ afterEach(() => {
 });
 
 describe('Search Provider', () => {
-  describe('constructor', () => {
+  test('constructor', () => {
     const provider = new searchProvider({
       onProviderChange: sinon.fake(),
       bookreader: {},
