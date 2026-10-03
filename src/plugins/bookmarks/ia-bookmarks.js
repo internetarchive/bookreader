@@ -109,13 +109,15 @@ class IABookmarks extends LitElement {
 
     this.bookmarkColors = [{
       id: 0,
-      // FIXME: This is also used as the aria-label
+      label: 'Red',
       className: 'red',
     }, {
       id: 1,
+      label: 'Blue',
       className: 'blue',
     }, {
       id: 2,
+      label: 'Green',
       className: 'green',
     }];
 

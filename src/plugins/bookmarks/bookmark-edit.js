@@ -2,6 +2,7 @@ import { repeat } from 'lit/directives/repeat.js';
 import { css, html, LitElement, nothing } from 'lit';
 import bookmarkColorsCSS from './bookmark-colors.js';
 import buttonCSS from '../../css/button-base.js';
+import { sharedStyles } from '../../css/sharedStyles.js';
 
 export class IABookmarkEdit extends LitElement {
   static get properties() {
@@ -66,7 +67,8 @@ export class IABookmarkEdit extends LitElement {
     return html`
       <div class="color-option">
         <input type="radio" name="color" id="color_${color.id}" .value=${color.id} @change=${() => this.changeColorTo(color.id)} ?checked=${this.bookmark.color === color.id}>
-        <label for="color_${color.id}" title=${color.className}>
+        <label for="color_${color.id}" title=${color.label}>
+          <span class="sr-only">${color.label}</span>
           <icon-bookmark class=${color.className} aria-hidden="true"></icon-bookmark>
         </label>
       </div>
@@ -221,7 +223,7 @@ export class IABookmarkEdit extends LitElement {
       justify-items: stretch;
     }
     `;
-    return [buttonCSS, bookmarkColorsCSS, bookmarkEditCSS];
+    return [sharedStyles, buttonCSS, bookmarkColorsCSS, bookmarkEditCSS];
   }
 }
 customElements.define('ia-bookmark-edit', IABookmarkEdit);
