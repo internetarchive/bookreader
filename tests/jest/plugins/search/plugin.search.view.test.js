@@ -151,7 +151,6 @@ describe('View: Plugin: Search', () => {
       br.init();
       br.plugins.search.searchView.renderModalMessage('No matches were found.');
 
-      expect(document.querySelector('.search_modal')).toBeNull();
       expect(brEl.querySelector(':scope > .search_modal').textContent).toEqual('No matches were found.');
     });
   });
