@@ -128,7 +128,7 @@ export const DEFAULT_OPTIONS = {
   enableExperimentalControls: false,
 
   /** CSS selectors */
-  /** Where BookReader mounts to */
+  /** @type {string | HTMLElement} Where BookReader mounts to; a CSS selector or an element */
   el: '#BookReader',
 
   /** @type {'lr' | 'rl'} Page progression */
