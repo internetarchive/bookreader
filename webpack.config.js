@@ -2,15 +2,13 @@
 import path from 'path';
 import webpack from 'webpack';
 import { fileURLToPath } from 'url';
-import { readFileSync } from 'fs';
+import PACKAGE_JSON from './package.json' with { type: 'json' };
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // The ESM build needs ES modules and import() (for chunks) anyway.
 const ESM_TARGETS = 'supports es6-module-dynamic-import';
-
-const { dependencies } = JSON.parse(readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
 
 /** @type {webpack.Configuration} */
 const shared = {
@@ -145,7 +143,7 @@ export default [
         const pkg = request?.match(/^(@[^/]+\/)?[^/.][^/]*/)?.[0];
         // lit is bundled: our 2018-09 decorators need lit 2's decorators, and
         // the consumer may be on lit 3.
-        if (pkg && pkg in dependencies && pkg !== 'lit') {
+        if (pkg && pkg in PACKAGE_JSON.dependencies && pkg !== 'lit') {
           return callback(null, `module ${request}`);
         }
         callback();
