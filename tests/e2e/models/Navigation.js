@@ -7,7 +7,7 @@ export default class Navigation {
     this.navFooter = new Selector('.BRfooter');
     this.bottomNavShell = new Selector('.BRnavMain');
     this.bottomNavShellMobile = new Selector('.BRnavMobile');
-    this.itemNav = Selector('ia-bookreader').shadowRoot().find('iaux-item-navigator').shadowRoot();
+    this.itemNav = Selector('ia-bookreader').shadowRoot().find('ia-item-navigator').shadowRoot();
 
     // flipping
     this.goLeft = this.bottomNavShell.find('.BRicon.book_left');
@@ -32,7 +32,7 @@ export default class Navigation {
     // search
     this.searchIcon = this.itemNav.find('button.shortcut.search');
     this.searchBox = this.itemNav
-      .find('ia-menu-slider').shadowRoot()
+      .find('ia-itemnav-menu-slider').shadowRoot()
       .find('ia-book-search-results').shadowRoot()
       .find('input[name=query]');
     this.searchPin = this.bottomNavShell.find('.BRsearch');

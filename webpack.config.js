@@ -38,6 +38,12 @@ const shared = {
           'sass-loader',
         ],
       },
+      {
+        // @internetarchive/elements imports its icons as .svg files. Inlining
+        // them as data: URIs keeps BookReader/ free of extra files.
+        test: /\.svg$/,
+        type: 'asset/inline',
+      },
     ],
   },
 
