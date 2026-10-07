@@ -1,7 +1,7 @@
 // @ts-check
 import { css, html, LitElement } from 'lit';
 import { BookReaderPlugin } from '../../BookReaderPlugin.js';
-import { customElement, property, query } from 'lit/decorators.js';
+import { customElement, property, query } from '../../util/lit-decorators.js';
 import { TranslationManager } from "./TranslationManager.js";
 import { toISO6391, toNativeName } from '../tts/utils.js';
 import { sortBy } from '../../../src/BookReader/utils.js';
