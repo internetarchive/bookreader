@@ -36,8 +36,10 @@ function wrapFieldDecorator(applyLitDecorator, { assignInitialValue }) {
         el[name] = initializer.call(el);
       });
     }
-    const { get, set } = Object.getOwnPropertyDescriptor(proto, name);
-    return { configurable: true, enumerable: true, get, set };
+    // Lit 2 defines the accessor on the prototype. Lit 3's `query` returns it
+    // instead, for the transpiler to define.
+    const accessor = result?.get ? result : Object.getOwnPropertyDescriptor(proto, name);
+    return { configurable: true, enumerable: true, get: accessor.get, set: accessor.set };
   };
 }
 
