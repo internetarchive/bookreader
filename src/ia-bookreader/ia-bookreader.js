@@ -668,6 +668,10 @@ export class IaBookReader extends LitElement {
         --item-navigator-header-icon-size: 2rem;
         --item-navigator-icon-size: 2.4rem;
         --item-navigator-share-embed-bg: var(--secondaryBGColor);
+        --iconFillColor: var(--primaryTextColor);
+        --iconStrokeColor: var(--primaryTextColor);
+        --iconWidth: 2.4rem;
+        --iconHeight: 2.4rem;
         --activityIndicatorLoadingDotColor: var(--primaryTextColor);
         --activityIndicatorLoadingRingColor: var(--primaryTextColor);
       }
