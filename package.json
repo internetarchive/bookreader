@@ -5,7 +5,7 @@
   "type": "module",
   "files": [
     "BookReader/",
-    "esm/",
+    "dist/",
     "src/",
     "jsconfig.json"
   ],
@@ -17,6 +17,11 @@
     "access": "public"
   },
   "module": "src/ia-bookreader/ia-bookreader.js",
+  "exports": {
+    ".": "./src/ia-bookreader/ia-bookreader.js",
+    "./esm/*": "./dist/esm/*",
+    "./*": "./*"
+  },
   "keywords": [
     "online",
     "bookreader",
@@ -126,7 +131,7 @@
     "build-js:watch": "npx webpack --mode=development --watch",
     "build-css": "npx sass --silence-deprecation=import --no-source-map ./src/css/BookReader.scss ./BookReader/BookReader.css",
     "build-css:watch": "npx sass --silence-deprecation=import --watch --no-source-map ./src/css/BookReader.scss ./BookReader/BookReader.css",
-    "clean": "rm -rf BookReader/ esm/",
+    "clean": "rm -rf BookReader/ dist/ esm/",
     "lint": "npx eslint src/ tests/ *.js *.cjs",
     "lint:fix": "npx eslint --fix src/ tests/ *.js *.cjs",
     "serve": "npx http-server . --port=8000",

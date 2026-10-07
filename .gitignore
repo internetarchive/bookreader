@@ -1,4 +1,5 @@
 /BookReader/
+/dist/
 /esm/
 /BookReaderDev/
 node_modules/

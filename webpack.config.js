@@ -17,7 +17,7 @@ const shared = {
   mode: 'production',
 
   watchOptions: {
-    ignored: ['BookReader/**', 'esm/**', 'node_modules/**', 'tests/**'],
+    ignored: ['BookReader/**', 'dist/**', 'esm/**', 'node_modules/**', 'tests/**'],
   },
 
   target: ['web', 'es5'],
@@ -169,7 +169,7 @@ export default [
       chunkLoading: 'import',
       filename: '[name]',
       chunkFilename: 'chunks/[id].js',
-      path: path.resolve(__dirname, 'esm'),
+      path: path.resolve(__dirname, 'dist/esm'),
     },
 
     devtool: 'source-map',
