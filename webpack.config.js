@@ -16,6 +16,11 @@ const shared = {
 
   target: ['web', 'es5'],
 
+  // LIT_DEV=1 resolves packages' "development" export condition. lit-html 3's
+  // minified build has a method named like its class, which Babel's ES5 class
+  // transform mis-renames, so a classic build that bundles lit 3 needs it.
+  resolve: process.env.LIT_DEV ? { conditionNames: ['development', '...'] } : {},
+
   module: {
     rules: [
       {

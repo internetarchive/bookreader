@@ -55,7 +55,7 @@
     "jquery-ui": "1.12.1",
     "jquery-ui-touch-punch": "0.2.3",
     "jquery.browser": "0.1.0",
-    "lit": "2.8.0",
+    "lit": "^2.8.0 || ^3.3.2",
     "soundmanager2": "2.97.20170602"
   },
   "devDependencies": {
@@ -144,7 +144,7 @@
     "DOCS:update:dev-deps": "Packages used for development",
     "update:dev-deps": "npm i @iiif/presentation-2@latest @iiif/presentation-3@latest concurrently@latest cpx2@latest http-server@latest hypothesis@latest live-server@latest testcafe-browser-provider-browserstack@latest",
     "DOCS:update:runtime-deps": "Core runtime dependencies; do an npm run build + visual check after updating",
-    "update:runtime-deps": "npm i @webcomponents/webcomponentsjs@latest interactjs@latest iso-language-codes@latest jquery@latest jquery-colorbox@latest jquery-ui@latest jquery-ui-touch-punch@latest jquery.browser@latest lit@latest soundmanager2@latest",
+    "update:runtime-deps": "npm i @webcomponents/webcomponentsjs@latest interactjs@latest iso-language-codes@latest jquery@latest jquery-colorbox@latest jquery-ui@latest jquery-ui-touch-punch@latest jquery.browser@latest soundmanager2@latest",
     "update:runtime-deps:test": "npm run build",
     "DOCS:update:ia-deps": "Packages by @internetarchive",
     "update:ia-deps": "npm i @internetarchive/bergamot-translator@latest @internetarchive/ia-activity-indicator@latest @internetarchive/ia-item-navigator@latest @internetarchive/icon-bookmark@latest @internetarchive/icon-close@latest @internetarchive/icon-dl@latest @internetarchive/icon-edit-pencil@latest @internetarchive/icon-ellipses@latest @internetarchive/icon-ia-logo@latest @internetarchive/icon-magnify-minus@latest @internetarchive/icon-magnify-plus@latest @internetarchive/icon-search@latest @internetarchive/icon-share@latest @internetarchive/icon-toc@latest @internetarchive/icon-visual-adjustment@latest @internetarchive/modal-manager@latest @internetarchive/shared-resize-observer@latest"
