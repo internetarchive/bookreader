@@ -1,5 +1,5 @@
 // @ts-check
-import { customElement, property, query } from 'lit/decorators.js';
+import { customElement, property, query } from '../util/lit-decorators.js';
 import {LitElement, html} from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import { ModeSmoothZoom } from './ModeSmoothZoom.js';

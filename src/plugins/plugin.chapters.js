@@ -1,6 +1,6 @@
 // @ts-check
 import { css, html, LitElement, nothing } from "lit";
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property } from '../util/lit-decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import '@internetarchive/icon-toc/icon-toc.js';
