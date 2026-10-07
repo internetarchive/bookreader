@@ -17,7 +17,7 @@ const shared = {
   mode: 'production',
 
   watchOptions: {
-    ignored: ['BookReader/**', 'dist/**', 'esm/**', 'node_modules/**', 'tests/**'],
+    ignored: ['BookReader/**', 'dist/**', 'node_modules/**', 'tests/**'],
   },
 
   target: ['web', 'es5'],
