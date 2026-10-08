@@ -1,6 +1,6 @@
 // @ts-check
 import sinon from "sinon";
-import { SelectionObserver } from "@/src/BookReader/utils/SelectionObserver.js";
+import { SelectionObserver, isSelectionCollapsed } from "@/src/BookReader/utils/SelectionObserver.js";
 
 afterEach(() => {
   sinon.restore();
@@ -78,5 +78,43 @@ describe("SelectionObserver", () => {
     observer._onSelectionChange();
     expect(handler.callCount).toBe(0);
     expect(observer.selecting).toBe(false);
+  });
+});
+
+describe("isSelectionCollapsed", () => {
+  const range = (collapsed) => ({ collapsed });
+
+  test("false when isCollapsed is false", () => {
+    expect(isSelectionCollapsed(/** @type {any} */({ isCollapsed: false, rangeCount: 0 }))).toBe(false);
+  });
+
+  test("true when isCollapsed and all ranges are collapsed", () => {
+    const sel = { isCollapsed: true, rangeCount: 1, getRangeAt: () => range(true) };
+    expect(isSelectionCollapsed(/** @type {any} */(sel))).toBe(true);
+  });
+
+  test("true when there are no ranges", () => {
+    expect(isSelectionCollapsed(/** @type {any} */({ isCollapsed: true, rangeCount: 0 }))).toBe(true);
+  });
+
+  test("false when isCollapsed is wrongly true but a range has content (shadow DOM on WebKit)", () => {
+    const sel = { isCollapsed: true, rangeCount: 1, getRangeAt: () => range(false) };
+    expect(isSelectionCollapsed(/** @type {any} */(sel))).toBe(false);
+  });
+});
+
+describe("SelectionObserver in shadow DOM", () => {
+  test("stays selecting when isCollapsed is wrongly true but the range has content", () => {
+    const handler = sinon.spy();
+    const observer = new SelectionObserver(".text-layer", handler);
+    const target = document.createElement("div");
+    target.classList.add("text-layer");
+    sinon.stub(window, "getSelection").returns(/** @type {any} */({
+      toString: () => "test", anchorNode: target, isCollapsed: true, rangeCount: 1, getRangeAt: () => ({ collapsed: false }),
+    }));
+    observer._onSelectionChange();
+    observer._onSelectionChange();
+    expect(handler.calledWith("cleared")).toBe(false);
+    expect(observer.selecting).toBe(true);
   });
 });
