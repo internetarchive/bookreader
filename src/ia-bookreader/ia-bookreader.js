@@ -571,6 +571,7 @@ export class IaBookReader extends LitElement {
   render() {
     return html`
       <ia-item-navigator
+        ?has-menu=${this.menuContents?.length > 0}
         ?viewportInFullscreen=${this.fullscreen}
         .baseHost=${this.baseHost}
         .identifier=${this.item?.metadata?.identifier}
@@ -625,6 +626,14 @@ export class IaBookReader extends LitElement {
         display: flex;
         width: 100%;
         height: 100%;
+      }
+
+      /* While the side panel is closed and has menus, the item navigator pads
+         its reader by the width of the menu rail (42px). The rail floats over
+         the book, so take that padding back and keep the book at full width. */
+      ia-item-navigator[has-menu]:not([menuopened]) div[slot="main"] {
+        margin-left: -42px;
+        width: calc(100% + 42px);
       }
 
       slot {
