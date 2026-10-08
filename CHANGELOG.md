@@ -1,3 +1,9 @@
+# 5.0.0-118
+- Perf: Use text layer for ReadAloud if possible @cdrini
+- Fix: Hash url mode on pages with custom `<base>` @jbuckner
+- Dev: Make Navbar work from shadow DOM @jbuckner
+- Dev: Update dev and build dependencies
+
 # 5.0.0-117
 - Fix: Scroll left position jitters when fullscreen on mobile @cdrini
 - Fix: ReadAloud/Copy link to highlight "scroll into view" causing body scroll @cdrini
