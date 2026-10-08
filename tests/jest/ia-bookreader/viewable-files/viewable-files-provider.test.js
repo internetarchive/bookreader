@@ -56,7 +56,7 @@ describe('Volumes Provider', () => {
     expect(provider.onProviderChange).toEqual(onProviderChange);
     expect(provider.id).toEqual('volumes');
     expect(provider.icon).toBeDefined();
-    expect(fixtureSync(provider.icon).tagName).toEqual('svg');
+    expect(fixtureSync(provider.icon).tagName).toEqual('SPAN');
     expect(provider.sortOrderBy).toEqual('default');
 
     expect(provider.label).toEqual(`Viewable files (${volumeCount})`);
