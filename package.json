@@ -32,8 +32,8 @@
   "private": false,
   "dependencies": {
     "@internetarchive/bergamot-translator": "^0.4.9-ia.1",
+    "@internetarchive/elements": "0.0.0-WEBDEV-8458-update-item-nav",
     "@internetarchive/ia-activity-indicator": "^1.0.0",
-    "@internetarchive/ia-item-navigator": "^2.2.3",
     "@internetarchive/icon-bookmark": "^1.4.1",
     "@internetarchive/icon-close": "^1.4.1",
     "@internetarchive/icon-dl": "^1.4.1",
@@ -99,7 +99,8 @@
     ],
     "moduleNameMapper": {
       "@/(.*)$": "<rootDir>/$1",
-      "\\.scss$": "<rootDir>/tests/jest/styleMock.js"
+      "\\.scss$": "<rootDir>/tests/jest/styleMock.js",
+      "\\.svg$": "<rootDir>/tests/jest/svgMock.js"
     },
     "setupFiles": [
       "./src/jquery-wrapper.js",
@@ -147,6 +148,6 @@
     "update:runtime-deps": "npm i @webcomponents/webcomponentsjs@latest interactjs@latest iso-language-codes@latest jquery@latest jquery-colorbox@latest jquery-ui@latest jquery-ui-touch-punch@latest jquery.browser@latest lit@latest soundmanager2@latest",
     "update:runtime-deps:test": "npm run build",
     "DOCS:update:ia-deps": "Packages by @internetarchive",
-    "update:ia-deps": "npm i @internetarchive/bergamot-translator@latest @internetarchive/ia-activity-indicator@latest @internetarchive/ia-item-navigator@latest @internetarchive/icon-bookmark@latest @internetarchive/icon-close@latest @internetarchive/icon-dl@latest @internetarchive/icon-edit-pencil@latest @internetarchive/icon-ellipses@latest @internetarchive/icon-ia-logo@latest @internetarchive/icon-magnify-minus@latest @internetarchive/icon-magnify-plus@latest @internetarchive/icon-search@latest @internetarchive/icon-share@latest @internetarchive/icon-toc@latest @internetarchive/icon-visual-adjustment@latest @internetarchive/modal-manager@latest @internetarchive/shared-resize-observer@latest"
+    "update:ia-deps": "npm i @internetarchive/bergamot-translator@latest @internetarchive/elements@latest @internetarchive/ia-activity-indicator@latest @internetarchive/icon-bookmark@latest @internetarchive/icon-close@latest @internetarchive/icon-dl@latest @internetarchive/icon-edit-pencil@latest @internetarchive/icon-ellipses@latest @internetarchive/icon-ia-logo@latest @internetarchive/icon-magnify-minus@latest @internetarchive/icon-magnify-plus@latest @internetarchive/icon-search@latest @internetarchive/icon-share@latest @internetarchive/icon-toc@latest @internetarchive/icon-visual-adjustment@latest @internetarchive/modal-manager@latest @internetarchive/shared-resize-observer@latest"
   }
 }

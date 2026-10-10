@@ -46,6 +46,23 @@
       baseHost="archive.org"
     >
       <div id="IABookReaderWrapper" slot="main">
+        <!--
+          The demo fetches item metadata and then the book manifest from
+          archive.org before BookReader can mount, which leaves the theater
+          blank for a couple of seconds. This placeholder fills that gap and is
+          removed once initializeBookReader runs. Demo only — the component
+          itself gates on `loaded`.
+
+          PLACEHOLDER — replace with the shared status indicator once
+          WEBDEV-8951 ships the slotted `icon` support that WEBDEV-8980 needs:
+
+            <ia-status-indicator mode="loading" mediatype="texts"></ia-status-indicator>
+
+          The navigator used to draw its own book-and-ring spinner here; that
+          was removed in WEBDEV-8458 because a shell shouldn't decide what
+          loading looks like. This text stands in until the shared one lands.
+        -->
+        <div id="demo-loading" role="status">Loading…</div>
         <div id="BookReader" class="BookReader"></div>
       </div>
       <div>
@@ -62,6 +79,19 @@
   </section>
 
   <style>
+    #demo-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      min-height: 300px;
+      color: #ccc;
+      background-color: #000;
+      font-family: system-ui, sans-serif;
+      font-size: 1.2rem;
+      letter-spacing: 0.02em;
+    }
+
     .demos {
       height: 800px;
       width: inherit;
