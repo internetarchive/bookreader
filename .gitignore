@@ -7,3 +7,12 @@ coverage*/
 
 .vscode
 CLAUDE.local.md
+
+# Playwright (prototype branch)
+tests/playwright/screenshots/
+test-results/
+playwright-report/
+
+# PocketTTS model weights are fetched at runtime, never committed (~146MB)
+*.onnx
+pocket-tts-sample.wav
