@@ -156,6 +156,8 @@ export const DEFAULT_OPTIONS = {
     experiments: {},
     /** @type {Partial<import('../plugins/plugin.iiif.js').IiifPlugin['options']>} */
     iiif: {},
+    /** @type {Partial<import('../plugins/plugin.pdf.js').PdfPlugin['options']>} */
+    pdf: {},
     /** @type {Partial<import('../plugins/plugin.resume.js').ResumePlugin['options']>} */
     resume: {},
     /** @type {Partial<import('../plugins/search/plugin.search.js').SearchPlugin['options']>} */

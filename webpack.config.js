@@ -62,6 +62,8 @@ export default [
       'plugins/plugin.experiments.js': { import: './src/plugins/plugin.experiments.js', dependOn: 'BookReader.js' },
       'plugins/plugin.iframe.js': { import: './src/plugins/plugin.iframe.js', dependOn: 'BookReader.js' },
       'plugins/plugin.iiif.js': { import: './src/plugins/plugin.iiif.js', dependOn: 'BookReader.js' },
+      'plugins/plugin.pdf.js': { import: './src/plugins/plugin.pdf.js', dependOn: 'BookReader.js' },
+      'plugins/pdf.worker.js': { import: 'pdfjs-dist/build/pdf.worker.mjs' },
       'plugins/plugin.resume.js': { import: './src/plugins/plugin.resume.js', dependOn: 'BookReader.js' },
       'plugins/plugin.search.js': { import: './src/plugins/search/plugin.search.js', dependOn: 'BookReader.js' },
       'plugins/plugin.text_selection.js': { import: './src/plugins/plugin.text_selection.js', dependOn: 'BookReader.js' },
