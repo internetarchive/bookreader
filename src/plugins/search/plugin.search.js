@@ -29,6 +29,7 @@ import { applyVariables } from '../../util/strings.js';
 import { toISO6391 } from '../tts/utils.js';
 /** @typedef {import('../../BookReader/PageContainer').PageContainer} PageContainer */
 /** @typedef {import('../../BookReader/BookModel').PageIndex} PageIndex */
+/** @typedef {import('../../BookReader/BookModel').PageModel} PageModel */
 /** @typedef {import('../../BookReader/BookModel').LeafNum} LeafNum */
 /** @typedef {import('../../BookReader/BookModel').PageNumString} PageNumString */
 
@@ -341,43 +342,10 @@ export class SearchPlugin extends BookReaderPlugin {
     const match = this.searchResults?.matches[matchIndex];
     const book = this.br.book;
     const pageIndex = book.leafNumToIndex(match.par[0].page);
-    const page = book.getPage(pageIndex);
+    const page = /** @type {PageModel} */(book.getPage(pageIndex));
     const onNearbyPage = Math.abs(this.br.currentIndex() - pageIndex) < 3;
-    let makeUnviewableAtEnd = false;
-    if (!page.isViewable) {
-      const resp = await fetch('/services/bookreader/request_page?' + new URLSearchParams({
-        id: this.br.options.bookId,
-        subprefix: this.br.options.subPrefix,
-        leafNum: page.leafNum,
-      })).then(r => r.json());
-
-      for (const leafNum of resp.value) {
-        book.getPage(book.leafNumToIndex(leafNum)).makeViewable();
-      }
-
-      // not able to show page; make the page viewable anyways so that it can
-      // actually open. On IA, it has a fallback to a special error page.
-      if (!resp.value.length) {
-        book.getPage(pageIndex).makeViewable();
-        makeUnviewableAtEnd = true;
-      }
-
-      // Trigger an update of book
-      this.br._modes.mode1Up.mode1UpLit.updatePages();
-      if (this.br.activeMode == this.br._modes.mode1Up) {
-        await this.br._modes.mode1Up.mode1UpLit.updateComplete;
-      }
-    }
-    /* this updates the URL */
-    if (!this.br._isIndexDisplayed(pageIndex)) {
-      this.suppressFragmentChange = false;
-      this.br.jumpToIndex(pageIndex, { ariaLive: true });
-    }
-
-    // Reset it to unviewable if it wasn't resolved
-    if (makeUnviewableAtEnd) {
-      book.getPage(pageIndex).makeViewable(false);
-    }
+    await this.br.tryOpenSlotForPage(page);
+    this.br.jumpToIndex(page.index, { ariaLive: true, allowUnviewable: true });
 
     // Scroll/flash in the ui
     const $boxes = await poll(() => $(`rect.match-index-${match.matchIndex}`), { until: result => result.length > 0 });
