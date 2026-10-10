@@ -46,4 +46,6 @@ export default class DeleteModalActions extends LitElement {
   }
 }
 
-customElements.define('delete-modal-actions', DeleteModalActions);
+if (!customElements.get('delete-modal-actions')) {
+  customElements.define('delete-modal-actions', DeleteModalActions);
+}
