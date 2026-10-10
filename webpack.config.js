@@ -56,6 +56,7 @@ export default [
       'BookReader.js': './src/BookReader.js',
 
       // Plugins (sorted!)
+      'plugins/plugin.annotations.js' : { import: './src/plugins/plugin.annotations.js', dependOn: 'BookReader.js' },
       'plugins/plugin.archive_analytics.js': { import: './src/plugins/plugin.archive_analytics.js', dependOn: 'BookReader.js' },
       'plugins/plugin.autoplay.js': { import: './src/plugins/plugin.autoplay.js', dependOn: 'BookReader.js' },
       'plugins/plugin.chapters.js': { import: './src/plugins/plugin.chapters.js', dependOn: 'BookReader.js' },
