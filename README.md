@@ -210,6 +210,14 @@ Note that BookReader is a core part of Archive.org's mission of Universal Access
 
 See [CHANGELOG.md](CHANGELOG.md) for history of the project.
 
+## Contributing
+
+Please refer to the [CONTRIBUTING.md](CONTRIBUTING.md) file for information about how to get involved. We welcome issues, questions, and pull requests. 
+
+## All Thanks To Our Contributors
+<a href="https://github.com/internetarchive/bookreader/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=internetarchive/bookreader" />
+</a>
 
 ## License
 The source code license is AGPL v3, as described in the LICENSE file.
