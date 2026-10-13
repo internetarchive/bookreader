@@ -7,6 +7,8 @@
 
 import { LitElement, html, css } from 'lit';
 
+// Loads the BookReader core (defines window.BookReader), so this is the one entrypoint
+import '../BookReader.js';
 import '@internetarchive/ia-item-navigator';
 import '@internetarchive/modal-manager';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';

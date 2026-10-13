@@ -48,24 +48,23 @@ const shared = {
 
 /** Output file -> srcfile, for the classic and ESM builds */
 const bookreaderEntries = {
-  // BookReader
-  'BookReader.js': './src/BookReader.js',
+  // BookReader (core + <ia-bookreader> shell)
+  'ia-bookreader.js': './src/ia-bookreader/ia-bookreader.js',
 
   // Plugins (sorted!)
-  'plugins/plugin.archive_analytics.js': { import: './src/plugins/plugin.archive_analytics.js', dependOn: 'BookReader.js' },
-  'plugins/plugin.autoplay.js': { import: './src/plugins/plugin.autoplay.js', dependOn: 'BookReader.js' },
-  'plugins/plugin.chapters.js': { import: './src/plugins/plugin.chapters.js', dependOn: 'BookReader.js' },
-  'plugins/plugin.experiments.js': { import: './src/plugins/plugin.experiments.js', dependOn: 'BookReader.js' },
-  'plugins/plugin.iframe.js': { import: './src/plugins/plugin.iframe.js', dependOn: 'BookReader.js' },
-  'plugins/plugin.iiif.js': { import: './src/plugins/plugin.iiif.js', dependOn: 'BookReader.js' },
-  'plugins/plugin.resume.js': { import: './src/plugins/plugin.resume.js', dependOn: 'BookReader.js' },
-  'plugins/plugin.search.js': { import: './src/plugins/search/plugin.search.js', dependOn: 'BookReader.js' },
-  'plugins/plugin.text_selection.js': { import: './src/plugins/plugin.text_selection.js', dependOn: 'BookReader.js' },
-  'plugins/plugin.translate.js': { import: './src/plugins/translate/plugin.translate.js', dependOn: 'BookReader.js' },
-  'plugins/plugin.tts.js': { import: './src/plugins/tts/plugin.tts.js', dependOn: 'BookReader.js' },
-  'plugins/plugin.url.js': { import: './src/plugins/url/plugin.url.js', dependOn: 'BookReader.js' },
-  'plugins/plugin.vendor-fullscreen.js': { import: './src/plugins/plugin.vendor-fullscreen.js', dependOn: 'BookReader.js' },
-  'ia-bookreader-bundle.js': { import: './src/ia-bookreader/ia-bookreader.js', dependOn: 'BookReader.js' },
+  'plugins/plugin.archive_analytics.js': { import: './src/plugins/plugin.archive_analytics.js', dependOn: 'ia-bookreader.js' },
+  'plugins/plugin.autoplay.js': { import: './src/plugins/plugin.autoplay.js', dependOn: 'ia-bookreader.js' },
+  'plugins/plugin.chapters.js': { import: './src/plugins/plugin.chapters.js', dependOn: 'ia-bookreader.js' },
+  'plugins/plugin.experiments.js': { import: './src/plugins/plugin.experiments.js', dependOn: 'ia-bookreader.js' },
+  'plugins/plugin.iframe.js': { import: './src/plugins/plugin.iframe.js', dependOn: 'ia-bookreader.js' },
+  'plugins/plugin.iiif.js': { import: './src/plugins/plugin.iiif.js', dependOn: 'ia-bookreader.js' },
+  'plugins/plugin.resume.js': { import: './src/plugins/plugin.resume.js', dependOn: 'ia-bookreader.js' },
+  'plugins/plugin.search.js': { import: './src/plugins/search/plugin.search.js', dependOn: 'ia-bookreader.js' },
+  'plugins/plugin.text_selection.js': { import: './src/plugins/plugin.text_selection.js', dependOn: 'ia-bookreader.js' },
+  'plugins/plugin.translate.js': { import: './src/plugins/translate/plugin.translate.js', dependOn: 'ia-bookreader.js' },
+  'plugins/plugin.tts.js': { import: './src/plugins/tts/plugin.tts.js', dependOn: 'ia-bookreader.js' },
+  'plugins/plugin.url.js': { import: './src/plugins/url/plugin.url.js', dependOn: 'ia-bookreader.js' },
+  'plugins/plugin.vendor-fullscreen.js': { import: './src/plugins/plugin.vendor-fullscreen.js', dependOn: 'ia-bookreader.js' },
 };
 
 /** @type {webpack.Configuration[]} */

@@ -16,9 +16,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "module": "src/ia-bookreader/ia-bookreader.js",
+  "module": "dist/esm/ia-bookreader.js",
   "exports": {
-    ".": "./src/ia-bookreader/ia-bookreader.js",
+    ".": "./dist/esm/ia-bookreader.js",
     "./esm/*": "./dist/esm/*",
     "./*": "./*"
   },
