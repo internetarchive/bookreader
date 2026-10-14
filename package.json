@@ -79,7 +79,7 @@
     "concurrently": "10.0.5",
     "core-js": "3.50.0",
     "cpx2": "9.0.3",
-    "css-loader": "7.1.4",
+    "css-loader": "7.1.5",
     "eslint": "7.32.0",
     "eslint-plugin-no-jquery": "2.7.0",
     "eslint-plugin-testcafe": "0.2.1",
@@ -89,14 +89,14 @@
     "jest-environment-jsdom": "30.5.2",
     "live-server": "1.2.2",
     "regenerator-runtime": "0.14.1",
-    "sass": "1.103.1",
-    "sass-loader": "17.0.0",
+    "sass": "1.105.1",
+    "sass-loader": "17.0.1",
     "sinon": "22.1.0",
     "svgo": "4.1.0",
     "testcafe": "3.7.6",
     "testcafe-browser-provider-browserstack": "1.15.2",
-    "webpack": "5.109.2",
-    "webpack-cli": "7.2.2"
+    "webpack": "5.111.1",
+    "webpack-cli": "7.2.3"
   },
   "jest": {
     "testEnvironment": "jsdom",
