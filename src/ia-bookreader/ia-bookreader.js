@@ -231,6 +231,8 @@ export class IaBookReader extends LitElement {
   /** Creates modal DOM & attaches to `<body>` */
   setModalManager() {
     /** @type {ModalManager} */
+    // modal-manager is a page-wide singleton appended to <body>, so a document-level lookup is intended
+    // eslint-disable-next-line no-restricted-properties
     let modalManager = document.querySelector('modal-manager');
     if (!modalManager) {
       modalManager = /** @type {ModalManager} */(document.createElement('modal-manager'));
