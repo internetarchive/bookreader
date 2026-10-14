@@ -1,4 +1,20 @@
 // @ts-check
+/**
+ * Like `Selection.isCollapsed`, but checks the ranges too. WebKit reports
+ * `isCollapsed` as true for any selection inside a shadow root, even when
+ * it has text.
+ * https://bugs.webkit.org/show_bug.cgi?id=281587
+ * @param {Selection} selection
+ * @returns {boolean}
+ */
+export function isSelectionCollapsed(selection) {
+  if (!selection.isCollapsed) return false;
+  for (let i = 0; i < selection.rangeCount; i++) {
+    if (!selection.getRangeAt(i).collapsed) return false;
+  }
+  return true;
+}
+
 export class SelectionObserver {
   selecting = false;
   startedInSelector = false;
@@ -31,6 +47,7 @@ export class SelectionObserver {
   _onSelectionChange = () => {
     const sel = window.getSelection();
     if (!sel) return;
+    const isCollapsed = isSelectionCollapsed(sel);
 
     if (!this.selecting && sel.toString()) {
       const target = $(sel.anchorNode).closest(this.selector)[0];
@@ -41,12 +58,12 @@ export class SelectionObserver {
       this.handler('started', this.target);
     }
 
-    if (this.selecting && this.lastKnownFocusNode != sel.focusNode && sel.toString() && !sel.isCollapsed) {
+    if (this.selecting && this.lastKnownFocusNode != sel.focusNode && sel.toString() && !isCollapsed) {
       this.lastKnownFocusNode = sel.focusNode;
       this.handler('changed', this.target);
     }
 
-    if (this.selecting && (sel.isCollapsed || !sel.toString() || !$(sel.anchorNode).closest(this.selector)[0])) {
+    if (this.selecting && (isCollapsed || !sel.toString() || !$(sel.anchorNode).closest(this.selector)[0])) {
       this.selecting = false;
       this.lastKnownFocusNode = null;
       this.handler('cleared', this.target);
