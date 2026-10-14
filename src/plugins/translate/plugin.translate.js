@@ -242,8 +242,9 @@ export class TranslatePlugin extends BookReaderPlugin {
   }
 
   clearAllTranslations() {
-    document.querySelectorAll('.BRtranslateLayer').forEach(el => el.remove());
-    document.querySelectorAll('.showingTranslation').forEach(el => el.classList.remove('showingTranslation'));
+    const brEl = this.br.refs.$br[0];
+    brEl.querySelectorAll('.BRtranslateLayer').forEach(el => el.remove());
+    brEl.querySelectorAll('.showingTranslation').forEach(el => el.classList.remove('showingTranslation'));
   }
 
   /**
