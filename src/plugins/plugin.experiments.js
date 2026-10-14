@@ -1,7 +1,7 @@
 // @ts-check
 import { css, html, LitElement } from 'lit';
 import { BookReaderPlugin } from '../BookReaderPlugin.js';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property, state } from '../util/lit-decorators.js';
 import { sleep } from '../BookReader/utils.js';
 
 // @ts-ignore
