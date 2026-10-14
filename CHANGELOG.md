@@ -1,3 +1,20 @@
+# 5.0.0-119
+- Dev: Support passing in an html element as `el` instead of only a selector @jbuckner
+- Dev: Fix height propagation through ia-bookreader shell @jbuckner
+- Dev: Add an ESM build for consumers who want to bundle BookReader themselves @cdrini
+    - You can now import bookreader like so:
+        ```js
+        import '@internetarchive/bookreader'  // ia-bookreader web component and window.BookReader constructor
+        import '@internetarchive/esm/plugins/plugin.text_selection.js'  // import specific plugins
+        ```
+
+        These import can be used in esm build tools like vite to correctly handle third-party package deduplication.
+    - Breaking change: You can no longer import BookReader.js alone ; import ia-bookreader.js which defines window.BookReader
+    - Breaking change: ia-bookreader-bundle.js has been renamed to ia-bookreader.js and now included BookReader core. You no longer need to import both, only ia-bookreader.js
+- Dev: Replace global query selectors with bound ones for shadow DOM @cdrini
+- Dev: Handle Selection.isCollapsed failing in shadow DOM on webkit @jbuckner
+- Dev: Update test, dev, and build dependencies @cdrini
+
 # 5.0.0-118
 - Perf: Use text layer for ReadAloud if possible @cdrini
 - Fix: Hash url mode on pages with custom `<base>` @jbuckner
