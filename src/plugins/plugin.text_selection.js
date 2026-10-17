@@ -1,6 +1,7 @@
 //@ts-check
 import { createDIVPageLayer } from '../BookReader/PageContainer.js';
 import { BookReaderPlugin } from '../BookReaderPlugin.js';
+import { BatchFetcher } from '../util/scheduling.js';
 import { applyVariables } from '../util/strings.js';
 import { Cache } from '../util/cache.js';
 import { toISO6391 } from './tts/utils.js';
@@ -20,6 +21,10 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     fullDjvuXmlUrl: null,
     /** @type {StringWithVars} The URL to fetch a single page of the DJVU xml. Supports options.vars. Also has {{pageIndex}} */
     singlePageDjvuXmlUrl: null,
+    /** Whether `singlePageDjvuXmlUrl` supports being given multiple `pageIndex` as a comma-separate list */
+    supportsBatches: false,
+    /** Max number of pages to fetch in one go, if batches are supported */
+    maxBatchSize: 6, // 3 spreads
     /** Whether to fetch the XML as a jsonp */
     jsonp: false,
     /** Mox words that can be selected when the text layer is protected */
@@ -58,6 +63,25 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     /** Whether the book is right-to-left */
     this.rtl = this.br.pageProgression === 'rl';
     this.textSelectionManager = new TextSelectionManager('.BRtextLayer', this.br, {selectionElement: ['.BRwordElement', '.BRspace', 'mark']}, this.options.maxProtectedWords);
+  }
+
+  /** @override */
+  setup(options) {
+    super.setup(options);
+
+    /** @type {BatchFetcher<number, HTMLElement>} */
+    this.batchFetcher = new BatchFetcher(
+      this.fetchPageTextMany.bind(this),
+      {
+        batchSize: this.options.supportsBatches ? this.options.maxBatchSize : 1,
+        getFromCache: (index) => {
+          return this.pageTextCache.entries
+            .find(x => x.index == index)
+            ?.response;
+        },
+      },
+    );
+    this.fetchPageText = this.batchFetcher.fetchOne;
   }
 
   /** @override */
@@ -149,32 +173,67 @@ export class TextSelectionPlugin extends BookReaderPlugin {
    */
   async getPageText(index) {
     if (this.options.singlePageDjvuXmlUrl) {
+      return await this.fetchPageText(index);
+    } else {
+      const XMLpagesArr = await this.djvuPagesPromise;
+      if (XMLpagesArr) return XMLpagesArr[index];
+    }
+  }
+
+  /**
+   * @param {number[]} indices Indices to fetch ; assumes they are unique and sorted
+   * @returns {Promise<Record<number, HTMLElement>>}
+   */
+  async fetchPageTextMany(indices) {
+    /** @type {Record<number, HTMLElement>} */
+    const results = {};
+    for (const index of indices) {
       const cachedEntry = this.pageTextCache.entries.find(x => x.index == index);
       if (cachedEntry) {
-        return cachedEntry.response;
+        results[index] = cachedEntry.response;
       }
-      const res = await $.ajax({
+    }
+
+    const indicesToFetch = indices.filter(i => !(i in results));
+    if (!indicesToFetch.length) return results;
+
+    let res;
+    try {
+      res = await $.ajax({
         type: "GET",
-        url: applyVariables(this.options.singlePageDjvuXmlUrl, this.br.options.vars, { pageIndex: index }),
+        url: applyVariables(this.options.singlePageDjvuXmlUrl, this.br.options.vars, { pageIndex: indicesToFetch.join(',') }),
         dataType: this.options.jsonp ? "jsonp" : "html",
         cache: true,
         xhrFields: {
           withCredentials: this.br.protected,
         },
-        error: (e) => undefined,
       });
-      try {
-        const xmlDoc = $.parseXML(res);
-        const result = xmlDoc && $(xmlDoc).find("OBJECT")[0];
-        this.pageTextCache.add({ index, response: result });
-        return result;
-      } catch (e) {
-        return undefined;
-      }
-    } else {
-      const XMLpagesArr = await this.djvuPagesPromise;
-      if (XMLpagesArr) return XMLpagesArr[index];
+    } catch (e) {
+      // Resolve the pages we do have; the rest simply render without a text layer
+      return results;
     }
+
+    /** @type {HTMLElement[]} */
+    let xmlObjects;
+    try {
+      const xmlDoc = $.parseXML(res);
+      xmlObjects = xmlDoc ? $(xmlDoc).find("OBJECT").toArray() : [];
+    } catch (e) {
+      return results;
+    }
+
+    // Pages are matched to the response by position, so a response of any other length
+    // would attach text to the wrong pages.
+    if (xmlObjects.length !== indicesToFetch.length) {
+      console.warn(`Expected OCR for ${indicesToFetch.length} page(s) (${indicesToFetch}), got ${xmlObjects.length}`);
+      return results;
+    }
+
+    for (const [index, xmlObject] of zip(indicesToFetch, xmlObjects)) {
+      this.pageTextCache.add({ index, response: xmlObject });
+      results[index] = xmlObject;
+    }
+    return results;
   }
 
   /**
