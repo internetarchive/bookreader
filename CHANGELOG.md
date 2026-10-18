@@ -1,3 +1,6 @@
+# 5.0.0-121
+- Fix: Copy link to highlight now only includes page number and text parameters @cdrini
+
 # 5.0.0-120
 - Fix: Copy link to highlight fixes for borrowable books @cdrini
 
