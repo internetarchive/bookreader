@@ -548,7 +548,7 @@ describe('BookReaderTextFragment.fromString', () => {
     };
 
     const fragment = BookReaderTextFragment.fromString(
-      '12:before%20text-,quoted%20text,-after%20text',
+      '12:before text-,quoted text,-after text',
       book,
       7,
     );
@@ -565,7 +565,7 @@ describe('BookReaderTextFragment.fromString', () => {
       getPageIndex: sinon.stub(),
     };
 
-    const fragment = BookReaderTextFragment.fromString('just%20a%20quote', book, 9);
+    const fragment = BookReaderTextFragment.fromString('just a quote', book, 9);
 
     expect(book.getPageIndex.called).toBe(false);
     expect(fragment.pageNumber).toBeNull();
@@ -590,7 +590,7 @@ describe('BookReaderTextFragment.fromString', () => {
     };
 
     const fragment = BookReaderTextFragment.fromString(
-      '12:before%20text-,The%20quick%20brown,the%20lazy%20dog,-after%20text',
+      '12:before text-,The quick brown,the lazy dog,-after text',
       book,
       7,
     );

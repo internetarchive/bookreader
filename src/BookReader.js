@@ -2006,10 +2006,11 @@ BookReader.prototype.queryStringFromParams = function(
  * @private
  * Tries to open a page by requesting the server to make it viewable.
  * @param {PageModel} page
+ * @returns {Promise<PageIndex[]>} indices of the pages that became viewable
  */
 BookReader.prototype.requestPage = async function(page) {
-  if (page.isViewable) return;
-  if (!this.options.requestPage) return;
+  if (page.isViewable) return [];
+  if (!this.options.requestPage) return [];
 
   const newlyAvailablePages = await this.options.requestPage.call(this, page);
   for (const pageIndex of newlyAvailablePages) {
@@ -2021,6 +2022,7 @@ BookReader.prototype.requestPage = async function(page) {
   if (this.activeMode == this._modes.mode1Up) {
     await this._modes.mode1Up.mode1UpLit.updateComplete;
   }
+  return newlyAvailablePages;
 };
 
 /**

@@ -345,7 +345,11 @@ export class SearchPlugin extends BookReaderPlugin {
     const page = /** @type {PageModel} */(book.getPage(pageIndex));
     const onNearbyPage = Math.abs(this.br.currentIndex() - pageIndex) < 3;
     await this.br.requestPage(page);
-    this.br.jumpToIndex(page.index, { ariaLive: true, allowUnviewable: true });
+    /* this updates the URL */
+    if (!this.br._isIndexDisplayed(pageIndex)) {
+      this.suppressFragmentChange = false;
+      this.br.jumpToIndex(pageIndex, { ariaLive: true, allowUnviewable: true });
+    }
 
     // Scroll/flash in the ui
     const $boxes = await poll(() => $(`rect.match-index-${match.matchIndex}`), { until: result => result.length > 0 });

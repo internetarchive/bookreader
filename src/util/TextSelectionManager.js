@@ -1222,7 +1222,8 @@ export class BookReaderTextFragment {
   }
 
   /**
-   * Parse a text fragment from its string value (the part after `text=`).
+   * Parse a text fragment from its string value (the part after `text=`), already
+   * URI-decoded (e.g. as returned by `URLSearchParams.get`).
    * Expected format: `pageNumber:prefix-,quote,-suffix`
    * @param {string} str
    * @param {import('@/src/BookReader/BookModel.js').BookModel} book
@@ -1237,8 +1238,8 @@ export class BookReaderTextFragment {
     if (!match) {
       throw new Error(`Invalid text fragment format: ${str}`);
     }
-    const pageNumber = match[1] ? decodeURIComponent(match[1]) : null;
-    const prefix = match[2] ? decodeURIComponent(match[2]) : null;
+    const pageNumber = match[1] || null;
+    const prefix = match[2] || null;
     const quoteRegion = match[3] || '';
     const quoteParts = quoteRegion.split(',');
     let quote = null;
@@ -1246,15 +1247,15 @@ export class BookReaderTextFragment {
     let quoteEnd = null;
 
     if (quoteParts.length === 1) {
-      quote = decodeURIComponent(quoteParts[0]);
+      quote = quoteParts[0];
     } else if (quoteParts.length === 2) {
-      quoteStart = decodeURIComponent(quoteParts[0]);
-      quoteEnd = decodeURIComponent(quoteParts[1]);
+      quoteStart = quoteParts[0];
+      quoteEnd = quoteParts[1];
     } else {
       throw new Error(`Invalid text fragment quote format: ${str}`);
     }
 
-    const suffix = match[4] ? decodeURIComponent(match[4]) : null;
+    const suffix = match[4] || null;
     const pageIndex = pageNumber ? book.getPageIndex(pageNumber) : fallbackPageIndex;
     if (typeof pageIndex !== 'number') {
       throw new Error(`Could not determine page index for text fragment with page number ${pageNumber}`);
@@ -1282,7 +1283,7 @@ export class BookReaderTextFragment {
   toUrl() {
     const params = new URLSearchParams(window.location.search);
     params.set('text', this.toNormalizedString());
-    
+
     const currentUrl = window.location;
     const pageNum = this.pageNumber || `n${this.pageIndex}`;
     const adjustedUrlPageNumPath = currentUrl.pathname.replace(/((?:^|[#/])page)\/[^/]+/, `$1/${pageNum}`);
@@ -1292,7 +1293,13 @@ export class BookReaderTextFragment {
 
   /**
    * Outputs a normalized, auto-truncated string representation of the text fragment,
-   * suitable for use in a URL.
+   * suitable for use in a URL. This is the inverse of `fromString`. Not URI-encoded; that
+   * is left to the caller (e.g. URLSearchParams).
+   *
+   * Format: `pageNumber:prefix-,quote,-suffix`
+   * Or for long quotes: `pageNumber:prefix-,quoteStart,quoteEnd,-suffix`
+   * The prefix and suffix are optional. Whitespace is collapsed and any text fragment
+   * delimiters (`:`, `,`, `-,`, `,-`) in the text are replaced with spaces.
    *
    * @returns {string}
    */
