@@ -666,6 +666,55 @@ describe('BookReaderTextFragment.toNormalizedString', () => {
 });
 
 
+describe('BookReaderTextFragment.toUrl', () => {
+  const book = { getPageIndex: (pageNum) => (pageNum === '12' ? 42 : undefined) };
+
+  afterEach(() => {
+    window.history.pushState({}, '', '/');
+  });
+
+  test('round trips text containing URL-special characters', () => {
+    const fragment = new BookReaderTextFragment({
+      pageNumber: '12',
+      pageIndex: 42,
+      prefix: 'before 100% & more',
+      quote: 'a%41 b+c &x=y “quoted” #hash',
+      suffix: 'after 50% of it',
+    });
+
+    const url = new URL(fragment.toUrl());
+    const parsed = BookReaderTextFragment.fromString(url.searchParams.get('text'), book, 0);
+
+    expect(parsed.pageNumber).toBe('12');
+    expect(parsed.pageIndex).toBe(42);
+    expect(parsed.prefix).toBe('before 100% & more');
+    expect(parsed.quote).toBe('a%41 b+c &x=y “quoted” #hash');
+    expect(parsed.suffix).toBe('after 50% of it');
+  });
+
+  test('points at the fragment page in the path and hash', () => {
+    window.history.pushState({}, '', '/details/foo/page/3/mode/2up#page/4/mode/1up');
+    const fragment = new BookReaderTextFragment({
+      pageNumber: '12', pageIndex: 42, prefix: null, quote: 'hello', suffix: null,
+    });
+
+    const url = new URL(fragment.toUrl());
+    expect(url.pathname).toBe('/details/foo/page/12/mode/2up');
+    expect(url.hash).toBe('#page/12/mode/1up');
+  });
+
+  test('keeps existing query params and replaces an existing text param', () => {
+    window.history.pushState({}, '', '/details/foo?q=cats&text=old');
+    const fragment = new BookReaderTextFragment({
+      pageNumber: '12', pageIndex: 42, prefix: null, quote: 'hello', suffix: null,
+    });
+
+    const params = new URL(fragment.toUrl()).searchParams;
+    expect(params.get('q')).toBe('cats');
+    expect(params.getAll('text')).toEqual(['12:hello']);
+  });
+});
+
 describe("getFirstWords and getLastWords tests", () => {
   test("Handles empty string", () => {
     expect(getFirstWords(3, "")).toBe("");
