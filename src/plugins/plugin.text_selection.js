@@ -97,7 +97,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
   }
 
   async initTextFragment() {
-    if (this.br.options.verifyTextFragment && !await this.br.options.verifyTextFragment(this.br.targetTextFragment)) {
+    if (this.br.options.verifyTextFragment && !await this.br.options.verifyTextFragment.call(this, this.br.targetTextFragment)) {
       return;
     }
 

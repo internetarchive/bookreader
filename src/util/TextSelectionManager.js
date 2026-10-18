@@ -1277,18 +1277,25 @@ export class BookReaderTextFragment {
   }
 
   /**
-   * Generates a URL pointing to the page with the text fragment highlighted. Maintains all existing
-   * parameters in the url.
+   * Generates a URL pointing to the page with the text fragment highlighted.
    */
   toUrl() {
-    const params = new URLSearchParams(window.location.search);
-    params.set('text', this.toNormalizedString());
+    // Strip all other parameters
+    const params = new URLSearchParams({
+      text: this.toNormalizedString(),
+    });
 
     const currentUrl = window.location;
-    const pageNum = this.pageNumber || `n${this.pageIndex}`;
-    const adjustedUrlPageNumPath = currentUrl.pathname.replace(/((?:^|[#/])page)\/[^/]+/, `$1/${pageNum}`);
-    const hash = currentUrl.hash ? currentUrl.hash.replace(/((?:^|[#/])page)\/[^/]+/, `$1/${pageNum}`) : '';
-    return `${currentUrl.origin}${adjustedUrlPageNumPath}?${params}${hash}`;
+    const pageNum = encodeURIComponent(this.pageNumber || `n${this.pageIndex}`);
+    // In urlMode 'hash' the BookReader state lives in the hash (e.g. #page/4/mode/2up)
+    const isHashMode = /^#\/?page\//.test(currentUrl.hash);
+    if (isHashMode) {
+      return `${currentUrl.origin}${currentUrl.pathname}?${params}#page/${pageNum}`;
+    }
+
+    // urlMode 'history': only keep /page/X in the path, adding it if missing
+    const basePath = currentUrl.pathname.replace(/\/page\/.*/, '').replace(/\/+$/, '');
+    return `${currentUrl.origin}${basePath}/page/${pageNum}?${params}`;
   }
 
   /**
