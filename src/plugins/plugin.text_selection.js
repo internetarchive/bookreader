@@ -90,20 +90,36 @@ export class TextSelectionPlugin extends BookReaderPlugin {
     // Init text fragment
     const textParam = new URLSearchParams(location.search).get('text');
     if (textParam) {
-      this.targetTextFragment = BookReaderTextFragment.fromString(textParam, this.br.book, this.br.firstIndex);
-      const targetTextFragment = this.targetTextFragment;
-      this.br.on('textLayerVisible', async (_, {pageContainerEl, textLayer}) => {
-        const pageIndex = targetTextFragment.pageIndex;
-        const hasTargetText = pageIndex === parseFloat(pageContainerEl.getAttribute('data-index'));
-        if (hasTargetText) {
-          const markEls = renderHighlight(textLayer, targetTextFragment, 'BRhighlight--target-text');
-          // Only jump once; presumably on first page load.
-          if (!this._jumpedToHighlight) {
-            this.br.scrollIntoView(markEls[0], {behavior: 'smooth', block: 'center'});
-            this._jumpedToHighlight = true;
-          }
+      // save on global BR
+      this.br.targetTextFragment = BookReaderTextFragment.fromString(textParam, this.br.book, this.br.firstIndex);
+      this.initTextFragment();
+    }
+  }
+
+  async initTextFragment() {
+    if (this.br.options.verifyTextFragment && !await this.br.options.verifyTextFragment(this.br.targetTextFragment)) {
+      return;
+    }
+
+    const targetTextFragment = this.br.targetTextFragment;
+    this.br.on('textLayerVisible', async (_, {pageContainerEl, textLayer}) => {
+      const pageIndex = targetTextFragment.pageIndex;
+      const hasTargetText = pageIndex === parseFloat(pageContainerEl.getAttribute('data-index'));
+      if (hasTargetText) {
+        const markEls = renderHighlight(textLayer, targetTextFragment, 'BRhighlight--target-text');
+        // Only jump once; presumably on first page load.
+        if (!this._jumpedToHighlight) {
+          this.br.scrollIntoView(markEls[0], {behavior: 'smooth', block: 'center'});
+          this._jumpedToHighlight = true;
         }
-      });
+      }
+    });
+
+    // Now jump to the page and open a slot if necessary
+    const page = this.br.book.getPage(this.br.targetTextFragment.pageIndex);
+    if (!page.isViewable) {
+      await this.br.requestPage(page);
+      this.br.jumpToIndex(page.index, { ariaLive: true, allowUnviewable: true });
     }
   }
 

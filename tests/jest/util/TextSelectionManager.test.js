@@ -318,7 +318,7 @@ describe("BookReaderTextFragment.fromSelection", () => {
     selectionPageOne.addRange(rangePageOne);
 
     const pageOneUrlParam = BookReaderTextFragment.fromSelection(selectionPageOne, Array.from(br.refs.$brContainer.find(".BRtextLayer")));
-    expect(pageOneUrlParam.toUrlString()).toMatch("12:Book%20header%20test%20replica,-This%20is%20page");
+    expect(pageOneUrlParam.toNormalizedString()).toMatch("12:Book header test replica,-This is page");
 
     const rangePageTwo = document.createRange();
     rangePageTwo.setStart($($(br.refs.$brContainer).find(".BRtextLayer")[1]).find(".BRparagraphElement").find(".BRwordElement")[0].firstChild, 0);
@@ -329,7 +329,7 @@ describe("BookReaderTextFragment.fromSelection", () => {
 
     const pageTwoUrlParam = BookReaderTextFragment.fromSelection(selectionPageTwo, Array.from(br.refs.$brContainer.find(".BRtextLayer")));
 
-    expect(pageTwoUrlParam.toUrlString()).toMatch("13:is%20page%20one-,Book%20header%20test%20replica,-Currently%20on%20page");
+    expect(pageTwoUrlParam.toNormalizedString()).toMatch("13:is page one-,Book header test replica,-Currently on page");
   });
 
   test("Forward and Backward selection without prefix", async () => {
@@ -349,7 +349,7 @@ describe("BookReaderTextFragment.fromSelection", () => {
     selection.removeAllRanges();
     selection.addRange(forwardRange);
     const forwardTest = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
-    expect(forwardTest.toUrlString()).toMatch("way%20can%20false,-judgment%20be%20-");
+    expect(forwardTest.toNormalizedString()).toMatch("way can false,-judgment be -");
 
     selection.removeAllRanges();
     backwardRange.collapse(false);
@@ -357,7 +357,7 @@ describe("BookReaderTextFragment.fromSelection", () => {
     selection.extend(forwardRange.startContainer, 0);
     window.getSelection().direction = 'backward';
     const backwardTest = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
-    expect(backwardTest.toUrlString()).toMatch(forwardTest.toUrlString());
+    expect(backwardTest.toNormalizedString()).toMatch(forwardTest.toNormalizedString());
   });
 
   test("Forward and Backward selection without suffix", async () => {
@@ -385,8 +385,8 @@ describe("BookReaderTextFragment.fromSelection", () => {
 
     const backwardTest = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
-    expect(forwardTest.toUrlString()).toMatch("12:our%20souls%20a%20waxen%20tablet%20of-,various%20qualities%20lastWord");
-    expect(backwardTest.toUrlString()).toMatch(forwardTest.toUrlString());
+    expect(forwardTest.toNormalizedString()).toMatch("12:our souls a waxen tablet of-,various qualities lastWord");
+    expect(backwardTest.toNormalizedString()).toMatch(forwardTest.toNormalizedString());
   });
 
   test("Handle start/end word with space before/after meaningful text content", async () => {
@@ -403,7 +403,7 @@ describe("BookReaderTextFragment.fromSelection", () => {
     selection.removeAllRanges();
     selection.addRange(startWordRange);
     const startingSpaceTextFragmentUrl = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
-    expect(startingSpaceTextFragmentUrl.toUrlString()).toBe(`12:way-,can%20false%20judgment%20be%20-%20formed.,-There%20remains%20another%20mode`);
+    expect(startingSpaceTextFragmentUrl.toNormalizedString()).toBe(`12:way-,can false judgment be - formed.,-There remains another mode`);
 
     const endWordRange = document.createRange();
     endWordRange.setStart($container.find(".BRwordElement")[1].firstChild, 0);
@@ -413,7 +413,7 @@ describe("BookReaderTextFragment.fromSelection", () => {
     selection.addRange(endWordRange);
     const endingSpaceTextFragmentUrl = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
-    expect(endingSpaceTextFragmentUrl.toUrlString()).toBe("12:way-,can%20false%20judgment%20be%20-,-formed.%20There%20remains%20another");
+    expect(endingSpaceTextFragmentUrl.toNormalizedString()).toBe("12:way-,can false judgment be -,-formed. There remains another");
   });
 
   test("Handle range end node not text node", async () => {
@@ -430,10 +430,10 @@ describe("BookReaderTextFragment.fromSelection", () => {
     selection.removeAllRanges();
     selection.addRange(range);
     const startingSpaceTextFragmentUrl = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
-    expect(startingSpaceTextFragmentUrl.toUrlString()).toBe("12:-%20formed.%20There-,remains%20an,-other%20mode%20in");
+    expect(startingSpaceTextFragmentUrl.toNormalizedString()).toBe("12:- formed. There-,remains an,-other mode in");
   });
 
-  test("Quote and comma included in text selection should be URI encoded", async () => {
+  test("Commas in text selection are replaced with spaces", async () => {
     const $container = $("<div class='BRpagecontainer' data-page-num='12' data-index='15'></div>").appendTo(br.refs.$brContainer);
     sinon.stub(br.plugins.textSelection, "getPageText")
       .returns($(new DOMParser().parseFromString(MULTIPLE_REPEAT_LINES, "text/xml")));
@@ -449,7 +449,8 @@ describe("BookReaderTextFragment.fromSelection", () => {
     commaSelection.addRange(rangeIncludesComma);
     const commaTextFragmentUrl = BookReaderTextFragment.fromSelection(commaSelection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
-    expect(commaTextFragmentUrl.toUrlString()).not.toContain("“");
+    expect(commaTextFragmentUrl.toNormalizedString()).not.toContain("mixture,");
+    expect(commaTextFragmentUrl.toNormalizedString()).toContain("mixture which");
   });
 
   test("Should be able to differentiate overlapping matches", async () => {
@@ -475,8 +476,8 @@ describe("BookReaderTextFragment.fromSelection", () => {
     selection.addRange(sameKeyHighlightRange);
     const similarHighlight = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
-    expect(multipleHighlights.toUrlString()).toBe(`12:is%20quite%20distinctive.%E2%80%9D-,%E2%80%9CThat%20is,-easily%20got.%E2%80%9D%20%E2%80%9CThat`);
-    expect(multipleHighlights.toUrlString()).not.toBe(similarHighlight.toUrlString());
+    expect(multipleHighlights.toNormalizedString()).toBe(`12:is quite distinctive.”-,“That is,-easily got.” “That`);
+    expect(multipleHighlights.toNormalizedString()).not.toBe(similarHighlight.toNormalizedString());
   });
 
   test("Create text fragment without spanning multiple new lines", async () => {
@@ -496,7 +497,7 @@ describe("BookReaderTextFragment.fromSelection", () => {
 
     const multiLineBehavior = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
     // “Stolen.”-,“My own seal.”,-“Imitated.”
-    expect(multiLineBehavior.toUrlString()).toMatch("12:%E2%80%9CStolen.%E2%80%9D-,%E2%80%9CMy%20own%20seal.%E2%80%9D,-%E2%80%9CImitated.%E2%80%9D");
+    expect(multiLineBehavior.toNormalizedString()).toMatch("12:“Stolen.”-,“My own seal.”,-“Imitated.”");
   });
 
   test("Prefix extended when < 3 words for suffix", async () => {
@@ -516,7 +517,7 @@ describe("BookReaderTextFragment.fromSelection", () => {
     // “My photograph.” “Bought.” “My photograph.”-,“My own,-seal.”
     const endShortSuffix = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
-    expect(endShortSuffix.toUrlString()).toMatch("12:%E2%80%9CMy%20photograph.%E2%80%9D%20%E2%80%9CBought.%E2%80%9D%20%E2%80%9CMy%20photograph.%E2%80%9D-,%E2%80%9CMy%20own,-seal.%E2%80%9D");
+    expect(endShortSuffix.toNormalizedString()).toMatch("12:“My photograph.” “Bought.” “My photograph.”-,“My own,-seal.”");
   });
 
   test("Able to match one non-unique highlighted word", async() => {
@@ -536,7 +537,7 @@ describe("BookReaderTextFragment.fromSelection", () => {
     // own seal. “Imitated.”-, “My,-photograph.”
     const singleTextFragment = BookReaderTextFragment.fromSelection(selection, Array.from(document.querySelectorAll('.BRtextLayer')));
 
-    expect(singleTextFragment.toUrlString()).toMatch("12:own%20seal.%E2%80%9D%20%E2%80%9CImitated.%E2%80%9D-,%E2%80%9CMy,-photograph.%E2%80%9D%20%E2%80%9CBought.%E2%80%9D%20%E2%80%9CMy");
+    expect(singleTextFragment.toNormalizedString()).toMatch("12:own seal.” “Imitated.”-,“My,-photograph.” “Bought.” “My");
   });
 });
 
@@ -547,7 +548,7 @@ describe('BookReaderTextFragment.fromString', () => {
     };
 
     const fragment = BookReaderTextFragment.fromString(
-      '12:before%20text-,quoted%20text,-after%20text',
+      '12:before text-,quoted text,-after text',
       book,
       7,
     );
@@ -564,7 +565,7 @@ describe('BookReaderTextFragment.fromString', () => {
       getPageIndex: sinon.stub(),
     };
 
-    const fragment = BookReaderTextFragment.fromString('just%20a%20quote', book, 9);
+    const fragment = BookReaderTextFragment.fromString('just a quote', book, 9);
 
     expect(book.getPageIndex.called).toBe(false);
     expect(fragment.pageNumber).toBeNull();
@@ -589,7 +590,7 @@ describe('BookReaderTextFragment.fromString', () => {
     };
 
     const fragment = BookReaderTextFragment.fromString(
-      '12:before%20text-,The%20quick%20brown,the%20lazy%20dog,-after%20text',
+      '12:before text-,The quick brown,the lazy dog,-after text',
       book,
       7,
     );
@@ -613,7 +614,7 @@ describe('BookReaderTextFragment.fromString', () => {
   });
 });
 
-describe('BookReaderTextFragment.toUrlString', () => {
+describe('BookReaderTextFragment.toNormalizedString', () => {
   test('serializes short quote as full quote', () => {
     const fragment = new BookReaderTextFragment({
       pageNumber: '12',
@@ -623,7 +624,7 @@ describe('BookReaderTextFragment.toUrlString', () => {
       suffix: 'after text',
     });
 
-    expect(fragment.toUrlString()).toBe('12:before%20text-,short%20quote,-after%20text');
+    expect(fragment.toNormalizedString()).toBe('12:before text-,short quote,-after text');
   });
 
   test('serializes long quote as quoteStart/quoteEnd', () => {
@@ -635,7 +636,7 @@ describe('BookReaderTextFragment.toUrlString', () => {
       suffix: 'after text',
     });
 
-    expect(fragment.toUrlString()).toBe('12:before%20text-,alpha%20beta%20gamma,rho%20sigma%20tau,-after%20text');
+    expect(fragment.toNormalizedString()).toBe('12:before text-,alpha beta gamma,rho sigma tau,-after text');
   });
 
   test('serializes long quote with fewer than 6 words as full quote', () => {
@@ -647,7 +648,7 @@ describe('BookReaderTextFragment.toUrlString', () => {
       suffix: 'after text',
     });
 
-    expect(fragment.toUrlString()).toBe('12:before%20text-,antidisestablishmentarianism%20supercalifragilisticexpialidocious%20pneumonoultramicroscopicsilicovolcanoconiosis%20hippopotomonstrosesquipedaliophobia%20floccinaucinihilipilification,-after%20text');
+    expect(fragment.toNormalizedString()).toBe('12:before text-,antidisestablishmentarianism supercalifragilisticexpialidocious pneumonoultramicroscopicsilicovolcanoconiosis hippopotomonstrosesquipedaliophobia floccinaucinihilipilification,-after text');
   });
 
   test('serializes explicit quoteStart/quoteEnd when quote is missing', () => {
@@ -660,10 +661,59 @@ describe('BookReaderTextFragment.toUrlString', () => {
       suffix: null,
     });
 
-    expect(fragment.toUrlString()).toBe('12:The%20quick%20brown,the%20lazy%20dog');
+    expect(fragment.toNormalizedString()).toBe('12:The quick brown,the lazy dog');
   });
 });
 
+
+describe('BookReaderTextFragment.toUrl', () => {
+  const book = { getPageIndex: (pageNum) => (pageNum === '12' ? 42 : undefined) };
+
+  afterEach(() => {
+    window.history.pushState({}, '', '/');
+  });
+
+  test('round trips text containing URL-special characters', () => {
+    const fragment = new BookReaderTextFragment({
+      pageNumber: '12',
+      pageIndex: 42,
+      prefix: 'before 100% & more',
+      quote: 'a%41 b+c &x=y “quoted” #hash',
+      suffix: 'after 50% of it',
+    });
+
+    const url = new URL(fragment.toUrl());
+    const parsed = BookReaderTextFragment.fromString(url.searchParams.get('text'), book, 0);
+
+    expect(parsed.pageNumber).toBe('12');
+    expect(parsed.pageIndex).toBe(42);
+    expect(parsed.prefix).toBe('before 100% & more');
+    expect(parsed.quote).toBe('a%41 b+c &x=y “quoted” #hash');
+    expect(parsed.suffix).toBe('after 50% of it');
+  });
+
+  test('points at the fragment page in the path and hash', () => {
+    window.history.pushState({}, '', '/details/foo/page/3/mode/2up#page/4/mode/1up');
+    const fragment = new BookReaderTextFragment({
+      pageNumber: '12', pageIndex: 42, prefix: null, quote: 'hello', suffix: null,
+    });
+
+    const url = new URL(fragment.toUrl());
+    expect(url.pathname).toBe('/details/foo/page/12/mode/2up');
+    expect(url.hash).toBe('#page/12/mode/1up');
+  });
+
+  test('keeps existing query params and replaces an existing text param', () => {
+    window.history.pushState({}, '', '/details/foo?q=cats&text=old');
+    const fragment = new BookReaderTextFragment({
+      pageNumber: '12', pageIndex: 42, prefix: null, quote: 'hello', suffix: null,
+    });
+
+    const params = new URL(fragment.toUrl()).searchParams;
+    expect(params.get('q')).toBe('cats');
+    expect(params.getAll('text')).toEqual(['12:hello']);
+  });
+});
 
 describe("getFirstWords and getLastWords tests", () => {
   test("Handles empty string", () => {

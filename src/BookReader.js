@@ -33,6 +33,7 @@ import { DEFAULT_OPTIONS, OptionsParseError } from './BookReader/options.js';
 /** @typedef {import('./BookReader/options.js').BookReaderOptions} BookReaderOptions */
 /** @typedef {import('./BookReader/options.js').ReductionFactor} ReductionFactor */
 /** @typedef {import('./BookReader/BookModel.js').PageIndex} PageIndex */
+/** @typedef {import('./BookReader/BookModel.js').PageModel} PageModel */
 import { EVENTS } from './BookReader/events.js';
 import { Toolbar } from './BookReader/Toolbar/Toolbar.js';
 import { BookModel } from './BookReader/BookModel.js';
@@ -177,6 +178,9 @@ BookReader.prototype.setup = function(options) {
   this.subPrefix = options.subPrefix;
   /** @deprecated */
   this.bookPath = options.bookPath;
+
+  /** @type {import('./util/TextSelectionManager.js').BookReaderTextFragment | null} */
+  this.targetTextFragment = null;
 
   // Construct the usual plugins first to get type hints
   this.plugins = {
@@ -1163,6 +1167,7 @@ BookReader.prototype._isIndexDisplayed = function(index) {
  * Changes the current page
  * @param {PageIndex | 'left' | 'right' | 'next' | 'prev'} indexOrDirection
  * @param {object} options
+ * @param {boolean} [options.allowUnviewable] - whether to allow jumping to unviewable pages; default false
  * @param {number} [options.pageX] Position on page ; not implemented
  * @param {number} [options.pageY] Position on page ; not implemented
  * @param {boolean} [options.noAnimate]
@@ -1170,7 +1175,7 @@ BookReader.prototype._isIndexDisplayed = function(index) {
  * @param {boolean} [options.ariaLive]
  * @param {boolean} [options.triggerStop] - whether to trigger the stop event; default true; maybe deprecated?
  */
-BookReader.prototype.jumpToIndex = function(indexOrDirection, {pageX = 0, pageY = 0, noAnimate = false, flipSpeed = null, ariaLive = false, triggerStop = true} = {}) {
+BookReader.prototype.jumpToIndex = function(indexOrDirection, {pageX = 0, pageY = 0, noAnimate = false, flipSpeed = null, ariaLive = false, triggerStop = true, allowUnviewable = false} = {}) {
   const page = this.activeMode.parsePageSpecifier(indexOrDirection);
   flipSpeed = utils.parseAnimationSpeed(flipSpeed) || this.flipSpeed;
   if (!page || page.index == this.currentIndex()) {
@@ -1178,7 +1183,7 @@ BookReader.prototype.jumpToIndex = function(indexOrDirection, {pageX = 0, pageY 
   }
 
   // Don't jump into specific unviewable page
-  if (!page.isViewable && page.unviewablesStart != page.index) {
+  if (!allowUnviewable && !page.isViewable && page.unviewablesStart != page.index) {
     // If already in unviewable range, jump to end of that range
     const alreadyInPreview = this._isIndexDisplayed(page.unviewablesStart);
     const newIndex = alreadyInPreview ? page.findNext({ combineConsecutiveUnviewables: true })?.index : page.unviewablesStart;
@@ -1995,6 +2000,29 @@ BookReader.prototype.queryStringFromParams = function(
 
   const result = newParams.toString();
   return result ? `?${result}` : '';
+};
+
+/**
+ * @private
+ * Tries to open a page by requesting the server to make it viewable.
+ * @param {PageModel} page
+ * @returns {Promise<PageIndex[]>} indices of the pages that became viewable
+ */
+BookReader.prototype.requestPage = async function(page) {
+  if (page.isViewable) return [];
+  if (!this.options.requestPage) return [];
+
+  const newlyAvailablePages = await this.options.requestPage.call(this, page);
+  for (const pageIndex of newlyAvailablePages) {
+    this.book.getPage(pageIndex).makeViewable();
+  }
+
+  // Trigger an update of book
+  this._modes.mode1Up.mode1UpLit.updatePages();
+  if (this.activeMode == this._modes.mode1Up) {
+    await this._modes.mode1Up.mode1UpLit.updateComplete;
+  }
+  return newlyAvailablePages;
 };
 
 /**

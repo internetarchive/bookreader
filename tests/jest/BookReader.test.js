@@ -431,3 +431,61 @@ describe('extendOptions', () => {
 function isObject(item) {
   return item && typeof item === 'object' && !Array.isArray(item);
 }
+
+describe('requestPage', () => {
+  function makeFakeBr({ requestPage = jest.fn().mockResolvedValue([]), inOneUp = true } = {}) {
+    const pages = [0, 1, 2].map(index => ({ index, isViewable: false, makeViewable: jest.fn() }));
+    const mode1Up = { mode1UpLit: { updatePages: jest.fn(), updateComplete: Promise.resolve() } };
+    return {
+      pages,
+      mode1Up,
+      options: { requestPage },
+      book: { getPage: (i) => pages[i] },
+      _modes: { mode1Up },
+      activeMode: inOneUp ? mode1Up : {},
+    };
+  }
+  const requestPage = (fakeBr, page) => BookReader.prototype.requestPage.call(fakeBr, page);
+
+  test('does not request a page that is already viewable', async () => {
+    const fakeBr = makeFakeBr();
+    fakeBr.pages[0].isViewable = true;
+
+    expect(await requestPage(fakeBr, fakeBr.pages[0])).toEqual([]);
+    expect(fakeBr.options.requestPage).not.toHaveBeenCalled();
+  });
+
+  test('returns early if no requestPage option is set', async () => {
+    const fakeBr = makeFakeBr({ requestPage: null });
+
+    expect(await requestPage(fakeBr, fakeBr.pages[0])).toEqual([]);
+    expect(fakeBr.mode1Up.mode1UpLit.updatePages).not.toHaveBeenCalled();
+  });
+
+  test('makes the returned pages viewable and updates the book', async () => {
+    const fakeBr = makeFakeBr({ requestPage: jest.fn().mockResolvedValue([0, 2]) });
+
+    expect(await requestPage(fakeBr, fakeBr.pages[0])).toEqual([0, 2]);
+
+    expect(fakeBr.options.requestPage).toHaveBeenCalledWith(fakeBr.pages[0]);
+    expect(fakeBr.pages[0].makeViewable).toHaveBeenCalled();
+    expect(fakeBr.pages[1].makeViewable).not.toHaveBeenCalled();
+    expect(fakeBr.pages[2].makeViewable).toHaveBeenCalled();
+    expect(fakeBr.mode1Up.mode1UpLit.updatePages).toHaveBeenCalled();
+  });
+
+  test('waits for the 1up update to finish when in 1up mode', async () => {
+    const fakeBr = makeFakeBr();
+    let finishUpdate;
+    fakeBr.mode1Up.mode1UpLit.updateComplete = new Promise(resolve => { finishUpdate = resolve; });
+
+    let done = false;
+    const promise = requestPage(fakeBr, fakeBr.pages[0]).then(() => { done = true; });
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(done).toBe(false);
+
+    finishUpdate();
+    await promise;
+    expect(done).toBe(true);
+  });
+});

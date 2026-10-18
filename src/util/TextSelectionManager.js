@@ -634,22 +634,11 @@ class BRSelectMenu extends LitElement {
       return;
     }
     const textFragment = BookReaderTextFragment.fromSelection(currentSelection, [textLayer]);
-
-    const currentParams = new URLSearchParams(this.br.readQueryString());
-    if (currentParams.has('text')) currentParams.delete('text');
-
-    let linkToHighlightParams = currentParams.toString();
-    // Use custom toUrlString, which decodes the delimiters for better readability
-    linkToHighlightParams += (linkToHighlightParams ? '&' : '') + `text=${textFragment.toUrlString()}`;
-
-    const currentUrl = window.location;
-    const pageNum = textFragment.pageNumber || `n${textFragment.pageIndex}`;
-    const adjustedUrlPageNumPath = currentUrl.pathname.replace(/((?:^|[#/])page)\/[^/]+/, `$1/${pageNum}`);
-    const hash = currentUrl.hash ? currentUrl.hash.replace(/((?:^|[#/])page)\/[^/]+/, `$1/${pageNum}`) : '';
-    const linkToHighlight = `${currentUrl.origin}${adjustedUrlPageNumPath}?${linkToHighlightParams}${hash}`;
+    const linkToHighlight = textFragment.toUrl();
 
     await navigator.clipboard.writeText(linkToHighlight);
     this.copyLinkOption?.showTemporaryText('Copied!');
+    this.br.trigger('copyLinkToHighlight', { textFragment, link: linkToHighlight });
   }
 
   /**
@@ -1233,7 +1222,8 @@ export class BookReaderTextFragment {
   }
 
   /**
-   * Parse a text fragment from its string value (the part after `text=`).
+   * Parse a text fragment from its string value (the part after `text=`), already
+   * URI-decoded (e.g. as returned by `URLSearchParams.get`).
    * Expected format: `pageNumber:prefix-,quote,-suffix`
    * @param {string} str
    * @param {import('@/src/BookReader/BookModel.js').BookModel} book
@@ -1248,8 +1238,8 @@ export class BookReaderTextFragment {
     if (!match) {
       throw new Error(`Invalid text fragment format: ${str}`);
     }
-    const pageNumber = match[1] ? decodeURIComponent(match[1]) : null;
-    const prefix = match[2] ? decodeURIComponent(match[2]) : null;
+    const pageNumber = match[1] || null;
+    const prefix = match[2] || null;
     const quoteRegion = match[3] || '';
     const quoteParts = quoteRegion.split(',');
     let quote = null;
@@ -1257,15 +1247,15 @@ export class BookReaderTextFragment {
     let quoteEnd = null;
 
     if (quoteParts.length === 1) {
-      quote = decodeURIComponent(quoteParts[0]);
+      quote = quoteParts[0];
     } else if (quoteParts.length === 2) {
-      quoteStart = decodeURIComponent(quoteParts[0]);
-      quoteEnd = decodeURIComponent(quoteParts[1]);
+      quoteStart = quoteParts[0];
+      quoteEnd = quoteParts[1];
     } else {
       throw new Error(`Invalid text fragment quote format: ${str}`);
     }
 
-    const suffix = match[4] ? decodeURIComponent(match[4]) : null;
+    const suffix = match[4] || null;
     const pageIndex = pageNumber ? book.getPageIndex(pageNumber) : fallbackPageIndex;
     if (typeof pageIndex !== 'number') {
       throw new Error(`Could not determine page index for text fragment with page number ${pageNumber}`);
@@ -1286,18 +1276,34 @@ export class BookReaderTextFragment {
     });
   }
 
+  /**
+   * Generates a URL pointing to the page with the text fragment highlighted. Maintains all existing
+   * parameters in the url.
+   */
+  toUrl() {
+    const params = new URLSearchParams(window.location.search);
+    params.set('text', this.toNormalizedString());
+
+    const currentUrl = window.location;
+    const pageNum = this.pageNumber || `n${this.pageIndex}`;
+    const adjustedUrlPageNumPath = currentUrl.pathname.replace(/((?:^|[#/])page)\/[^/]+/, `$1/${pageNum}`);
+    const hash = currentUrl.hash ? currentUrl.hash.replace(/((?:^|[#/])page)\/[^/]+/, `$1/${pageNum}`) : '';
+    return `${currentUrl.origin}${adjustedUrlPageNumPath}?${params}${hash}`;
+  }
 
   /**
-   * Outputs a url-safe string serialization of the text fragment, that's a variation of the standard
-   * browser TextFragment format to include page information: `pageNumber:prefix-,quote,-suffix`
+   * Outputs a normalized, auto-truncated string representation of the text fragment,
+   * suitable for use in a URL. This is the inverse of `fromString`. Not URI-encoded; that
+   * is left to the caller (e.g. URLSearchParams).
    *
-   * If quote text is long enough, it is serialized as `quoteStart,quoteEnd`.
-   * Note the ':' and ',' separators must not and are not encoded, but
-   * the pageNumber, prefix, quote/quoteStart/quoteEnd, and suffix text are encoded.
+   * Format: `pageNumber:prefix-,quote,-suffix`
+   * Or for long quotes: `pageNumber:prefix-,quoteStart,quoteEnd,-suffix`
+   * The prefix and suffix are optional. Whitespace is collapsed and any text fragment
+   * delimiters (`:`, `,`, `-,`, `,-`) in the text are replaced with spaces.
    *
    * @returns {string}
    */
-  toUrlString() {
+  toNormalizedString() {
     // When constructing to url, we can collapse the whitespace since the corresponding
     // toRegExp method is resilient to multiple whitespace characters.
     /** @param {string} s */
@@ -1340,11 +1346,7 @@ export class BookReaderTextFragment {
       str += normalize(this.suffix);
     }
 
-    return encodeURIComponent(str)
-      // Bring back the delimiters so it's easier to read, but note not necessary.
-      // Note hyphens are not encoded by encodeURIComponent, so no need to replace them
-      .replace(/%2C/g, ',')
-      .replace(/%3A/g, ':');
+    return str;
   }
 
   /**

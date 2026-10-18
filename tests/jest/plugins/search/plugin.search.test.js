@@ -1,5 +1,5 @@
 import BookReader from '@/src/BookReader.js';
-import '@/src/plugins/search/plugin.search.js';
+import { SearchPlugin } from '@/src/plugins/search/plugin.search.js';
 import { deepCopy } from '../../utils.js';
 import { DUMMY_RESULTS } from './utils.js';
 
@@ -125,5 +125,50 @@ describe('Plugin: Search', () => {
     br.init();
     await br.search('foo');
     expect(triggeredEvents()).toContain(`${namespace}SearchCallbackEmpty`);
+  });
+});
+
+describe('jumpToMatch', () => {
+  function makeFake({ displayed }) {
+    const page = { index: 7 };
+    const fakeBr = {
+      currentIndex: () => 0,
+      book: { leafNumToIndex: () => page.index, getPage: () => page },
+      requestPage: jest.fn().mockResolvedValue([]),
+      _isIndexDisplayed: jest.fn().mockReturnValue(displayed),
+      jumpToIndex: jest.fn(),
+      scrollIntoView: jest.fn(),
+    };
+    const fakePlugin = {
+      br: fakeBr,
+      suppressFragmentChange: true,
+      searchResults: { matches: [{ matchIndex: 99, par: [{ page: 7 }] }] },
+    };
+    return { page, fakeBr, fakePlugin };
+  }
+
+  beforeEach(() => {
+    document.body.innerHTML = '<svg><rect class="match-index-99"></rect></svg>';
+  });
+
+  test('requests the page, then jumps to it even if unviewable', async () => {
+    const { page, fakeBr, fakePlugin } = makeFake({ displayed: false });
+
+    await SearchPlugin.prototype.jumpToMatch.call(fakePlugin, 0);
+
+    expect(fakeBr.requestPage).toHaveBeenCalledWith(page);
+    expect(fakeBr.jumpToIndex).toHaveBeenCalledWith(7, { ariaLive: true, allowUnviewable: true });
+    expect(fakeBr.requestPage.mock.invocationCallOrder[0])
+      .toBeLessThan(fakeBr.jumpToIndex.mock.invocationCallOrder[0]);
+    expect(fakePlugin.suppressFragmentChange).toBe(false);
+  });
+
+  test('does not jump if the page is already displayed', async () => {
+    const { fakeBr, fakePlugin } = makeFake({ displayed: true });
+
+    await SearchPlugin.prototype.jumpToMatch.call(fakePlugin, 0);
+
+    expect(fakeBr.jumpToIndex).not.toHaveBeenCalled();
+    expect(fakeBr.scrollIntoView).toHaveBeenCalled();
   });
 });
