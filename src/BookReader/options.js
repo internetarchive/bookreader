@@ -1,6 +1,8 @@
 // @ts-check
 /** @typedef {import('./BookModel.js').PageNumString} PageNumString */
 /** @typedef {import('./BookModel.js').LeafNum} LeafNum */
+/** @typedef {import('./BookModel.js').PageModel} PageModel */
+/** @typedef {import('./BookModel.js').PageIndex} PageIndex */
 
 export const DEFAULT_OPTIONS = {
   /**
@@ -220,9 +222,17 @@ export const DEFAULT_OPTIONS = {
   getPageHeight: null,
   /** @type {(index: number, reduce: number, rotate: number) => string} */
   getPageURI: null,
+  /** @type {(page: PageModel) => Promise<PageIndex[]> | PageIndex[]} */
+  requestPage(page) {
+    return [];
+  },
+  /** @type {(textFragment: import('../util/TextSelectionManager.js').BookReaderTextFragment) => Promise<boolean> | boolean} */
+  verifyTextFragment(textFragment) {
+    return true;
+  },
 
   /**
-   * @type {(img: HTMLImageElement, uri: string) => Promise<void>}
+   * @type {(img: HTMLImageElement, uri: string) => Promise<void> | void}
    * Render the page URI into the image element. Perform any necessary preloading,
    * authentication, etc.
    */

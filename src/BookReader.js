@@ -179,6 +179,9 @@ BookReader.prototype.setup = function(options) {
   /** @deprecated */
   this.bookPath = options.bookPath;
 
+  /** @type {import('./util/TextSelectionManager.js').BookReaderTextFragment | null} */
+  this.targetTextFragment = null;
+
   // Construct the usual plugins first to get type hints
   this.plugins = {
     archiveAnalytics: BookReader.PLUGINS.archiveAnalytics ? new BookReader.PLUGINS.archiveAnalytics(this) : null,
@@ -2000,19 +2003,17 @@ BookReader.prototype.queryStringFromParams = function(
 };
 
 /**
- * Tries to open the slot for the given page by requesting the server to make it viewable.
+ * @private
+ * Tries to open a page by requesting the server to make it viewable.
  * @param {PageModel} page
  */
-BookReader.prototype.tryOpenSlotForPage = async function(page) {
+BookReader.prototype.requestPage = async function(page) {
   if (page.isViewable) return;
-  const resp = await fetch('/services/bookreader/request_page?' + new URLSearchParams({
-    id: this.options.bookId,
-    subprefix: this.options.subPrefix,
-    leafNum: page.leafNum,
-  })).then(r => r.json());
+  if (!this.options.requestPage) return;
 
-  for (const leafNum of resp.value) {
-    this.book.getPage(this.book.leafNumToIndex(leafNum)).makeViewable();
+  const newlyAvailablePages = await this.options.requestPage.call(this, page);
+  for (const pageIndex of newlyAvailablePages) {
+    this.book.getPage(pageIndex).makeViewable();
   }
 
   // Trigger an update of book

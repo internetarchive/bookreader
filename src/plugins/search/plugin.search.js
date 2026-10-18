@@ -344,7 +344,7 @@ export class SearchPlugin extends BookReaderPlugin {
     const pageIndex = book.leafNumToIndex(match.par[0].page);
     const page = /** @type {PageModel} */(book.getPage(pageIndex));
     const onNearbyPage = Math.abs(this.br.currentIndex() - pageIndex) < 3;
-    await this.br.tryOpenSlotForPage(page);
+    await this.br.requestPage(page);
     this.br.jumpToIndex(page.index, { ariaLive: true, allowUnviewable: true });
 
     // Scroll/flash in the ui
