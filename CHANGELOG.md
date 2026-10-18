@@ -1,3 +1,6 @@
+# 5.0.0-120
+- Fix: Copy link to highlight fixes for borrowable books @cdrini
+
 # 5.0.0-119
 - Dev: Support passing in an html element as `el` instead of only a selector @jbuckner
 - Dev: Fix height propagation through ia-bookreader shell @jbuckner
