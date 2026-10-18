@@ -692,26 +692,69 @@ describe('BookReaderTextFragment.toUrl', () => {
     expect(parsed.suffix).toBe('after 50% of it');
   });
 
-  test('points at the fragment page in the path and hash', () => {
-    window.history.pushState({}, '', '/details/foo/page/3/mode/2up#page/4/mode/1up');
+  test('history mode: points at the fragment page in the path, dropping everything after /page/', () => {
+    window.history.pushState({}, '', '/details/foo/page/3/mode/2up');
     const fragment = new BookReaderTextFragment({
       pageNumber: '12', pageIndex: 42, prefix: null, quote: 'hello', suffix: null,
     });
 
     const url = new URL(fragment.toUrl());
-    expect(url.pathname).toBe('/details/foo/page/12/mode/2up');
-    expect(url.hash).toBe('#page/12/mode/1up');
+    expect(url.pathname).toBe('/details/foo/page/12');
+    expect(url.hash).toBe('');
   });
 
-  test('keeps existing query params and replaces an existing text param', () => {
-    window.history.pushState({}, '', '/details/foo?q=cats&text=old');
+  test('hash mode: points at the fragment page in the hash and leaves the path alone', () => {
+    window.history.pushState({}, '', '/details/foo#page/4/mode/1up');
+    const fragment = new BookReaderTextFragment({
+      pageNumber: '12', pageIndex: 42, prefix: null, quote: 'hello', suffix: null,
+    });
+
+    const url = new URL(fragment.toUrl());
+    expect(url.pathname).toBe('/details/foo');
+    expect(url.hash).toBe('#page/12');
+  });
+
+  test('url-encodes the page number in the path and hash', () => {
+    const fragment = new BookReaderTextFragment({
+      pageNumber: '1/2 #a', pageIndex: 42, prefix: null, quote: 'hello', suffix: null,
+    });
+
+    window.history.pushState({}, '', '/details/foo/page/3');
+    expect(new URL(fragment.toUrl()).pathname).toBe('/details/foo/page/1%2F2%20%23a');
+
+    window.history.pushState({}, '', '/details/foo#page/3');
+    expect(new URL(fragment.toUrl()).hash).toBe('#page/1%2F2%20%23a');
+  });
+
+  test('strips existing query params and only includes the text param', () => {
+    window.history.pushState({}, '', '/details/foo?q=cats&view=theater&text=old');
     const fragment = new BookReaderTextFragment({
       pageNumber: '12', pageIndex: 42, prefix: null, quote: 'hello', suffix: null,
     });
 
     const params = new URL(fragment.toUrl()).searchParams;
-    expect(params.get('q')).toBe('cats');
-    expect(params.getAll('text')).toEqual(['12:hello']);
+    expect([...params.keys()]).toEqual(['text']);
+    expect(params.get('text')).toBe('12:hello');
+  });
+
+  test('falls back to n<pageIndex> when there is no page number', () => {
+    window.history.pushState({}, '', '/details/foo/page/3');
+    const fragment = new BookReaderTextFragment({
+      pageNumber: null, pageIndex: 7, prefix: null, quote: 'hello', suffix: null,
+    });
+
+    expect(new URL(fragment.toUrl()).pathname).toBe('/details/foo/page/n7');
+  });
+
+  test('history mode: adds /page/X when the path has no /page/ segment', () => {
+    window.history.pushState({}, '', '/details/foo/');
+    const fragment = new BookReaderTextFragment({
+      pageNumber: '12', pageIndex: 42, prefix: null, quote: 'hello', suffix: null,
+    });
+
+    const url = new URL(fragment.toUrl());
+    expect(url.pathname).toBe('/details/foo/page/12');
+    expect(url.hash).toBe('');
   });
 });
 
