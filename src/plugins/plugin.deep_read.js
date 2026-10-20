@@ -171,7 +171,10 @@ if (typeof customElements !== 'undefined' && !customElements.get('deep-read-side
           .chip[aria-pressed="true"]{border-color:var(--dr-accent);color:var(--dr-accent);background:#fdf2f0}
           .chip .t{color:var(--dr-muted);font-size:11px;margin-left:6px}
           .summary{margin:16px 0;line-height:1.5}.summary h3{margin:0 0 4px;font-size:18px}
-          ul.links{list-style:none;margin:0;padding:0}ul.links li{padding:12px 0;border-top:1px solid var(--dr-border)}
+          ul.links{list-style:none;margin:0;padding:0}
+          ul.links li{padding:12px 0;border-top:1px solid var(--dr-border);display:flex;gap:12px}
+          .thumb{width:52px;height:68px;object-fit:cover;border:1px solid var(--dr-border);border-radius:3px;background:var(--dr-chip);flex:0 0 auto}
+          .meta{flex:1;min-width:0}
           ul.links a{color:var(--dr-accent);text-decoration:none;font-weight:600}ul.links a:hover{text-decoration:underline}
           .excerpt{color:var(--dr-muted);font-size:13px;line-height:1.4;margin-top:4px}
           .empty,.loading{color:var(--dr-muted);font-size:14px;padding:8px 0}
@@ -198,9 +201,14 @@ if (typeof customElements !== 'undefined' && !customElements.get('deep-read-side
       if (this._loading) return `<p class="loading">Researching ${esc(sel.name)}…</p>`;
       const r = this._res; if (!r) return '';
       const links = (r.links || []).map((l) => `
-        <li><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.title)}</a>
-        ${l.mediatype ? `<div class="mediatype">${esc(l.mediatype)}</div>` : ''}
-        ${l.excerpt ? `<div class="excerpt">${esc(l.excerpt)}</div>` : ''}</li>`).join('');
+        <li>
+          ${l.thumbnail ? `<img class="thumb" src="${esc(l.thumbnail)}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
+          <div class="meta">
+            <a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.title)}</a>
+            ${l.mediatype ? `<div class="mediatype">${esc(l.mediatype)}${l.year ? ' · ' + esc(l.year) : ''}</div>` : ''}
+            ${l.excerpt ? `<div class="excerpt">${esc(l.excerpt)}</div>` : ''}
+          </div>
+        </li>`).join('');
       return `<div class="summary"><h3>${esc(sel.name)}</h3><div>${esc(r.summary || '')}</div></div>
         ${links ? `<ul class="links">${links}</ul>` : `<p class="empty">No references found.</p>`}`;
     }
