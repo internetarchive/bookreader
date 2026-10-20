@@ -111,6 +111,8 @@ BookReader.PLUGINS = {
   autoplay: null,
   /** @type {typeof import('./plugins/plugin.chapters.js').ChaptersPlugin | null}*/
   chapters: null,
+  /** @type {typeof import('./plugins/deep_read/plugin.deep_read.js').DeepReadPlugin | null}*/
+  deepRead: null,
   /** @type {typeof import('./plugins/plugin.experiments.js').ExperimentsPlugin | null}*/
   experiments: null,
   /** @type {typeof import('./plugins/plugin.iframe.js').IframePlugin | null}*/
