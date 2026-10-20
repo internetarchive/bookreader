@@ -1,0 +1,19 @@
+// Entity mentions rendered by the deepRead plugin. These are .BRhighlight
+// marks, so override the default highlight look with a typed underline.
+.BRtextLayer .BRhighlight.BRdeepReadEntity {
+    --deepReadColor: hsl(210, 80%, 55%);
+    background-color: transparent;
+    // em, since the text layer is scaled to fit the page
+    border-bottom: 0.12em solid var(--deepReadColor);
+    cursor: pointer;
+
+    &:hover, &.BRdeepReadEntity--active {
+        background-color: hsl(from var(--deepReadColor) h s l / 0.25);
+    }
+}
+
+.BRdeepReadEntity--person { --deepReadColor: hsl(280, 60%, 55%); }
+.BRdeepReadEntity--place { --deepReadColor: hsl(140, 55%, 40%); }
+.BRdeepReadEntity--organization { --deepReadColor: hsl(25, 85%, 50%); }
+.BRdeepReadEntity--work { --deepReadColor: hsl(340, 70%, 50%); }
+.BRdeepReadEntity--event { --deepReadColor: hsl(45, 90%, 45%); }
