@@ -32,6 +32,8 @@ export class DeepReadPlugin extends BookReaderPlugin {
     windowRadius: 1,
     /** Re-identify entities when the page changes. */
     autoIdentifyOnFlip: true,
+    /** On each window, auto-select + research the top entity (shows a result immediately). */
+    autoSelectTop: true,
     /**
      * Optional override to extract the window text for a given BookReader.
      * @type {null | ((br: BookReader, radius: number) => Promise<string>)}
@@ -71,12 +73,24 @@ export class DeepReadPlugin extends BookReaderPlugin {
     this.sidebar.addEventListener('close', () => { panel.style.display = 'none'; });
   }
 
-  /** Pull the window text and request entities. */
+  /** Pull the window text and request entities (auto-selecting the top one if enabled). */
   async identify() {
     const text = await this._windowText();
     const key = (text || '').slice(0, 64);
     if (!text || key === this._lastKey) return;
     this._lastKey = key;
+
+    if (this.options.autoSelectTop) {
+      // One round trip: entities + a pre-researched top entity.
+      const { entities, selected, research } = await this._post('/api/window', { text });
+      if (this.sidebar) {
+        this.sidebar.entities = entities || [];
+        this.sidebar.selected = selected || null;
+        this.sidebar.result = research || null;
+      }
+      return entities;
+    }
+
     const { entities } = await this._post('/api/identify', { text });
     if (this.sidebar) {
       this.sidebar.entities = entities || [];
