@@ -162,6 +162,9 @@ export class SearchPlugin extends BookReaderPlugin {
     this.suppressFragmentChange = options.suppressFragmentChange;
     this.searchCancelled = false;
 
+    // Smart keyboard quotes should delimit phrases just like straight quotes.
+    term = term.replace(/[“”]/g, '"');
+
     // strip slashes, since this goes in the url
     this.searchTerm = term.replace(/\//g, ' ');
 
