@@ -1290,7 +1290,7 @@ export class AudioReaderView extends LitElement {
       position: relative;
       /* Fixed height so switching into read-along -- or a sentence changing length
          -- does not shift the controls below it. Overflows scroll. */
-      height: 13rem;
+      height: 23rem;
       box-sizing: border-box;
       overflow-y: auto;
       margin: 0.5rem 0 0;
