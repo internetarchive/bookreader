@@ -1,4 +1,9 @@
+import { splitSentences, normalizeOcrText } from './textSegments.js';
+
 /** @typedef {import('../plugins/tts/PageChunk.js').default} PageChunk */
+
+/** How many chunks a single sentence may be stitched across before we give up. */
+const MAX_SENTENCE_SPAN = 5;
 
 /**
  * A paragraph's position in the book. Paragraphs have no global index we can know
@@ -73,6 +78,55 @@ export default class ParagraphSource {
     if (!cursor) return null;
     const chunks = await this.page(cursor.leafIndex);
     return chunks[cursor.chunkIndex] || null;
+  }
+
+  /**
+   * The paragraph's text adjusted so it begins and ends on sentence boundaries.
+   *
+   * OCR chunks are cut at page edges, routinely mid-sentence: one chunk ends
+   * "...you shall hear the whole" and the next opens "truth. Not indeed...". Read
+   * chunk by chunk that produces utterances that trail off and resume mid-thought.
+   *
+   * So a chunk that ends mid-sentence borrows the following chunk(s)' opening
+   * fragment -- up to the first sentence terminator -- to finish the sentence, and
+   * a chunk whose opening fragment was borrowed by its predecessor drops it, so no
+   * text is read twice. A word the page broke with a hyphen at the seam
+   * ("inhabi-" / "tants") is fused in passing, the same join the within-page parser
+   * ({@link PageChunk._removeDanglingHyphens}) makes for line breaks.
+   *
+   * @param {ParagraphCursor} cursor
+   * @return {Promise<string>}
+   */
+  async resolvedText(cursor) {
+    const chunk = await this.at(cursor);
+    if (!chunk) return '';
+    let text = chunk.text || '';
+
+    // If our predecessor ends mid-sentence it has taken our opening fragment to
+    // finish that sentence; start after it so we open on a sentence boundary.
+    const previous = await this.prev(cursor);
+    if (previous) {
+      const previousChunk = await this.at(previous);
+      if (previousChunk && endsMidSentence(previousChunk.text)) {
+        text = dropLeadingFragment(text);
+      }
+    }
+
+    // If we end mid-sentence, pull following chunks' opening fragments until the
+    // sentence is complete, so the utterance ends on a sentence boundary.
+    let walker = cursor;
+    for (let span = 0; endsMidSentence(text) && span < MAX_SENTENCE_SPAN; span++) {
+      walker = await this.next(walker);
+      if (!walker) break;
+      const nextChunk = await this.at(walker);
+      const fragment = nextChunk ? leadingFragment(nextChunk.text) : '';
+      if (!fragment) break;
+      text = `${text} ${fragment}`;
+    }
+
+    // Fuse a word the page broke at a seam (its halves are now whitespace-adjacent),
+    // and drop a hyphen left truly dangling at the end of the book.
+    return text.replace(/[-¬]\s+/g, '').replace(/(\p{L})[-¬]\s*$/u, '$1');
   }
 
   /**
@@ -178,6 +232,39 @@ export default class ParagraphSource {
  */
 export function isSpeakable(text) {
   return !!text && /\p{L}{2}/u.test(text);
+}
+
+/**
+ * Whether `text`'s final sentence has no terminator -- i.e. the chunk was cut
+ * mid-sentence (the common case at a page break) rather than ending cleanly. A
+ * trailing word-break hyphen counts as mid-sentence too, since the word, and so
+ * the sentence, continues in the next chunk.
+ * @param {string} text
+ * @return {boolean}
+ */
+export function endsMidSentence(text) {
+  const sentences = splitSentences(normalizeOcrText(text));
+  if (!sentences.length) return false;
+  const last = sentences[sentences.length - 1];
+  return !/[.!?]["'’)\]]*$/.test(last);
+}
+
+/**
+ * @param {string} text
+ * @return {string} the text up to and including its first sentence terminator
+ *   (its whole content if it has none), to complete a sentence a predecessor began
+ */
+export function leadingFragment(text) {
+  return splitSentences(normalizeOcrText(text))[0] || '';
+}
+
+/**
+ * @param {string} text
+ * @return {string} the text with its first sentence removed -- the fragment a
+ *   predecessor that ended mid-sentence has already borrowed
+ */
+export function dropLeadingFragment(text) {
+  return splitSentences(normalizeOcrText(text)).slice(1).join(' ');
 }
 
 /**

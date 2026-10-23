@@ -6,7 +6,7 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 /** Long enough for the seek debounce to fire and the resulting async work to settle. */
 const settle = () => sleep(DEBOUNCE * 5);
 
-/** Two long sentences, so every paragraph yields landmark + tail + one more sentence. */
+/** Two sentences, so every paragraph yields two whole-sentence segments. */
 const para = n => `Paragraph ${n} begins right here with plenty of words. And it has a second sentence too.`;
 
 /** Ten paragraphs, one per leaf, so paragraph seeks cross page boundaries. */
@@ -82,10 +82,9 @@ describe('initial buffering', () => {
     await settle();
 
     const order = engine.synthesize.mock.calls.map(([text]) => text);
-    expect(order[0]).toBe('Paragraph 0 begins');                                   // 3-word landmark
-    expect(order[1]).toBe('right here with plenty of words.');                     // rest of the sentence
-    expect(order[2]).toBe('And it has a second sentence too.');                    // rest of the paragraph
-    expect(order[3]).toBe('Paragraph 1 begins');                                   // then the lookahead
+    expect(order[0]).toBe('Paragraph 0 begins right here with plenty of words.');   // first whole sentence
+    expect(order[1]).toBe('And it has a second sentence too.');                     // rest of the paragraph
+    expect(order[2]).toBe('Paragraph 1 begins right here with plenty of words.');   // then the lookahead
   });
 
   test('buffers exactly 5 paragraphs, not the whole book', async () => {
@@ -135,10 +134,10 @@ describe('playback', () => {
     await settle();
 
     expect(spoken.slice(0, 4)).toEqual([
-      'Paragraph 0 begins',
-      'right here with plenty of words.',
+      'Paragraph 0 begins right here with plenty of words.',
       'And it has a second sentence too.',
-      'Paragraph 1 begins',
+      'Paragraph 1 begins right here with plenty of words.',
+      'And it has a second sentence too.',
     ]);
   });
 
@@ -153,8 +152,8 @@ describe('playback', () => {
     expect(new Set(player._plan.map(j => j.key.split('#')[0])))
       .toEqual(new Set(['0:0', '1:0', '2:0', '3:0', '4:0']));
 
-    // Read all three segments of paragraph 0.
-    for (let i = 0; i < 3; i++) { await finishPlay(); await settle(); }
+    // Read both segments of paragraph 0.
+    for (let i = 0; i < 2; i++) { await finishPlay(); await settle(); }
 
     expect(player.cursor).toEqual({ leafIndex: 1, chunkIndex: 0 });
     expect(new Set(player._plan.map(j => j.key.split('#')[0])))
@@ -213,7 +212,8 @@ describe('playback', () => {
 describe('the loading spinner', () => {
   test('is on while waiting for the current segment, off once it arrives', async () => {
     const harness = makeEngine({ instantSynth: false, instantPlay: false });
-    const { player, finishSynth, spoken } = makePlayer({ harness });
+    // Pre-roll of 1 isolates the per-segment spinner from the multi-segment pre-roll.
+    const { player, finishSynth, spoken } = makePlayer({ harness, playerOpts: { prebufferSegments: 1 } });
     await player.start({ leafIndex: 0, chunkIndex: 0 });
     await settle();
 
@@ -221,29 +221,29 @@ describe('the loading spinner', () => {
     player.play();
     await settle();
 
-    // Audio for the landmark has not been synthesized yet.
+    // Audio for the first sentence has not been synthesized yet.
     expect(player.loading).toBe(true);
     expect(spoken).toEqual([]);
 
-    await finishSynth('Paragraph 0 begins');
+    await finishSynth('Paragraph 0 begins right here with plenty of words.');
     await settle();
     expect(player.loading).toBe(false);
-    expect(spoken).toEqual(['Paragraph 0 begins']);
+    expect(spoken).toEqual(['Paragraph 0 begins right here with plenty of words.']);
   });
 
   test('comes back on if the next segment is not buffered yet', async () => {
     const harness = makeEngine({ instantSynth: false, instantPlay: false });
-    const { player, finishSynth, finishPlay } = makePlayer({ harness });
+    const { player, finishSynth, finishPlay } = makePlayer({ harness, playerOpts: { prebufferSegments: 1 } });
     await player.start({ leafIndex: 0, chunkIndex: 0 });
     await settle();
     player.play();
     await settle();
 
-    await finishSynth('Paragraph 0 begins');
+    await finishSynth('Paragraph 0 begins right here with plenty of words.');
     await settle();
     expect(player.loading).toBe(false);
 
-    // Landmark finishes playing, but the rest of the sentence has not arrived.
+    // The first sentence finishes playing, but the next one has not arrived.
     await finishPlay();
     await settle();
     expect(player.loading).toBe(true);
@@ -257,6 +257,30 @@ describe('the loading spinner', () => {
     await settle();
 
     expect(player.loading).toBe(false);
+  });
+
+  test('pre-rolls several segments before the first sound', async () => {
+    const harness = makeEngine({ instantSynth: false, instantPlay: false });
+    const { player, finishSynth, spoken } = makePlayer({ harness, playerOpts: { prebufferSegments: 2 } });
+    await player.start({ leafIndex: 0, chunkIndex: 0 });
+    await settle();
+
+    player.play();
+    await settle();
+
+    // The first segment is synthesized, but playback waits for the pre-roll to
+    // fill rather than starting immediately.
+    await finishSynth('Paragraph 0 begins right here with plenty of words.');
+    await settle();
+    expect(player.loading).toBe(true);
+    expect(spoken).toEqual([]);
+
+    // Once the second pre-roll segment lands, the good voice starts and plays
+    // straight through the buffered segments.
+    await finishSynth('And it has a second sentence too.');
+    await settle();
+    expect(player.loading).toBe(false);
+    expect(spoken).toEqual(['Paragraph 0 begins right here with plenty of words.']);
   });
 });
 
@@ -339,7 +363,7 @@ describe('seek throttling', () => {
     await settle();
 
     expect(player.playing).toBe(true);
-    expect(spoken).toEqual(['Paragraph 1 begins']);
+    expect(spoken).toEqual(['Paragraph 1 begins right here with plenty of words.']);
   });
 
   test('stays paused after a seek if it was paused', async () => {
@@ -435,8 +459,8 @@ describe('housekeeping', () => {
     await player.start({ leafIndex: 0, chunkIndex: 0 });
     await settle();
 
-    expect(player.bufferState).toEqual({ ready: 0, total: 15 });
-    await finishSynth('Paragraph 0 begins');
+    expect(player.bufferState).toEqual({ ready: 0, total: 10 });
+    await finishSynth('Paragraph 0 begins right here with plenty of words.');
     await settle();
     expect(player.bufferState.ready).toBe(1);
   });

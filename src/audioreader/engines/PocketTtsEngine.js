@@ -23,7 +23,7 @@ export default class PocketTtsEngine {
     workerUrl = '/BookReader/pocket-tts-worker.js',
     modelBase = DEFAULT_MODEL_BASE,
     ortBase = '/BookReader/ort/',
-    referenceAudioUrl = 'https://huggingface.co/KevinAHM/pocket-tts-onnx/resolve/main/reference_sample.wav',
+    referenceAudioUrl = 'https://huggingface.co/kyutai/tts-voices/resolve/main/voice-zero/stuart_bell.wav',
     onProgress,
   } = {}) {
     this.name = 'PocketTTS';

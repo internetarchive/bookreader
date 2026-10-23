@@ -133,15 +133,12 @@ export function splitSentences(text) {
  * @return {Segment[]} empty if the paragraph has no speakable text
  */
 export function segmentParagraph(paragraphText, opts = {}) {
-  const landmarkWords = opts.landmarkWords ?? LANDMARK_WORD_COUNT;
+  const landmarkWords = opts.landmark ? (opts.landmarkWords ?? LANDMARK_WORD_COUNT) : 0;
   const normalized = normalizeOcrText(paragraphText);
   if (!normalized) return [];
 
   const sentences = splitSentences(normalized);
   if (!sentences.length) return [];
-
-  const [firstSentence, ...restSentences] = sentences;
-  const words = firstSentence.split(' ');
 
   /** @type {Segment[]} */
   const segments = [];
@@ -155,16 +152,26 @@ export function segmentParagraph(paragraphText, opts = {}) {
     });
   };
 
-  if (words.length > landmarkWords) {
-    push(words.slice(0, landmarkWords).join(' '), 'landmark');
-    push(words.slice(landmarkWords).join(' '), 'sentence-tail');
+  // The leading "landmark" (first few words) is opt-in. On a cold seek it lets the
+  // reader say something almost instantly, but during linear reading it splits the
+  // first sentence into two syntheses with an audible seam -- an awkward little
+  // break and an extra load at the start of every paragraph. The default is clean
+  // whole-sentence chunks; pass `landmark: true` to restore the seek behaviour.
+  if (landmarkWords > 0) {
+    const [firstSentence, ...restSentences] = sentences;
+    const words = firstSentence.split(' ');
+    if (words.length > landmarkWords) {
+      push(words.slice(0, landmarkWords).join(' '), 'landmark');
+      push(words.slice(landmarkWords).join(' '), 'sentence-tail');
+    } else {
+      // Sentence is already shorter than the landmark; splitting it would just
+      // add a pointless pause.
+      push(firstSentence, 'landmark');
+    }
+    restSentences.forEach(sentence => push(sentence, 'sentence'));
   } else {
-    // Sentence is already shorter than the landmark; splitting it would just
-    // add a pointless pause.
-    push(firstSentence, 'landmark');
+    sentences.forEach(sentence => push(sentence, 'sentence'));
   }
-
-  restSentences.forEach(sentence => push(sentence, 'sentence'));
 
   return segments;
 }

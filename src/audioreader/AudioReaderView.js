@@ -36,6 +36,8 @@ export class AudioReaderView extends LitElement {
     debug: { type: Boolean },
     /** Show the paragraph being read. Off by default: it is not in the design. */
     showText: { type: Boolean },
+    /** Swap the cover for a "read along" panel showing the current sentence. */
+    readAlong: { type: Boolean },
     _tick: { type: Number, state: true },
   };
 
@@ -45,8 +47,12 @@ export class AudioReaderView extends LitElement {
     this.player = null;
     this.debug = false;
     this.showText = false;
+    this.readAlong = false;
     /** Bumped to re-render on player state changes. */
     this._tick = 0;
+    /** While dragging the page bar: the previewed position, 0..100, else null. */
+    this._dragPercent = null;
+    this._dragging = false;
   }
 
   /**
@@ -79,12 +85,12 @@ export class AudioReaderView extends LitElement {
     this.player?.destroy();
   }
 
-  /** @return {string} e.g. "p. 12", or "leaf 4" when the page is unnumbered */
+  /** @return {string} e.g. "p. 12", or "page 4" when the leaf is unnumbered */
   get _locationLabel() {
     const cursor = this.player?.cursor;
     if (!cursor) return '';
     const leaf = this.book?.leaves[cursor.leafIndex];
-    return leaf?.pageNum != null ? `p. ${leaf.pageNum}` : `leaf ${cursor.leafIndex + 1}`;
+    return leaf?.pageNum != null ? `p. ${leaf.pageNum}` : `page ${cursor.leafIndex + 1}`;
   }
 
   /** @return {number} how far through the book we are, 0..100 */
@@ -110,7 +116,7 @@ export class AudioReaderView extends LitElement {
       <div class="reader">
         ${this._renderHeader()}
         <div class="scroller">
-          ${this._renderCover()}
+          ${this.readAlong ? this._renderReadAlong() : this._renderCover()}
           ${this._renderEngineStatus()}
           ${this._renderScrubber()}
           ${this._renderTransport()}
@@ -138,6 +144,14 @@ export class AudioReaderView extends LitElement {
           aria-label="Back to the item"
         >←</a>
         <h1 class="title" title=${this.book.title}>${this.book.title}</h1>
+        ${this._renderVoicePicker()}
+        <button
+          class="icon-toggle ${this.readAlong ? 'active' : ''}"
+          title="Read along"
+          aria-label="Read along"
+          aria-pressed=${this.readAlong ? 'true' : 'false'}
+          @click=${() => { this.readAlong = !this.readAlong; }}
+        >📖</button>
         <button
           class="rate"
           title="Playback speed"
@@ -146,6 +160,44 @@ export class AudioReaderView extends LitElement {
         >${player.engine.rate ?? 1}×</button>
       </header>
     `;
+  }
+
+  /**
+   * A handful of ungated English voices to clone, from kyutai/tts-voices. Picking
+   * one reloads with `?referenceAudio=` set; the model bundle is cached, so the
+   * reload re-primes the voice in seconds rather than re-downloading anything.
+   * Only shown for the PocketTTS-based engines, which are the ones that clone.
+   */
+  static VOICES = [
+    { label: 'Stuart Bell', url: 'https://huggingface.co/kyutai/tts-voices/resolve/main/voice-zero/stuart_bell.wav' },
+    { label: 'Bill Boerst', url: 'https://huggingface.co/kyutai/tts-voices/resolve/main/voice-zero/bill_boerst.wav' },
+    { label: 'Peter Yearsley', url: 'https://huggingface.co/kyutai/tts-voices/resolve/main/voice-zero/peter_yearsley.wav' },
+    { label: 'Caro Davy', url: 'https://huggingface.co/kyutai/tts-voices/resolve/main/voice-zero/caro_davy.wav' },
+  ];
+
+  _renderVoicePicker() {
+    // Cloning only applies to the PocketTTS-backed engines.
+    if (!/Pocket|Hybrid/.test(this.player.engine.name || '')) return nothing;
+    // No `referenceAudio` means the engine default, which is the first voice.
+    const current = new URLSearchParams(window.location.search).get('referenceAudio')
+      || AudioReaderView.VOICES[0].url;
+
+    return html`
+      <select class="voice" title="Voice — switching reloads the page" aria-label="Voice"
+        @change=${this._onVoiceChange}>
+        ${AudioReaderView.VOICES.map(voice => html`
+          <option value=${voice.url} ?selected=${voice.url === current}>${voice.label}</option>`)}
+      </select>
+    `;
+  }
+
+  /** @private @param {Event} event */
+  _onVoiceChange(event) {
+    const url = new URL(window.location.href);
+    const value = /** @type {HTMLSelectElement} */ (event.target).value;
+    if (value) url.searchParams.set('referenceAudio', value);
+    else url.searchParams.delete('referenceAudio');
+    window.location.href = url.toString();
   }
 
   _renderCover() {
@@ -160,27 +212,87 @@ export class AudioReaderView extends LitElement {
   _renderScrubber() {
     const buffer = this.player.bufferState;
     const bufferTitle = `${buffer.ready} of ${buffer.total} buffered segments ready`;
+    // While dragging, the page bar follows the finger; otherwise it tracks position.
+    const pagePercent = this._dragPercent ?? this._progressPercent;
+    const word = this.player.pageWordProgress;
 
     return html`
-      <div class="scrubber" title=${bufferTitle}>
-        <div class="track">
-          <div class="track-fill" style="width:${this._progressPercent}%"></div>
-          <div class="knob" style="left:${this._progressPercent}%"></div>
+      <div class="scrubber">
+        <div
+          class="track page ${this._dragging ? 'dragging' : ''}"
+          role="slider"
+          aria-label="Position in book, by page"
+          aria-valuemin="1"
+          aria-valuemax=${this.book.numLeafs}
+          aria-valuenow=${(this.player.cursor?.leafIndex ?? 0) + 1}
+          title="Drag or click to change page"
+          @pointerdown=${this._onPagePointerDown}
+          @pointermove=${this._onPagePointerMove}
+          @pointerup=${this._onPagePointerUp}
+          @pointercancel=${this._onPagePointerUp}
+        >
+          <div class="track-fill" style="width:${pagePercent}%"></div>
+          <div class="knob" style="left:${pagePercent}%"></div>
+        </div>
+        <div
+          class="track realtime"
+          title=${`Reading progress on this page — ${word.read} of ${word.total} words. ${bufferTitle}`}
+        >
+          <div class="track-fill realtime-fill" style="width:${word.percent}%"></div>
         </div>
         <div class="times">
           <span>${this._locationLabel}</span>
-          <span>${this.book.numLeafs} leaves</span>
+          <span>${this.book.numLeafs} pages</span>
         </div>
       </div>
     `;
+  }
+
+  /**
+   * @private
+   * @param {PointerEvent} event
+   * @return {number} position along the page bar, 0..1
+   */
+  _pageBarFraction(event) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    if (!rect.width) return 0;
+    return Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
+  }
+
+  /** @private @param {PointerEvent} event */
+  _onPagePointerDown(event) {
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    this._dragging = true;
+    this._dragPercent = this._pageBarFraction(event) * 100;
+    this._tick++;
+  }
+
+  /** @private @param {PointerEvent} event */
+  _onPagePointerMove(event) {
+    if (!this._dragging) return;
+    this._dragPercent = this._pageBarFraction(event) * 100;
+    this._tick++;
+  }
+
+  /** @private @param {PointerEvent} event */
+  _onPagePointerUp(event) {
+    if (!this._dragging) return;
+    const leaf = Math.round(this._pageBarFraction(event) * (this.book.numLeafs - 1));
+    this._dragging = false;
+    this._dragPercent = null;
+    // Lands on the nearest page at/after `leaf` that has text; keeps play state.
+    this.player.jumpToLeaf(leaf);
+    this._tick++;
   }
 
   _renderTransport() {
     const player = this.player;
     return html`
       <div class="transport">
-        <button class="skip" title="Previous paragraph" aria-label="Previous paragraph"
-          @click=${() => player.prev()}>↺</button>
+        <button class="skip page" title="Previous page" aria-label="Previous page"
+          @click=${() => player.prevPage()}>«</button>
+        <button class="skip sentence" title="Previous sentence" aria-label="Previous sentence"
+          @click=${() => player.prevSentence()}>‹</button>
 
         <button class="play" aria-label=${player.playing ? 'Pause' : 'Play'}
           ?disabled=${player.finished}
@@ -188,8 +300,31 @@ export class AudioReaderView extends LitElement {
           <span class="play-glyph">${player.playing ? '❚❚' : '▶'}</span>
         </button>
 
-        <button class="skip" title="Next paragraph" aria-label="Next paragraph"
-          @click=${() => player.next()}>↻</button>
+        <button class="skip sentence" title="Next sentence" aria-label="Next sentence"
+          @click=${() => player.nextSentence()}>›</button>
+        <button class="skip page" title="Next page" aria-label="Next page"
+          @click=${() => player.nextPage()}>»</button>
+      </div>
+    `;
+  }
+
+  /**
+   * The "read along" panel that replaces the cover: the current paragraph with the
+   * sentence being read highlighted, so a patron can follow the text by eye. Word-
+   * level highlighting is a separate step; this is sentence-level.
+   */
+  _renderReadAlong() {
+    const player = this.player;
+    const waiting = player.loading || player.seeking;
+
+    return html`
+      <div class="readalong ${waiting ? 'waiting' : ''}" role="region" aria-label="Read along">
+        ${player.segments.length
+      ? player.segments.map(segment => html`<span
+              class="ra-segment ${this._segmentClass(segment)}"
+              data-index=${segment.index}
+            >${segment.text} </span>`)
+      : html`<span class="ra-segment placeholder">…</span>`}
       </div>
     `;
   }
@@ -406,6 +541,42 @@ export class AudioReaderView extends LitElement {
     }
     .rate:hover { color: var(--ink); border-color: #d6ccbb; }
 
+    .icon-toggle {
+      flex: none;
+      width: 1.9rem;
+      height: 1.9rem;
+      border: 1px solid var(--rule);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--ink-soft);
+      font-size: 0.95rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0;
+    }
+    .icon-toggle:hover { border-color: #d6ccbb; }
+
+    .voice {
+      flex: none;
+      max-width: 7.5rem;
+      height: 1.9rem;
+      border: 1px solid var(--rule);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--ink-soft);
+      font: inherit;
+      font-size: 0.78rem;
+      padding: 0 0.5rem;
+      cursor: pointer;
+    }
+    .voice:hover { color: var(--ink); border-color: #d6ccbb; }
+    .icon-toggle.active {
+      background: var(--control);
+      border-color: var(--control);
+      /* The glyph is an emoji; a filled pill is the clearest "on" signal. */
+      box-shadow: inset 0 0 0 2px var(--control);
+    }
+
     .cover-wrap { display: flex; justify-content: center; padding: 0.5rem 0 0; }
 
     .cover {
@@ -439,18 +610,55 @@ export class AudioReaderView extends LitElement {
     }
     .track.thin { display: block; margin-top: 0.4rem; }
 
+    /* The page bar is interactive: a bigger hit area and a grab cursor, with the
+       thin visible rail centred inside it. */
+    .track.page {
+      height: 1.1rem;
+      background: transparent;
+      cursor: pointer;
+      touch-action: none;
+    }
+    .track.page::before {
+      content: "";
+      position: absolute;
+      inset: 50% 0 auto 0;
+      height: 0.15rem;
+      transform: translateY(-50%);
+      border-radius: 999px;
+      background: #d9d1c2;
+    }
+    .track.page.dragging { cursor: grabbing; }
+
+    /* The real-time bar is read-only and subtle, and glides between sentence
+       updates so it reads as continuous progress rather than stepping. */
+    .track.realtime {
+      height: 0.12rem;
+      margin-top: 0.3rem;
+      background: #e4ddcf;
+    }
+    .realtime-fill {
+      background: #b2a894;
+      transition: width 0.35s linear;
+    }
+
     .track-fill {
       position: absolute;
       inset: 0 auto 0 0;
       border-radius: 999px;
       background: var(--control);
     }
+    /* On the taller page track, keep the fill as a centred thin rail. */
+    .track.page .track-fill {
+      inset: 50% auto auto 0;
+      height: 0.15rem;
+      transform: translateY(-50%);
+    }
 
     .knob {
       position: absolute;
       top: 50%;
-      width: 0.6rem;
-      height: 0.6rem;
+      width: 0.75rem;
+      height: 0.75rem;
       border-radius: 50%;
       background: var(--control);
       transform: translate(-50%, -50%);
@@ -469,7 +677,7 @@ export class AudioReaderView extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 2.25rem;
+      gap: 1.15rem;
       margin: 1.35rem 0 1.75rem;
     }
 
@@ -477,11 +685,13 @@ export class AudioReaderView extends LitElement {
       border: 0;
       background: transparent;
       color: var(--ink);
-      font-size: 1.5rem;
       line-height: 1;
       padding: 0.4rem;
       cursor: pointer;
     }
+    /* Page skips (« ») read as the coarser jump, sentence skips (‹ ›) the finer. */
+    .skip.page { font-size: 1.7rem; color: var(--ink-soft); }
+    .skip.sentence { font-size: 1.9rem; }
     .skip:hover { color: #000; }
 
     .play {
@@ -577,6 +787,32 @@ export class AudioReaderView extends LitElement {
     .segment.buffered { color: var(--ink); }
     .segment.pending { color: #b3a897; font-style: italic; }
     .segment.placeholder { color: #b3a897; }
+
+    /* Read-along panel: the cover's place, giving the current sentence room to be
+       read by eye. Larger type than the debug text view, same state colours. */
+    .readalong {
+      position: relative;
+      min-height: 11rem;
+      margin: 0.5rem 0 0;
+      padding: 1.1rem 1.15rem;
+      border: 1px solid var(--rule);
+      border-radius: 0.6rem;
+      background: #fffdf8;
+      font-size: 1.25rem;
+      line-height: 1.7;
+    }
+    .readalong.waiting { opacity: 0.7; }
+    .ra-segment { color: #c3b9a8; transition: color 0.2s; }
+    .ra-segment.read { color: #b7ad9d; }
+    .ra-segment.current {
+      color: var(--ink);
+      background: #ffe9a8;
+      border-radius: 0.2rem;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
+    .ra-segment.buffered { color: #6f665c; }
+    .ra-segment.placeholder { color: #b3a897; }
 
     .spinner {
       position: absolute;

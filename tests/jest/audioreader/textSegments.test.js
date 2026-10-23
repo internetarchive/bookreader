@@ -57,20 +57,30 @@ describe('splitSentences', () => {
 describe('segmentParagraph', () => {
   const PARAGRAPH = 'The first sentence of this paragraph runs long. A second sentence follows. And a third.';
 
-  test('emits landmark, sentence tail, then one segment per remaining sentence', () => {
+  test('by default emits one whole-sentence segment per sentence', () => {
     const segments = segmentParagraph(PARAGRAPH);
+    expect(segments.map(s => s.kind)).toEqual(['sentence', 'sentence', 'sentence']);
+    expect(segments.map(s => s.text)).toEqual([
+      'The first sentence of this paragraph runs long.',
+      'A second sentence follows.',
+      'And a third.',
+    ]);
+  });
+
+  test('with landmark: emits landmark, sentence tail, then a segment per remaining sentence', () => {
+    const segments = segmentParagraph(PARAGRAPH, { landmark: true });
     expect(segments.map(s => s.kind))
       .toEqual(['landmark', 'sentence-tail', 'sentence', 'sentence']);
   });
 
-  test('the landmark is exactly the first 3 words', () => {
-    const [landmark] = segmentParagraph(PARAGRAPH);
+  test('with landmark: the landmark is exactly the first 3 words', () => {
+    const [landmark] = segmentParagraph(PARAGRAPH, { landmark: true });
     expect(landmark.text).toBe('The first sentence');
     expect(landmark.text.split(' ')).toHaveLength(LANDMARK_WORD_COUNT);
   });
 
-  test('the sentence tail is the rest of the first sentence only', () => {
-    const [, tail] = segmentParagraph(PARAGRAPH);
+  test('with landmark: the sentence tail is the rest of the first sentence only', () => {
+    const [, tail] = segmentParagraph(PARAGRAPH, { landmark: true });
     expect(tail.text).toBe('of this paragraph runs long.');
   });
 
@@ -95,14 +105,14 @@ describe('segmentParagraph', () => {
     expect(new Set(offsets).size).toBe(offsets.length);
   });
 
-  test('does not split a first sentence shorter than the landmark', () => {
-    const segments = segmentParagraph('Yes it is. Then more text follows here.');
+  test('with landmark: does not split a first sentence shorter than the landmark', () => {
+    const segments = segmentParagraph('Yes it is. Then more text follows here.', { landmark: true });
     expect(segments.map(s => s.text)).toEqual(['Yes it is.', 'Then more text follows here.']);
     expect(segments[0].kind).toBe('landmark');
   });
 
-  test('honors a custom landmark size', () => {
-    const [landmark] = segmentParagraph(PARAGRAPH, { landmarkWords: 5 });
+  test('with landmark: honors a custom landmark size', () => {
+    const [landmark] = segmentParagraph(PARAGRAPH, { landmark: true, landmarkWords: 5 });
     expect(landmark.text).toBe('The first sentence of this');
   });
 
@@ -113,6 +123,6 @@ describe('segmentParagraph', () => {
 
   test('indexes are sequential from 0', () => {
     const segments = segmentParagraph(PARAGRAPH);
-    expect(segments.map(s => s.index)).toEqual([0, 1, 2, 3]);
+    expect(segments.map(s => s.index)).toEqual([0, 1, 2]);
   });
 });
