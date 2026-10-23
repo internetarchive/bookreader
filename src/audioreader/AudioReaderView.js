@@ -74,6 +74,8 @@ export class AudioReaderView extends LitElement {
     this._sleep = null;
     /** @type {Array<{id: string, leafIndex: number, wordPercent: number}>} */
     this._likes = [];
+    /** Segment key last scrolled into view, so we scroll once per change. */
+    this._lastScrolledKey = null;
   }
 
   /**
@@ -108,6 +110,25 @@ export class AudioReaderView extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     this.player?.destroy();
+  }
+
+  updated() {
+    // Follow the reading: when the segment being read changes, bring it into view
+    // in the read-along (or reading) panel so the highlight never scrolls off.
+    const key = this.player?.currentKey;
+    if (key && key !== this._lastScrolledKey) {
+      this._lastScrolledKey = key;
+      this._scrollCurrentIntoView();
+    }
+  }
+
+  /** @private Centre the current sentence within its fixed-height scroll panel. */
+  _scrollCurrentIntoView() {
+    const current = this.renderRoot?.querySelector('.ra-segment.current, .segment.current');
+    const panel = current?.closest('.readalong, .reading');
+    if (!current || !panel) return;
+    const target = current.offsetTop - (panel.clientHeight - current.offsetHeight) / 2;
+    panel.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
   }
 
   /**
