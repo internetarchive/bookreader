@@ -80,7 +80,9 @@ export class AudioReaderView extends LitElement {
    */
   async attach(book, engine, opts = {}) {
     this.book = book;
-    this._likes = readStore(`audioreader:likes:${book.identifier}`, []);
+    // Older marks were stored without a count; treat them as a single clap.
+    this._likes = (readStore(`audioreader:likes:${book.identifier}`, []) || [])
+      .map(like => ({ count: 1, ...like }));
 
     const source = new ParagraphSource({
       fetchPageChunks: leafIndex => book.fetchPageChunks(leafIndex),
@@ -148,29 +150,58 @@ export class AudioReaderView extends LitElement {
     return this.player?.currentKey ?? null;
   }
 
-  /** @return {boolean} whether the current spot is already marked */
-  get _likedHere() {
+  /** @return {number} how many claps the current spot already has */
+  get _clapsHere() {
     const id = this._likeIdHere;
-    return !!id && this._likes.some(like => like.id === id);
+    return (id && this._likes.find(like => like.id === id)?.count) || 0;
   }
 
   /**
    * @private
-   * Mark (or unmark) the current reading position. Positions are kept per book in
-   * localStorage and drawn as faint lines on both scrubbers.
+   * Add a clap at the current reading position -- additive, like Medium: every
+   * press bumps the count. Marks are kept per book in localStorage and drawn as
+   * ticks on both scrubbers, heavier where a spot has more claps.
    */
-  _toggleLike() {
+  _addClap() {
     const id = this._likeIdHere;
     if (!id) return;
-    const existing = this._likes.some(like => like.id === id);
-    this._likes = existing
-      ? this._likes.filter(like => like.id !== id)
-      : [...this._likes, {
+
+    const index = this._likes.findIndex(like => like.id === id);
+    let count;
+    if (index >= 0) {
+      count = (this._likes[index].count || 1) + 1;
+      this._likes = this._likes.map((like, i) => (i === index ? { ...like, count } : like));
+    } else {
+      count = 1;
+      this._likes = [...this._likes, {
         id,
         leafIndex: this.player.cursor.leafIndex,
         wordPercent: this.player.pageWordProgress.percent,
+        count,
       }];
+    }
     writeStore(`audioreader:likes:${this.book.identifier}`, this._likes);
+    this._tick++;
+    this._playClapAnimation(count);
+  }
+
+  /**
+   * @private
+   * Restart the button pop and the floating "+N" after the re-render settles, by
+   * retriggering the CSS animations on the (persistent) nodes.
+   * @param {number} count
+   */
+  _playClapAnimation(count) {
+    this.updateComplete.then(() => {
+      // Pop the glyph (not the button, whose transform holds its vertical centering).
+      restartAnimation(this.renderRoot?.querySelector('.clap-glyph'), 'pop');
+
+      const float = this.renderRoot?.querySelector('.clap-float');
+      if (float) {
+        float.textContent = `+${count}`;
+        restartAnimation(float, 'run');
+      }
+    });
   }
 
   /** @return {number} a like's position along the whole-book page bar, 0..100 */
@@ -479,27 +510,43 @@ export class AudioReaderView extends LitElement {
           @click=${() => player.nextPage()}>»</button>
 
         <button
-          class="clap ${this._likedHere ? 'active' : ''}"
-          title=${this._likedHere ? 'Remove this mark' : 'Mark this spot'}
-          aria-label="Mark this spot"
-          aria-pressed=${this._likedHere ? 'true' : 'false'}
-          @click=${() => this._toggleLike()}
-        >👏</button>
+          class="clap ${this._clapsHere ? 'active' : ''}"
+          title=${this._clapsHere ? `${this._clapsHere} clap${this._clapsHere === 1 ? '' : 's'} here — clap again` : 'Clap for this spot'}
+          aria-label="Clap for this spot"
+          @click=${() => this._addClap()}
+        >
+          <span class="clap-glyph">👏</span>
+          ${this._clapsHere ? html`<span class="badge">${this._clapsHere}</span>` : nothing}
+          <span class="clap-float" aria-hidden="true"></span>
+        </button>
       </div>
     `;
   }
 
-  /** Faint lines on a scrubber marking the spots the patron clapped for. */
+  /**
+   * Ticks on a scrubber marking clapped-for spots, heavier where a spot has more
+   * claps (taller and more opaque, Medium-style weighting).
+   */
   _renderLikeMarks(which) {
     if (!this._likes.length) return nothing;
     const currentLeaf = this.player?.cursor?.leafIndex;
     const marks = which === 'page'
-      ? this._likes.map(like => this._likePagePercent(like))
+      ? this._likes.map(like => ({ percent: this._likePagePercent(like), count: like.count || 1 }))
       // The real-time bar only spans the current page, so only this page's marks.
-      : this._likes.filter(like => like.leafIndex === currentLeaf).map(like => like.wordPercent);
+      : this._likes
+        .filter(like => like.leafIndex === currentLeaf)
+        .map(like => ({ percent: like.wordPercent, count: like.count || 1 }));
 
-    return marks.map(percent => html`
-      <div class="like-mark" style="left:${percent}%"></div>`);
+    return marks.map(({ percent, count }) => {
+      const strength = Math.min(count, 6);
+      const opacity = Math.min(1, 0.4 + strength * 0.1);
+      const height = 0.5 + strength * 0.08;
+      return html`<div
+        class="like-mark"
+        title=${`${count} clap${count === 1 ? '' : 's'}`}
+        style="left:${percent}%; opacity:${opacity}; height:${height}rem"
+      ></div>`;
+    });
   }
 
   /**
@@ -975,6 +1022,36 @@ export class AudioReaderView extends LitElement {
     }
     .clap:hover { opacity: 0.8; }
     .clap.active { opacity: 1; filter: none; }
+    .clap .badge { top: -0.15rem; right: -0.15rem; }
+
+    .clap-glyph { display: inline-block; }
+    .clap-glyph.pop { animation: clap-pop 0.35s ease; }
+    @keyframes clap-pop {
+      0% { transform: scale(1); }
+      30% { transform: scale(1.4); }
+      55% { transform: scale(0.88); }
+      100% { transform: scale(1); }
+    }
+
+    /* The floating "+N" that rises on each clap. */
+    .clap-float {
+      position: absolute;
+      left: 50%;
+      top: -0.1rem;
+      transform: translate(-50%, 0);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #e0a44a;
+      opacity: 0;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .clap-float.run { animation: clap-float 0.75s ease-out; }
+    @keyframes clap-float {
+      0% { opacity: 0; transform: translate(-50%, 0) scale(0.8); }
+      20% { opacity: 1; }
+      100% { opacity: 0; transform: translate(-50%, -1.7rem) scale(1.1); }
+    }
 
     /* Faint ticks on the scrubbers marking clapped-for spots. */
     .like-mark {
@@ -1166,6 +1243,19 @@ export class AudioReaderView extends LitElement {
     }
     .loading-screen .spinner { position: static; width: 1.4rem; height: 1.4rem; }
   `;
+}
+
+/**
+ * Retrigger a one-shot CSS animation on an element by removing its class, forcing
+ * a reflow, and adding it back -- the standard way to replay an animation.
+ * @param {Element|null} el
+ * @param {string} cls
+ */
+function restartAnimation(el, cls) {
+  if (!el) return;
+  el.classList.remove(cls);
+  void el.offsetWidth;
+  el.classList.add(cls);
 }
 
 /**
