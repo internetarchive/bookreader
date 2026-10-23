@@ -35,6 +35,19 @@
 export const LANDMARK_WORD_COUNT = 3;
 
 /**
+ * A sentence longer than this (characters) is a candidate for clause splitting, so
+ * one very long sentence does not become one very long utterance (and highlight).
+ */
+export const MAX_SEGMENT_CHARS = 180;
+
+/**
+ * No clause split may leave a piece shorter than this. A too-short fragment reads
+ * worse than a slightly-too-long one, so when every candidate would make a stub we
+ * leave the sentence whole.
+ */
+export const MIN_SEGMENT_CHARS = 50;
+
+/**
  * Abbreviations that end in a period but do not end a sentence. Lowercased,
  * without the trailing period.
  */
@@ -157,6 +170,8 @@ export function segmentParagraph(paragraphText, opts = {}) {
   // first sentence into two syntheses with an audible seam -- an awkward little
   // break and an extra load at the start of every paragraph. The default is clean
   // whole-sentence chunks; pass `landmark: true` to restore the seek behaviour.
+  const pushSentence = sentence => splitLongSentence(sentence).forEach(piece => push(piece, 'sentence'));
+
   if (landmarkWords > 0) {
     const [firstSentence, ...restSentences] = sentences;
     const words = firstSentence.split(' ');
@@ -168,12 +183,81 @@ export function segmentParagraph(paragraphText, opts = {}) {
       // add a pointless pause.
       push(firstSentence, 'landmark');
     }
-    restSentences.forEach(sentence => push(sentence, 'sentence'));
+    restSentences.forEach(pushSentence);
   } else {
-    sentences.forEach(sentence => push(sentence, 'sentence'));
+    sentences.forEach(pushSentence);
   }
 
   return segments;
+}
+
+/**
+ * Break a sentence that is too long to be a comfortable single utterance at a
+ * clause boundary -- after a comma followed by a coordinating conjunction
+ * ("..., and ...", "..., but ..."), or after a semicolon or colon.
+ *
+ * The rules, following what the reading experience wants:
+ * - Only a sentence over {@link MAX_SEGMENT_CHARS} is touched at all.
+ * - Split once, then re-check each half and split again only if it is *still* too
+ *   long -- never more than necessary.
+ * - A candidate that would leave either side under {@link MIN_SEGMENT_CHARS} is
+ *   skipped in favour of another; if none qualifies, the sentence is left whole.
+ * - Among the qualifying candidates the most balanced cut is taken, since even
+ *   halves are the least likely to need splitting again.
+ *
+ * @param {string} text one sentence
+ * @param {{maxChars?: number, minChars?: number}} [opts]
+ * @return {string[]} one or more pieces that concatenate back to the sentence
+ */
+export function splitLongSentence(text, { maxChars = MAX_SEGMENT_CHARS, minChars = MIN_SEGMENT_CHARS } = {}) {
+  const trimmed = (text || '').trim();
+  if (trimmed.length <= maxChars) return trimmed ? [trimmed] : [];
+
+  const candidates = clauseSplitPositions(trimmed)
+    .map(position => ({
+      position,
+      first: trimmed.slice(0, position).trim(),
+      second: trimmed.slice(position).trim(),
+    }))
+    .filter(candidate => candidate.first.length >= minChars && candidate.second.length >= minChars);
+
+  if (!candidates.length) return [trimmed];
+
+  const middle = trimmed.length / 2;
+  candidates.sort((a, b) => Math.abs(a.position - middle) - Math.abs(b.position - middle));
+  const best = candidates[0];
+
+  return [
+    ...splitLongSentence(best.first, { maxChars, minChars }),
+    ...splitLongSentence(best.second, { maxChars, minChars }),
+  ];
+}
+
+/**
+ * @private
+ * Character offsets where a long sentence may be broken, each the start of the
+ * second piece: just past a comma that precedes a coordinating conjunction, or
+ * just past a semicolon or colon.
+ * @param {string} text
+ * @return {number[]}
+ */
+function clauseSplitPositions(text) {
+  const positions = [];
+
+  // "..., and ...", "..., but ..." -- break after the comma so the conjunction
+  // opens the next clause.
+  const conjunction = /,\s+(?:and|but|or|nor|so|yet|for)\s/gi;
+  for (let match = conjunction.exec(text); match; match = conjunction.exec(text)) {
+    positions.push(match.index + 1);
+  }
+
+  // "...; ...", "...: ..." -- break just past the mark.
+  const strong = /[;:]\s/g;
+  for (let match = strong.exec(text); match; match = strong.exec(text)) {
+    positions.push(match.index + 1);
+  }
+
+  return positions;
 }
 
 /**

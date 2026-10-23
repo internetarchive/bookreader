@@ -2,7 +2,9 @@ import {
   normalizeOcrText,
   splitSentences,
   segmentParagraph,
+  splitLongSentence,
   LANDMARK_WORD_COUNT,
+  MAX_SEGMENT_CHARS,
 } from '@/src/audioreader/textSegments.js';
 
 describe('normalizeOcrText', () => {
@@ -51,6 +53,52 @@ describe('splitSentences', () => {
 
   test('returns [] for whitespace-only text', () => {
     expect(splitSentences('   ')).toEqual([]);
+  });
+});
+
+describe('splitLongSentence', () => {
+  test('leaves a sentence within the limit alone', () => {
+    expect(splitLongSentence('A short enough sentence.')).toEqual(['A short enough sentence.']);
+  });
+
+  test('splits a long sentence at a comma-conjunction boundary', () => {
+    const long = 'The committee considered the detailed proposal at considerable length over '
+      + 'several days of heated debate, and in the end they still could not agree on even '
+      + 'the smallest and least controversial point of all.';
+    expect(long.length).toBeGreaterThan(MAX_SEGMENT_CHARS);
+
+    const pieces = splitLongSentence(long);
+    expect(pieces.length).toBe(2);
+    expect(pieces.every(piece => piece.length <= MAX_SEGMENT_CHARS)).toBe(true);
+    expect(pieces[1].startsWith('and ')).toBe(true);     // the conjunction opens the next clause
+    expect(pieces.join(' ')).toBe(long);                 // nothing lost
+  });
+
+  test('splits again only while a piece is still too long', () => {
+    // Several clauses; with a tight limit it keeps splitting until each fits, and
+    // loses nothing. (Custom thresholds keep the case small and deterministic.)
+    const text = 'alpha alpha, and beta beta, but gamma gamma, or delta delta here.';
+    const pieces = splitLongSentence(text, { maxChars: 18, minChars: 5 });
+    expect(pieces.length).toBeGreaterThanOrEqual(3);
+    expect(pieces.join(' ')).toBe(text);
+  });
+
+  test('does not split when every candidate would leave a stub', () => {
+    // The only comma-conjunction is at the very start, so splitting there would
+    // make a stub -- better to leave the sentence whole.
+    const text = 'Hi, and here follows a considerably longer remaining clause of text.';
+    expect(splitLongSentence(text, { maxChars: 20, minChars: 12 })).toEqual([text]);
+  });
+
+  test('leaves a long sentence with no clause boundary whole', () => {
+    const text = `${'word '.repeat(50).trim()}.`;
+    expect(text.length).toBeGreaterThan(MAX_SEGMENT_CHARS);
+    expect(splitLongSentence(text)).toEqual([text]);
+  });
+
+  test('honors custom thresholds', () => {
+    expect(splitLongSentence('one, and two', { maxChars: 5, minChars: 3 }))
+      .toEqual(['one,', 'and two']);
   });
 });
 
