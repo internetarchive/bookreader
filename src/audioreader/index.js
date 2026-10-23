@@ -14,7 +14,7 @@ import './AudioReaderView.js';
  * the page model, viewing modes, or image-oriented plugins are wanted. See cq #2.
  *
  * Query parameters:
- *   ocaid       archive.org identifier (required)
+ *   book        archive.org identifier (aliases: `ocaid`, `id`); the book to read
  *   engine      `pocket` (default, PocketTTS in a worker), `hybrid` (PocketTTS
  *               with an instant WebSpeech preview), `webspeech`, or `pcm`
  *               (measurable tones, not speech)
@@ -120,7 +120,8 @@ function instrumentSpeech() {
 
 async function boot() {
   const params = new URLSearchParams(window.location.search);
-  const ocaid = params.get('ocaid') || DEFAULT_OCAID;
+  // `book` and `id` are friendlier aliases for the archive.org identifier.
+  const ocaid = params.get('ocaid') || params.get('book') || params.get('id') || DEFAULT_OCAID;
   const view = document.querySelector('ia-audio-reader');
   view.debug = params.get('debug') === '1';
   view.showText = params.get('text') === '1';
