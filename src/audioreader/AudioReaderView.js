@@ -45,6 +45,8 @@ export class AudioReaderView extends LitElement {
     _openMenu: { state: true },
     /** Active sleep timer: {pages, startLeaf}, or null. */
     _sleep: { state: true },
+    /** Positions the patron marked with the clap button. */
+    _likes: { state: true },
   };
 
   /** Sleep-timer presets, in pages. */
@@ -67,6 +69,8 @@ export class AudioReaderView extends LitElement {
     this._dragging = false;
     this._openMenu = null;
     this._sleep = null;
+    /** @type {Array<{id: string, leafIndex: number, wordPercent: number}>} */
+    this._likes = [];
   }
 
   /**
@@ -76,6 +80,7 @@ export class AudioReaderView extends LitElement {
    */
   async attach(book, engine, opts = {}) {
     this.book = book;
+    this._likes = readStore(`audioreader:likes:${book.identifier}`, []);
 
     const source = new ParagraphSource({
       fetchPageChunks: leafIndex => book.fetchPageChunks(leafIndex),
@@ -136,6 +141,42 @@ export class AudioReaderView extends LitElement {
   _setSleep(pages) {
     this._sleep = pages ? { pages, startLeaf: this.player.cursor?.leafIndex ?? 0 } : null;
     this._openMenu = null;
+  }
+
+  /** @return {string|null} a stable id for the segment being read, or null */
+  get _likeIdHere() {
+    return this.player?.currentKey ?? null;
+  }
+
+  /** @return {boolean} whether the current spot is already marked */
+  get _likedHere() {
+    const id = this._likeIdHere;
+    return !!id && this._likes.some(like => like.id === id);
+  }
+
+  /**
+   * @private
+   * Mark (or unmark) the current reading position. Positions are kept per book in
+   * localStorage and drawn as faint lines on both scrubbers.
+   */
+  _toggleLike() {
+    const id = this._likeIdHere;
+    if (!id) return;
+    const existing = this._likes.some(like => like.id === id);
+    this._likes = existing
+      ? this._likes.filter(like => like.id !== id)
+      : [...this._likes, {
+        id,
+        leafIndex: this.player.cursor.leafIndex,
+        wordPercent: this.player.pageWordProgress.percent,
+      }];
+    writeStore(`audioreader:likes:${this.book.identifier}`, this._likes);
+  }
+
+  /** @return {number} a like's position along the whole-book page bar, 0..100 */
+  _likePagePercent(like) {
+    if (!this.book?.numLeafs || this.book.numLeafs < 2) return 0;
+    return Math.min(100, (like.leafIndex / (this.book.numLeafs - 1)) * 100);
   }
 
   /** @return {string} e.g. "p. 12", or "page 4" when the leaf is unnumbered */
@@ -362,6 +403,7 @@ export class AudioReaderView extends LitElement {
           @pointercancel=${this._onPagePointerUp}
         >
           <div class="track-fill" style="width:${pagePercent}%"></div>
+          ${this._renderLikeMarks('page')}
           <div class="knob" style="left:${pagePercent}%"></div>
         </div>
         <div
@@ -369,6 +411,7 @@ export class AudioReaderView extends LitElement {
           title=${`Reading progress on this page — ${word.read} of ${word.total} words. ${bufferTitle}`}
         >
           <div class="track-fill realtime-fill" style="width:${word.percent}%"></div>
+          ${this._renderLikeMarks('realtime')}
         </div>
         <div class="times">
           <span>${this._locationLabel}</span>
@@ -434,8 +477,29 @@ export class AudioReaderView extends LitElement {
           @click=${() => player.nextSentence()}>›</button>
         <button class="skip page" title="Next page" aria-label="Next page"
           @click=${() => player.nextPage()}>»</button>
+
+        <button
+          class="clap ${this._likedHere ? 'active' : ''}"
+          title=${this._likedHere ? 'Remove this mark' : 'Mark this spot'}
+          aria-label="Mark this spot"
+          aria-pressed=${this._likedHere ? 'true' : 'false'}
+          @click=${() => this._toggleLike()}
+        >👏</button>
       </div>
     `;
+  }
+
+  /** Faint lines on a scrubber marking the spots the patron clapped for. */
+  _renderLikeMarks(which) {
+    if (!this._likes.length) return nothing;
+    const currentLeaf = this.player?.cursor?.leafIndex;
+    const marks = which === 'page'
+      ? this._likes.map(like => this._likePagePercent(like))
+      // The real-time bar only spans the current page, so only this page's marks.
+      : this._likes.filter(like => like.leafIndex === currentLeaf).map(like => like.wordPercent);
+
+    return marks.map(percent => html`
+      <div class="like-mark" style="left:${percent}%"></div>`);
   }
 
   /**
@@ -885,11 +949,44 @@ export class AudioReaderView extends LitElement {
     }
 
     .transport {
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 1.15rem;
       margin: 1.35rem 0 1.75rem;
+    }
+
+    /* The clap/mark control sits at the right edge so the play control stays
+       centred. Greyed out until the current spot is marked. */
+    .clap {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 0;
+      background: transparent;
+      font-size: 1.35rem;
+      line-height: 1;
+      padding: 0.3rem;
+      cursor: pointer;
+      opacity: 0.45;
+      filter: grayscale(1);
+    }
+    .clap:hover { opacity: 0.8; }
+    .clap.active { opacity: 1; filter: none; }
+
+    /* Faint ticks on the scrubbers marking clapped-for spots. */
+    .like-mark {
+      position: absolute;
+      top: 50%;
+      width: 2px;
+      height: 0.7rem;
+      transform: translate(-50%, -50%);
+      border-radius: 1px;
+      background: #e0a44a;
+      opacity: 0.6;
+      pointer-events: none;
     }
 
     .skip {
