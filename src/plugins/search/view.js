@@ -25,7 +25,7 @@ class SearchView {
   cacheDOMElements() {
     this.dom = {};
     // Search input within the top toolbar. Will be removed once the mobile menu is replaced.
-    this.dom.toolbarSearch = this.buildToolbarSearch();
+    this.dom.toolbarSearch = this.br.options.showToolbar ? this.buildToolbarSearch() : null;
   }
 
   /**
@@ -416,7 +416,7 @@ class SearchView {
       .on(`${namespace}SearchCallbackEmpty`, this.handleSearchCallbackEmpty.bind(this))
       .on(`${namespace}pageChanged`, this.updateSearchNavigation.bind(this));
 
-    this.dom.toolbarSearch.querySelector('form').addEventListener('submit', this.submitHandler.bind(this));
+    this.dom.toolbarSearch?.querySelector('form').addEventListener('submit', this.submitHandler.bind(this));
   }
 }
 
