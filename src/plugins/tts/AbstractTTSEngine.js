@@ -137,6 +137,34 @@ export default class AbstractTTSEngine {
     this.step();
   }
 
+  /**
+   * @public
+   * @param {PageChunk} chunk
+   * @return {{ index: number, count: number } | null}
+   */
+  getPagePosition(chunk) {
+    return this._chunkIterator?.getPagePosition(chunk) ?? null;
+  }
+
+  /**
+   * @public
+   * @param {number} leafIndex
+   * @param {number} [pageFraction] 0-1, how far into the page to start
+   * @param {boolean} [play] resume playback if paused
+   */
+  async jumpTo(leafIndex, pageFraction = 0, play = false) {
+    if (!this._chunkIterator) return;
+    await Promise.all([
+      this.activeSound?.stop(),
+      this._chunkIterator.seek(leafIndex, pageFraction),
+    ]);
+    if (play && this.paused) {
+      this.paused = false;
+      this.events.trigger('resume');
+    }
+    this.step();
+  }
+
   /** @param {string} voiceURI */
   setVoice(voiceURI) {
     // if the user actively selects a voice, don't re-choose best voice anymore

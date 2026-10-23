@@ -366,6 +366,17 @@ export class IaBookReader extends LitElement {
   }
 
   /**
+   * Panels fire `closeMenu` after the user picks something (e.g. a search
+   * result or chapter). Only close on narrow screens, where the menu covers
+   * the book.
+   */
+  closeMenuIfNarrow() {
+    if (!this.isWideEnoughToOpenMenu) {
+      this.itemNav?.closeMenu();
+    }
+  }
+
+  /**
    * Open side menu
    * @param {string} menuId
    * @param {('open'|'close'|'toggle')} action
@@ -585,6 +596,7 @@ export class IaBookReader extends LitElement {
         .menuShortcuts=${this.menuShortcuts}
         .menuContents=${this.menuContents}
         .openMenu=${this.openMenuName}
+        @closeMenu=${this.closeMenuIfNarrow}
       >
         <div slot="header">
           <slot name="header"></slot>
