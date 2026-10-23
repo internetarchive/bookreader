@@ -643,12 +643,23 @@ export class AudioReaderView extends LitElement {
     const { loaded = 0, total = 1 } = engine.progress || {};
     const percent = Math.min(100, Math.round((loaded / Math.max(total, 1)) * 100));
     const mb = bytes => (bytes / 1024 / 1024).toFixed(0);
+    // After the bytes land there is still real work -- building the ONNX sessions,
+    // encoding the voice, a warm-up pass -- so at 100% say "preparing", and keep a
+    // spinner going the whole time so a stalled-looking bar never reads as done.
+    const downloaded = percent >= 100;
 
     return html`
       <div class="engine-status" role="status">
-        <span>Loading voice — ${mb(loaded)} of ${mb(total)} MB${
+        <div class="status-head">
+          <span class="status-spinner" aria-hidden="true"></span>
+          <span class="status-text">${downloaded
+    ? html`Preparing voice…`
+    : html`Loading voice — ${mb(loaded)} of ${mb(total)} MB`}${
   engine.fast ? html`. Reading in the preview voice meanwhile.` : nothing}</span>
-        <span class="track thin"><span class="track-fill" style="width:${percent}%"></span></span>
+        </div>
+        <span class="track thin ${downloaded ? 'indeterminate' : ''}">
+          <span class="track-fill" style=${downloaded ? '' : `width:${percent}%`}></span>
+        </span>
       </div>
     `;
   }
@@ -1213,6 +1224,27 @@ export class AudioReaderView extends LitElement {
       border-color: #e5c4c4;
       background: #fdf1f1;
       color: #8a4141;
+    }
+    .status-head { display: flex; align-items: center; gap: 0.45rem; }
+    .status-spinner {
+      flex: none;
+      width: 0.8rem;
+      height: 0.8rem;
+      border: 2px solid #e0d6c2;
+      border-top-color: #9a7b3f;
+      border-radius: 50%;
+      animation: spin 700ms linear infinite;
+    }
+    /* Once the bytes are in, the work left has no measurable percentage, so the
+       bar sweeps instead of filling -- it must not look parked at 100%. */
+    .track.thin.indeterminate { overflow: hidden; }
+    .track.thin.indeterminate .track-fill {
+      width: 40%;
+      animation: indeterminate 1.1s ease-in-out infinite;
+    }
+    @keyframes indeterminate {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(350%); }
     }
 
     .reading {
