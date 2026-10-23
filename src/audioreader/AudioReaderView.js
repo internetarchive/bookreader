@@ -770,6 +770,7 @@ export class AudioReaderView extends LitElement {
       --rule: #e8e1d4;
       --control: #2f2621;
       --on-control: #ffffff;
+      --ink-strong: #000000;
       --track: #d9d1c2;
       --track-soft: #e4ddcf;
       --highlight: #ffe9a8;
@@ -796,6 +797,7 @@ export class AudioReaderView extends LitElement {
       --rule: #2a2e36;
       --control: #e7e2d8;
       --on-control: #15171c;
+      --ink-strong: #ffffff;
       --track: #2b2f37;
       --track-soft: #23262d;
       --highlight: #46391c;
@@ -1167,7 +1169,7 @@ export class AudioReaderView extends LitElement {
     /* Page skips (« ») read as the coarser jump, sentence skips (‹ ›) the finer. */
     .skip.page { font-size: 1.7rem; color: var(--ink-soft); }
     .skip.sentence { font-size: 1.9rem; }
-    .skip:hover { color: #000; }
+    .skip:hover { color: var(--ink-strong); }
 
     .play {
       width: 4.4rem;
