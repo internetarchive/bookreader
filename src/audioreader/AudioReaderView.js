@@ -904,11 +904,12 @@ export class AudioReaderView extends LitElement {
       cursor: pointer;
     }
     .voice:hover { color: var(--ink); border-color: var(--hover-border); }
+    /* "On" is a soft tinted pill with a stronger border and full-contrast glyph --
+       not a hard dark fill, which read as a black box behind the emoji. */
     .icon-toggle.active {
-      background: var(--control);
+      background: var(--hover-bg);
       border-color: var(--control);
-      /* The glyph is an emoji; a filled pill is the clearest "on" signal. */
-      box-shadow: inset 0 0 0 2px var(--control);
+      color: var(--ink);
     }
 
     /* Header popovers (overflow = voice + speed; sleep = page budget). */
