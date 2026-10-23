@@ -38,6 +38,7 @@ describe('WebTTSEngine', () => {
 
     expect(filteredVoices).toEqual([
       { voiceURI: 'com.apple.speech.synthesis.voice.Alex', name: 'Alex' },
+      { voiceURI: 'com.apple.voice.super-compact.en-US.Samantha', name: 'Samantha (SC)' },
       { voiceURI: 'com.apple.voice.compact.en-US.Samantha', name: 'Samantha' },
       { voiceURI: 'urn:moz-tts:sapi:David', name: 'David' },
     ]);

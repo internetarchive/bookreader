@@ -27,7 +27,6 @@ export default class WebTTSEngine extends AbstractTTSEngine {
       'com.apple.speech.synthesis.voice.',
       // Novelty voices (Grandma, Rocko, ...)
       'com.apple.eloquence.',
-      'com.apple.voice.super-compact.',
     ];
     // Good voices that share a prefix with the bad ones
     const goodVoices = [
