@@ -38,8 +38,19 @@ export class AudioReaderView extends LitElement {
     showText: { type: Boolean },
     /** Swap the cover for a "read along" panel showing the current sentence. */
     readAlong: { type: Boolean },
+    /** Dark theme; reflected to the host so CSS can flip the palette. */
+    darkMode: { type: Boolean, reflect: true },
     _tick: { type: Number, state: true },
+    /** Which header popover is open: 'overflow' | 'sleep' | null. */
+    _openMenu: { state: true },
+    /** Active sleep timer: {pages, startLeaf}, or null. */
+    _sleep: { state: true },
   };
+
+  /** Sleep-timer presets, in pages. */
+  static SLEEP_OPTIONS = [1, 2, 5, 10, 20];
+  /** Playback-speed presets. */
+  static RATES = [0.75, 1, 1.25, 1.5, 1.75, 2];
 
   constructor() {
     super();
@@ -48,11 +59,14 @@ export class AudioReaderView extends LitElement {
     this.debug = false;
     this.showText = false;
     this.readAlong = false;
+    this.darkMode = readStore('audioreader:dark', false) === true;
     /** Bumped to re-render on player state changes. */
     this._tick = 0;
     /** While dragging the page bar: the previewed position, 0..100, else null. */
     this._dragPercent = null;
     this._dragging = false;
+    this._openMenu = null;
+    this._sleep = null;
   }
 
   /**
@@ -71,6 +85,7 @@ export class AudioReaderView extends LitElement {
     this.player = new AudioReaderPlayer({
       source, engine,
       onChange: () => { this._tick++; },
+      onParagraphChange: cursor => this._checkSleepTimer(cursor),
       ...opts,
     });
 
@@ -83,6 +98,44 @@ export class AudioReaderView extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     this.player?.destroy();
+  }
+
+  /**
+   * @private
+   * Stop playback once the sleep timer's page budget is used up. Fired on every
+   * paragraph change, so it catches both continuous reading and seeks.
+   * @param {{leafIndex: number}} cursor
+   */
+  _checkSleepTimer(cursor) {
+    if (!this._sleep) return;
+    if (cursor.leafIndex - this._sleep.startLeaf >= this._sleep.pages) {
+      this.player.pause();
+      this._sleep = null;
+    }
+    this._tick++;
+  }
+
+  /** @private Toggle dark theme and remember the choice. */
+  _toggleDark() {
+    this.darkMode = !this.darkMode;
+    writeStore('audioreader:dark', this.darkMode);
+  }
+
+  /** @private @param {'overflow'|'sleep'} menu */
+  _toggleMenu(menu) {
+    this._openMenu = this._openMenu === menu ? null : menu;
+  }
+
+  /** @private @param {number} rate */
+  _setRate(rate) {
+    this.player.engine.setRate?.(rate);
+    this._tick++;
+  }
+
+  /** @private @param {number|null} pages null clears the timer */
+  _setSleep(pages) {
+    this._sleep = pages ? { pages, startLeaf: this.player.cursor?.leafIndex ?? 0 } : null;
+    this._openMenu = null;
   }
 
   /** @return {string} e.g. "p. 12", or "page 4" when the leaf is unnumbered */
@@ -115,6 +168,7 @@ export class AudioReaderView extends LitElement {
     return html`
       <div class="reader">
         ${this._renderHeader()}
+        ${this._renderMenu()}
         <div class="scroller">
           ${this.readAlong ? this._renderReadAlong() : this._renderCover()}
           ${this._renderEngineStatus()}
@@ -129,11 +183,7 @@ export class AudioReaderView extends LitElement {
   }
 
   _renderHeader() {
-    const player = this.player;
-    const rates = [0.75, 1, 1.25, 1.5];
-    // The design has a history control in this slot. Rather than ship a dead
-    // button, it holds the playback rate, which this prototype actually supports.
-    const nextRate = () => rates[(rates.indexOf(player.engine.rate ?? 1) + 1) % rates.length];
+    const sleepActive = !!this._sleep;
 
     return html`
       <header>
@@ -144,7 +194,6 @@ export class AudioReaderView extends LitElement {
           aria-label="Back to the item"
         >←</a>
         <h1 class="title" title=${this.book.title}>${this.book.title}</h1>
-        ${this._renderVoicePicker()}
         <button
           class="icon-toggle ${this.readAlong ? 'active' : ''}"
           title="Read along"
@@ -153,12 +202,93 @@ export class AudioReaderView extends LitElement {
           @click=${() => { this.readAlong = !this.readAlong; }}
         >📖</button>
         <button
-          class="rate"
-          title="Playback speed"
-          aria-label="Playback speed"
-          @click=${() => { player.engine.setRate?.(nextRate()); this._tick++; }}
-        >${player.engine.rate ?? 1}×</button>
+          class="icon-toggle ${sleepActive ? 'active' : ''}"
+          title=${sleepActive ? `Stops in ${this._sleepPagesLeft} page(s)` : 'Sleep timer'}
+          aria-label="Sleep timer"
+          aria-pressed=${sleepActive ? 'true' : 'false'}
+          @click=${() => this._toggleMenu('sleep')}
+        >🕐${sleepActive ? html`<span class="badge">${this._sleepPagesLeft}</span>` : nothing}</button>
+        <button
+          class="icon-toggle ${this.darkMode ? 'active' : ''}"
+          title="Dark mode"
+          aria-label="Dark mode"
+          aria-pressed=${this.darkMode ? 'true' : 'false'}
+          @click=${() => this._toggleDark()}
+        >${this.darkMode ? '☀️' : '🌙'}</button>
+        <button
+          class="icon-toggle ${this._openMenu === 'overflow' ? 'active' : ''}"
+          title="Voice and speed"
+          aria-label="Voice and speed"
+          aria-haspopup="true"
+          aria-expanded=${this._openMenu === 'overflow' ? 'true' : 'false'}
+          @click=${() => this._toggleMenu('overflow')}
+        >⋯</button>
       </header>
+    `;
+  }
+
+  /** @return {number} pages remaining before the sleep timer fires */
+  get _sleepPagesLeft() {
+    if (!this._sleep) return 0;
+    const used = (this.player?.cursor?.leafIndex ?? 0) - this._sleep.startLeaf;
+    return Math.max(0, this._sleep.pages - used);
+  }
+
+  /**
+   * The header popovers: the overflow menu (voice + speed) and the sleep-timer
+   * menu. A transparent backdrop closes whichever is open on an outside click.
+   */
+  _renderMenu() {
+    if (!this._openMenu) return nothing;
+    const panel = this._openMenu === 'overflow'
+      ? this._renderOverflowPanel()
+      : this._renderSleepPanel();
+
+    return html`
+      <div class="menu-backdrop" @click=${() => { this._openMenu = null; }}></div>
+      <div class="menu ${this._openMenu}" role="menu">${panel}</div>
+    `;
+  }
+
+  _renderOverflowPanel() {
+    const rate = this.player.engine.rate ?? 1;
+    const clones = /Pocket|Hybrid/.test(this.player.engine.name || '');
+
+    return html`
+      ${clones ? html`
+        <div class="menu-group">
+          <div class="menu-label">Voice</div>
+          ${this._renderVoicePicker()}
+        </div>` : nothing}
+      <div class="menu-group">
+        <div class="menu-label">Speed</div>
+        <div class="menu-rates">
+          ${AudioReaderView.RATES.map(r => html`
+            <button
+              class="menu-rate ${r === rate ? 'current' : ''}"
+              aria-pressed=${r === rate ? 'true' : 'false'}
+              @click=${() => this._setRate(r)}
+            >${r}×</button>`)}
+        </div>
+      </div>
+    `;
+  }
+
+  _renderSleepPanel() {
+    const current = this._sleep?.pages ?? 0;
+    return html`
+      <div class="menu-group">
+        <div class="menu-label">Stop after…</div>
+        <div class="menu-rates">
+          <button class="menu-rate ${current === 0 ? 'current' : ''}"
+            @click=${() => this._setSleep(null)}>Off</button>
+          ${AudioReaderView.SLEEP_OPTIONS.map(pages => html`
+            <button
+              class="menu-rate ${current === pages ? 'current' : ''}"
+              @click=${() => this._setSleep(pages)}
+            >${pages} pg</button>`)}
+        </div>
+      </div>
     `;
   }
 
@@ -472,6 +602,7 @@ export class AudioReaderView extends LitElement {
       --card: #ffffff;
       --rule: #e8e1d4;
       --control: #2f2621;
+      --on-control: #ffffff;
 
       display: block;
       height: 100%;
@@ -481,7 +612,21 @@ export class AudioReaderView extends LitElement {
       -webkit-font-smoothing: antialiased;
     }
 
+    /* Dark theme: a warm-neutral dark palette, flipped when the host carries the
+       reflected darkmode attribute. The control tone inverts (light button on a
+       dark page), so its text token inverts with it. */
+    :host([darkmode]) {
+      --page: #15171c;
+      --ink: #e9e6e0;
+      --ink-soft: #988f82;
+      --card: #1e2128;
+      --rule: #2d313a;
+      --control: #e7e2d8;
+      --on-control: #15171c;
+    }
+
     .reader {
+      position: relative;
       display: flex;
       flex-direction: column;
       height: 100%;
@@ -501,9 +646,10 @@ export class AudioReaderView extends LitElement {
       flex: none;
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.4rem;
       padding: 0.75rem 1.25rem 1rem;
     }
+    .title { margin-right: 0.35rem; }
 
     .back {
       flex: none;
@@ -542,6 +688,7 @@ export class AudioReaderView extends LitElement {
     .rate:hover { color: var(--ink); border-color: #d6ccbb; }
 
     .icon-toggle {
+      position: relative;
       flex: none;
       width: 1.9rem;
       height: 1.9rem;
@@ -549,12 +696,29 @@ export class AudioReaderView extends LitElement {
       border-radius: 999px;
       background: transparent;
       color: var(--ink-soft);
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       line-height: 1;
       cursor: pointer;
       padding: 0;
     }
     .icon-toggle:hover { border-color: #d6ccbb; }
+
+    /* Small count badge on the sleep-timer button. */
+    .badge {
+      position: absolute;
+      top: -0.35rem;
+      right: -0.35rem;
+      min-width: 1rem;
+      height: 1rem;
+      padding: 0 0.2rem;
+      box-sizing: border-box;
+      border-radius: 999px;
+      background: var(--control);
+      color: var(--on-control);
+      font-size: 0.6rem;
+      line-height: 1rem;
+      font-variant-numeric: tabular-nums;
+    }
 
     .voice {
       flex: none;
@@ -575,6 +739,53 @@ export class AudioReaderView extends LitElement {
       border-color: var(--control);
       /* The glyph is an emoji; a filled pill is the clearest "on" signal. */
       box-shadow: inset 0 0 0 2px var(--control);
+    }
+
+    /* Header popovers (overflow = voice + speed; sleep = page budget). */
+    .menu-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+    }
+    .menu {
+      position: absolute;
+      z-index: 6;
+      top: 3.2rem;
+      right: 1.25rem;
+      min-width: 12rem;
+      max-width: calc(100% - 2.5rem);
+      padding: 0.6rem;
+      border: 1px solid var(--rule);
+      border-radius: 0.6rem;
+      background: var(--card);
+      box-shadow: 0 0.4rem 1.2rem #00000026;
+    }
+    .menu-group + .menu-group { margin-top: 0.7rem; }
+    .menu-label {
+      margin: 0 0 0.4rem;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--ink-soft);
+    }
+    .menu .voice { max-width: 100%; width: 100%; }
+    .menu-rates { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+    .menu-rate {
+      flex: none;
+      padding: 0.3rem 0.55rem;
+      border: 1px solid var(--rule);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.78rem;
+      cursor: pointer;
+    }
+    .menu-rate:hover { border-color: #d6ccbb; }
+    .menu-rate.current {
+      background: var(--control);
+      border-color: var(--control);
+      color: var(--on-control);
     }
 
     .cover-wrap { display: flex; justify-content: center; padding: 0.5rem 0 0; }
@@ -700,7 +911,7 @@ export class AudioReaderView extends LitElement {
       border: 0;
       border-radius: 50%;
       background: var(--control);
-      color: #fff;
+      color: var(--on-control);
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -778,7 +989,7 @@ export class AudioReaderView extends LitElement {
       padding: 0.9rem 1rem;
       border: 1px solid var(--rule);
       border-radius: 0.6rem;
-      background: #fffdf8;
+      background: var(--card);
       font-size: 0.95rem;
       line-height: 1.65;
     }
@@ -797,7 +1008,7 @@ export class AudioReaderView extends LitElement {
       padding: 1.1rem 1.15rem;
       border: 1px solid var(--rule);
       border-radius: 0.6rem;
-      background: #fffdf8;
+      background: var(--card);
       font-size: 1.25rem;
       line-height: 1.7;
     }
@@ -858,6 +1069,34 @@ export class AudioReaderView extends LitElement {
     }
     .loading-screen .spinner { position: static; width: 1.4rem; height: 1.4rem; }
   `;
+}
+
+/**
+ * Read a JSON value from localStorage, tolerating private-mode and quota errors.
+ * @param {string} key
+ * @param {*} fallback
+ * @return {*}
+ */
+function readStore(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw == null ? fallback : JSON.parse(raw);
+  } catch {
+    return fallback;
+  }
+}
+
+/**
+ * @param {string} key
+ * @param {*} value
+ */
+function writeStore(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Private mode or a full quota: a remembered preference is a convenience, not
+    // something worth throwing over.
+  }
 }
 
 customElements.define('ia-audio-reader', AudioReaderView);
