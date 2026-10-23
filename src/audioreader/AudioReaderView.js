@@ -5,6 +5,9 @@ import { cursorKey } from './ParagraphSource.js';
 
 /** @typedef {import('./IaAudioBook.js').default} IaAudioBook */
 
+/** The Internet Archive "pantheon" mark, from @internetarchive/icon-ia-logo. */
+const IA_LOGO_PATH = 'M26.6666667,28.6046512 L26.6666667,30 L0,30 L0.000283687943,28.6046512 L26.6666667,28.6046512 Z M25.6140351,26.5116279 L25.6140351,28.255814 L1.05263158,28.255814 L1.05263158,26.5116279 L25.6140351,26.5116279 Z M3.62469203,7.6744186 L3.91746909,7.82153285 L4.0639977,10.1739544 L4.21052632,13.9963932 L4.21052632,17.6725617 L4.0639977,22.255044 L4.03962296,25.3421929 L3.62469203,25.4651163 L2.16024641,25.4651163 L1.72094074,25.3421929 L1.55031755,22.255044 L1.40350877,17.6970339 L1.40350877,14.0211467 L1.55031755,10.1739544 L1.68423854,7.80887484 L1.98962322,7.6744186 L3.62469203,7.6744186 Z M24.6774869,7.6744186 L24.9706026,7.82153285 L25.1168803,10.1739544 L25.2631579,13.9963932 L25.2631579,17.6725617 L25.1168803,22.255044 L25.0927809,25.3421929 L24.6774869,25.4651163 L23.2130291,25.4651163 L22.7736357,25.3421929 L22.602418,22.255044 L22.4561404,17.6970339 L22.4561404,14.0211467 L22.602418,10.1739544 L22.7369262,7.80887484 L23.0420916,7.6744186 L24.6774869,7.6744186 Z M9.94042303,7.6744186 L10.2332293,7.82153285 L10.3797725,10.1739544 L10.5263158,13.9963932 L10.5263158,17.6725617 L10.3797725,22.255044 L10.3556756,25.3421929 L9.94042303,25.4651163 L8.47583122,25.4651163 L8.0362015,25.3421929 L7.86556129,22.255044 L7.71929825,17.6970339 L7.71929825,14.0211467 L7.86556129,10.1739544 L8.00005604,7.80887484 L8.30491081,7.6744186 L9.94042303,7.6744186 Z M18.0105985,7.6744186 L18.3034047,7.82153285 L18.449948,10.1739544 L18.5964912,13.9963932 L18.5964912,17.6725617 L18.449948,22.255044 L18.425851,25.3421929 L18.0105985,25.4651163 L16.5460067,25.4651163 L16.1066571,25.3421929 L15.9357367,22.255044 L15.7894737,17.6970339 L15.7894737,14.0211467 L15.9357367,10.1739544 L16.0702315,7.80887484 L16.3753664,7.6744186 L18.0105985,7.6744186 Z M25.6140351,4.53488372 L25.6140351,6.97674419 L1.05263158,6.97674419 L1.05263158,4.53488372 L25.6140351,4.53488372 Z M13.0806755,0 L25.9649123,2.93331338 L25.4484139,3.8372093 L0.771925248,3.8372093 L0,3.1041615 L13.0806755,0 Z';
+
 /**
  * The minimal audio-first reading view of issue #1580.
  *
@@ -182,25 +185,19 @@ export class AudioReaderView extends LitElement {
     }
     writeStore(`audioreader:likes:${this.book.identifier}`, this._likes);
     this._tick++;
-    this._playClapAnimation(count);
+    this._playClapAnimation();
   }
 
   /**
    * @private
-   * Restart the button pop and the floating "+N" after the re-render settles, by
-   * retriggering the CSS animations on the (persistent) nodes.
-   * @param {number} count
+   * Pop the glyph and send a clap bursting upward on every press. No count is
+   * shown -- the feedback is the loudness of the motion, not a number.
    */
-  _playClapAnimation(count) {
+  _playClapAnimation() {
     this.updateComplete.then(() => {
       // Pop the glyph (not the button, whose transform holds its vertical centering).
       restartAnimation(this.renderRoot?.querySelector('.clap-glyph'), 'pop');
-
-      const float = this.renderRoot?.querySelector('.clap-float');
-      if (float) {
-        float.textContent = `+${count}`;
-        restartAnimation(float, 'run');
-      }
+      restartAnimation(this.renderRoot?.querySelector('.clap-float'), 'run');
     });
   }
 
@@ -256,6 +253,7 @@ export class AudioReaderView extends LitElement {
 
   _renderHeader() {
     const sleepActive = !!this._sleep;
+    const clones = /Pocket|Hybrid/.test(this.player.engine.name || '');
 
     return html`
       <header>
@@ -264,7 +262,14 @@ export class AudioReaderView extends LitElement {
           href="https://archive.org/details/${this.book.identifier}"
           title="Back to the item"
           aria-label="Back to the item"
-        >←</a>
+        >
+          <svg class="ia-logo" viewBox="0 0 27 30" aria-hidden="true">
+            <path d=${IA_LOGO_PATH}></path>
+          </svg>
+        </a>
+        ${this.readAlong
+    ? html`<img class="mini-cover" src=${this.book.coverUrl} alt="Cover of ${this.book.title}" />`
+    : nothing}
         <h1 class="title" title=${this.book.title}>${this.book.title}</h1>
         <button
           class="icon-toggle ${this.readAlong ? 'active' : ''}"
@@ -287,14 +292,15 @@ export class AudioReaderView extends LitElement {
           aria-pressed=${this.darkMode ? 'true' : 'false'}
           @click=${() => this._toggleDark()}
         >${this.darkMode ? '☀️' : '🌙'}</button>
-        <button
-          class="icon-toggle ${this._openMenu === 'overflow' ? 'active' : ''}"
-          title="Voice and speed"
-          aria-label="Voice and speed"
-          aria-haspopup="true"
-          aria-expanded=${this._openMenu === 'overflow' ? 'true' : 'false'}
-          @click=${() => this._toggleMenu('overflow')}
-        >⋯</button>
+        ${clones ? html`
+          <button
+            class="icon-toggle ${this._openMenu === 'overflow' ? 'active' : ''}"
+            title="Voice"
+            aria-label="Voice"
+            aria-haspopup="true"
+            aria-expanded=${this._openMenu === 'overflow' ? 'true' : 'false'}
+            @click=${() => this._toggleMenu('overflow')}
+          >⋯</button>` : nothing}
       </header>
     `;
   }
@@ -323,25 +329,11 @@ export class AudioReaderView extends LitElement {
   }
 
   _renderOverflowPanel() {
-    const rate = this.player.engine.rate ?? 1;
-    const clones = /Pocket|Hybrid/.test(this.player.engine.name || '');
-
+    // Speed lives in the transport now; the overflow menu holds just the voice.
     return html`
-      ${clones ? html`
-        <div class="menu-group">
-          <div class="menu-label">Voice</div>
-          ${this._renderVoicePicker()}
-        </div>` : nothing}
       <div class="menu-group">
-        <div class="menu-label">Speed</div>
-        <div class="menu-rates">
-          ${AudioReaderView.RATES.map(r => html`
-            <button
-              class="menu-rate ${r === rate ? 'current' : ''}"
-              aria-pressed=${r === rate ? 'true' : 'false'}
-              @click=${() => this._setRate(r)}
-            >${r}×</button>`)}
-        </div>
+        <div class="menu-label">Voice</div>
+        ${this._renderVoicePicker()}
       </div>
     `;
   }
@@ -479,20 +471,45 @@ export class AudioReaderView extends LitElement {
   }
 
   /** @private @param {PointerEvent} event */
-  _onPagePointerUp(event) {
+  async _onPagePointerUp(event) {
     if (!this._dragging) return;
-    const leaf = Math.round(this._pageBarFraction(event) * (this.book.numLeafs - 1));
+    const fraction = this._pageBarFraction(event);
     this._dragging = false;
-    this._dragPercent = null;
-    // Lands on the nearest page at/after `leaf` that has text; keeps play state.
-    this.player.jumpToLeaf(leaf);
+    // Hold the knob at the chosen spot through the async jump. Clearing it now
+    // would snap the knob back to the old page until jumpToLeaf resolved, then
+    // forward again -- the glitch a plain click used to show.
+    this._dragPercent = fraction * 100;
     this._tick++;
+    await this._seekPageToFraction(fraction);
+    this._dragPercent = null;
+    this._tick++;
+  }
+
+  /**
+   * Jump to the page at `fraction` through the book. Extracted from the pointer
+   * handler so the click-to-page mapping is unit-testable without a layout.
+   * @param {number} fraction 0..1 along the page bar
+   * @return {Promise<void>}
+   */
+  _seekPageToFraction(fraction) {
+    const clamped = Math.min(1, Math.max(0, fraction));
+    const leaf = Math.round(clamped * (this.book.numLeafs - 1));
+    // Lands on the nearest page at/after `leaf` that has text; keeps play state.
+    return this.player.jumpToLeaf(leaf);
   }
 
   _renderTransport() {
     const player = this.player;
+    const rate = player.engine.rate ?? 1;
     return html`
       <div class="transport">
+        <button
+          class="rate"
+          title="Reading speed"
+          aria-label="Reading speed"
+          @click=${() => this._cycleRate()}
+        >${rate}×</button>
+
         <button class="skip page" title="Previous page" aria-label="Previous page"
           @click=${() => player.prevPage()}>«</button>
         <button class="skip sentence" title="Previous sentence" aria-label="Previous sentence"
@@ -511,16 +528,23 @@ export class AudioReaderView extends LitElement {
 
         <button
           class="clap ${this._clapsHere ? 'active' : ''}"
-          title=${this._clapsHere ? `${this._clapsHere} clap${this._clapsHere === 1 ? '' : 's'} here — clap again` : 'Clap for this spot'}
+          title="Clap for this spot"
           aria-label="Clap for this spot"
           @click=${() => this._addClap()}
         >
           <span class="clap-glyph">👏</span>
-          ${this._clapsHere ? html`<span class="badge">${this._clapsHere}</span>` : nothing}
-          <span class="clap-float" aria-hidden="true"></span>
+          <span class="clap-float" aria-hidden="true">👏</span>
         </button>
       </div>
     `;
+  }
+
+  /** @private Advance the reading speed to the next preset, wrapping around. */
+  _cycleRate() {
+    const rates = AudioReaderView.RATES;
+    const current = this.player.engine.rate ?? 1;
+    const index = rates.indexOf(current);
+    this._setRate(rates[(index + 1) % rates.length]);
   }
 
   /**
@@ -714,6 +738,12 @@ export class AudioReaderView extends LitElement {
       --rule: #e8e1d4;
       --control: #2f2621;
       --on-control: #ffffff;
+      --track: #d9d1c2;
+      --track-soft: #e4ddcf;
+      --highlight: #ffe9a8;
+      --highlight-ink: #241f1b;
+      --hover-border: #d6ccbb;
+      --hover-bg: #faf7f0;
 
       display: block;
       height: 100%;
@@ -731,9 +761,15 @@ export class AudioReaderView extends LitElement {
       --ink: #e9e6e0;
       --ink-soft: #988f82;
       --card: #1e2128;
-      --rule: #2d313a;
+      --rule: #2a2e36;
       --control: #e7e2d8;
       --on-control: #15171c;
+      --track: #2b2f37;
+      --track-soft: #23262d;
+      --highlight: #46391c;
+      --highlight-ink: #efe4c9;
+      --hover-border: #3a3f49;
+      --hover-bg: #20242b;
     }
 
     .reader {
@@ -764,11 +800,30 @@ export class AudioReaderView extends LitElement {
 
     .back {
       flex: none;
-      font-size: 1.35rem;
-      line-height: 1;
+      display: inline-flex;
+      align-items: center;
       color: var(--ink);
       text-decoration: none;
       padding: 0.25rem;
+      opacity: 0.85;
+    }
+    .back:hover { opacity: 1; }
+    .ia-logo {
+      width: 1.1rem;
+      height: 1.25rem;
+      display: block;
+      fill: currentColor;
+    }
+
+    /* The small cover shown beside the title while reading along. */
+    .mini-cover {
+      flex: none;
+      width: 1.9rem;
+      height: 2.5rem;
+      object-fit: cover;
+      border-radius: 0.15rem;
+      box-shadow: 0 0.1rem 0.3rem #00000022;
+      background: #e6ded0;
     }
 
     .title {
@@ -784,9 +839,13 @@ export class AudioReaderView extends LitElement {
       overflow: hidden;
     }
 
+    /* Reading speed sits at the left edge of the transport, mirroring the clap. */
     .rate {
-      flex: none;
-      min-width: 2.5rem;
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      min-width: 2.6rem;
       height: 1.9rem;
       border: 1px solid var(--rule);
       border-radius: 999px;
@@ -796,7 +855,7 @@ export class AudioReaderView extends LitElement {
       font-size: 0.78rem;
       cursor: pointer;
     }
-    .rate:hover { color: var(--ink); border-color: #d6ccbb; }
+    .rate:hover { color: var(--ink); border-color: var(--hover-border); }
 
     .icon-toggle {
       position: relative;
@@ -812,7 +871,7 @@ export class AudioReaderView extends LitElement {
       cursor: pointer;
       padding: 0;
     }
-    .icon-toggle:hover { border-color: #d6ccbb; }
+    .icon-toggle:hover { border-color: var(--hover-border); }
 
     /* Small count badge on the sleep-timer button. */
     .badge {
@@ -844,7 +903,7 @@ export class AudioReaderView extends LitElement {
       padding: 0 0.5rem;
       cursor: pointer;
     }
-    .voice:hover { color: var(--ink); border-color: #d6ccbb; }
+    .voice:hover { color: var(--ink); border-color: var(--hover-border); }
     .icon-toggle.active {
       background: var(--control);
       border-color: var(--control);
@@ -892,7 +951,7 @@ export class AudioReaderView extends LitElement {
       font-size: 0.78rem;
       cursor: pointer;
     }
-    .menu-rate:hover { border-color: #d6ccbb; }
+    .menu-rate:hover { border-color: var(--hover-border); }
     .menu-rate.current {
       background: var(--control);
       border-color: var(--control);
@@ -928,7 +987,7 @@ export class AudioReaderView extends LitElement {
       position: relative;
       height: 0.15rem;
       border-radius: 999px;
-      background: #d9d1c2;
+      background: var(--track);
     }
     .track.thin { display: block; margin-top: 0.4rem; }
 
@@ -947,7 +1006,7 @@ export class AudioReaderView extends LitElement {
       height: 0.15rem;
       transform: translateY(-50%);
       border-radius: 999px;
-      background: #d9d1c2;
+      background: var(--track);
     }
     .track.page.dragging { cursor: grabbing; }
 
@@ -956,7 +1015,7 @@ export class AudioReaderView extends LitElement {
     .track.realtime {
       height: 0.12rem;
       margin-top: 0.3rem;
-      background: #e4ddcf;
+      background: var(--track-soft);
     }
     .realtime-fill {
       background: #b2a894;
@@ -1013,44 +1072,42 @@ export class AudioReaderView extends LitElement {
       transform: translateY(-50%);
       border: 0;
       background: transparent;
-      font-size: 1.35rem;
+      font-size: 1.4rem;
       line-height: 1;
       padding: 0.3rem;
       cursor: pointer;
-      opacity: 0.45;
-      filter: grayscale(1);
+      /* Default to what used to be the hover state -- the control was too faint. */
+      opacity: 0.85;
     }
-    .clap:hover { opacity: 0.8; }
-    .clap.active { opacity: 1; filter: none; }
-    .clap .badge { top: -0.15rem; right: -0.15rem; }
+    .clap:hover { opacity: 1; }
+    .clap.active { opacity: 1; }
 
     .clap-glyph { display: inline-block; }
-    .clap-glyph.pop { animation: clap-pop 0.35s ease; }
+    /* A loud pop: overshoots hard and recoils, with a little twist. */
+    .clap-glyph.pop { animation: clap-pop 0.4s cubic-bezier(0.2, 1.4, 0.4, 1); }
     @keyframes clap-pop {
-      0% { transform: scale(1); }
-      30% { transform: scale(1.4); }
-      55% { transform: scale(0.88); }
-      100% { transform: scale(1); }
+      0% { transform: scale(1) rotate(0); }
+      25% { transform: scale(1.75) rotate(-12deg); }
+      50% { transform: scale(0.8) rotate(8deg); }
+      75% { transform: scale(1.25) rotate(-3deg); }
+      100% { transform: scale(1) rotate(0); }
     }
 
-    /* The floating "+N" that rises on each clap. */
+    /* A clap bursting upward on every press -- feedback by motion, not a number. */
     .clap-float {
       position: absolute;
       left: 50%;
       top: -0.1rem;
       transform: translate(-50%, 0);
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: #e0a44a;
+      font-size: 1.1rem;
       opacity: 0;
       pointer-events: none;
-      white-space: nowrap;
     }
-    .clap-float.run { animation: clap-float 0.75s ease-out; }
+    .clap-float.run { animation: clap-float 0.7s ease-out; }
     @keyframes clap-float {
-      0% { opacity: 0; transform: translate(-50%, 0) scale(0.8); }
-      20% { opacity: 1; }
-      100% { opacity: 0; transform: translate(-50%, -1.7rem) scale(1.1); }
+      0% { opacity: 0; transform: translate(-50%, 0) scale(0.7); }
+      25% { opacity: 0.9; }
+      100% { opacity: 0; transform: translate(-50%, -2.1rem) scale(1.3) rotate(12deg); }
     }
 
     /* Faint ticks on the scrubbers marking clapped-for spots. */
@@ -1110,7 +1167,7 @@ export class AudioReaderView extends LitElement {
     }
 
     .chapters ol { list-style: none; margin: 0; padding: 0; }
-    .chapters li + li { border-top: 1px solid #f0ebe0; }
+    .chapters li + li { border-top: 1px solid var(--rule); }
 
     .chapter {
       display: flex;
@@ -1126,7 +1183,7 @@ export class AudioReaderView extends LitElement {
       text-align: left;
       cursor: pointer;
     }
-    .chapter:hover { background: #faf7f0; }
+    .chapter:hover { background: var(--hover-bg); }
     .chapter.current { font-weight: 700; }
 
     .bullet {
@@ -1168,7 +1225,7 @@ export class AudioReaderView extends LitElement {
       line-height: 1.65;
     }
     .segment.read { color: #a49a8c; }
-    .segment.current { background: #ffe9a8; border-radius: 0.15rem; }
+    .segment.current { background: var(--highlight); color: var(--highlight-ink); border-radius: 0.15rem; }
     .segment.buffered { color: var(--ink); }
     .segment.pending { color: #b3a897; font-style: italic; }
     .segment.placeholder { color: #b3a897; }
@@ -1177,7 +1234,11 @@ export class AudioReaderView extends LitElement {
        read by eye. Larger type than the debug text view, same state colours. */
     .readalong {
       position: relative;
-      min-height: 11rem;
+      /* Fixed height so switching into read-along -- or a sentence changing length
+         -- does not shift the controls below it. Overflows scroll. */
+      height: 13rem;
+      box-sizing: border-box;
+      overflow-y: auto;
       margin: 0.5rem 0 0;
       padding: 1.1rem 1.15rem;
       border: 1px solid var(--rule);
@@ -1187,16 +1248,17 @@ export class AudioReaderView extends LitElement {
       line-height: 1.7;
     }
     .readalong.waiting { opacity: 0.7; }
-    .ra-segment { color: #c3b9a8; transition: color 0.2s; }
-    .ra-segment.read { color: #b7ad9d; }
+    .ra-segment { color: var(--ink-soft); opacity: 0.65; transition: color 0.2s, opacity 0.2s; }
+    .ra-segment.read { color: var(--ink-soft); opacity: 0.85; }
     .ra-segment.current {
-      color: var(--ink);
-      background: #ffe9a8;
+      color: var(--highlight-ink);
+      background: var(--highlight);
+      opacity: 1;
       border-radius: 0.2rem;
       box-decoration-break: clone;
       -webkit-box-decoration-break: clone;
     }
-    .ra-segment.buffered { color: #6f665c; }
+    .ra-segment.buffered { color: var(--ink-soft); opacity: 1; }
     .ra-segment.placeholder { color: #b3a897; }
 
     .spinner {
