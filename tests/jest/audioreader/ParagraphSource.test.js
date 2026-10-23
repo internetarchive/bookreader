@@ -1,4 +1,9 @@
-import ParagraphSource, { cursorKey, cursorsEqual, isSpeakable } from '@/src/audioreader/ParagraphSource.js';
+import ParagraphSource, {
+  cursorKey,
+  cursorsEqual,
+  isSpeakable,
+  endsMidSentence,
+} from '@/src/audioreader/ParagraphSource.js';
 
 /**
  * Build a source over a fixture of pages. `pages` is an array (indexed by leaf) of
@@ -207,6 +212,67 @@ describe('firstSubstantial', () => {
     const { source } = makeSource(pages, { onFetch: leaf => fetched.push(leaf) });
     await source.firstSubstantial({ searchLeafs: 10 });
     expect(Math.max(...fetched)).toBeLessThan(200);
+  });
+});
+
+describe('endsMidSentence', () => {
+  test('is true when the last sentence has no terminator', () => {
+    expect(endsMidSentence('you shall hear the whole')).toBe(true);
+    expect(endsMidSentence('A finished one. An unfinished one')).toBe(true);
+    expect(endsMidSentence('the inhabi-')).toBe(true);  // broken word continues the sentence
+  });
+
+  test('is false when the text ends on a sentence boundary', () => {
+    expect(endsMidSentence('A whole sentence.')).toBe(false);
+    expect(endsMidSentence('"Stop!" she cried.')).toBe(false);  // terminator plus closing quote
+    expect(endsMidSentence('Really?')).toBe(false);
+    expect(endsMidSentence('')).toBe(false);
+  });
+});
+
+describe('resolvedText (sentence-complete chunks)', () => {
+  test('completes a sentence the page broke across chunks', async () => {
+    const { source } = makeSource([
+      ['He said much. But from me you shall hear the whole'],
+      ['truth. Not indeed, Athenians, with choice phrases.'],
+    ]);
+    // The trailing fragment borrows the next chunk's opening sentence...
+    expect(await source.resolvedText({ leafIndex: 0, chunkIndex: 0 }))
+      .toBe('He said much. But from me you shall hear the whole truth.');
+    // ...and that opening sentence is dropped from the next chunk.
+    expect(await source.resolvedText({ leafIndex: 1, chunkIndex: 0 }))
+      .toBe('Not indeed, Athenians, with choice phrases.');
+  });
+
+  test('fuses a word the page broke with a hyphen at the seam', async () => {
+    const { source } = makeSource([['The town has many inhabi-', 'tants of good cheer.']]);
+    expect(await source.resolvedText({ leafIndex: 0, chunkIndex: 0 }))
+      .toBe('The town has many inhabitants of good cheer.');
+    expect(await source.resolvedText({ leafIndex: 0, chunkIndex: 1 })).toBe('');
+  });
+
+  test('stitches a sentence across a blank page', async () => {
+    const { source } = makeSource([
+      ['A long word that will contin-'],
+      [],                                 // blank plate between the halves
+      ['uation lands here. A fresh one begins.'],
+    ]);
+    expect(await source.resolvedText({ leafIndex: 0, chunkIndex: 0 }))
+      .toBe('A long word that will continuation lands here.');
+    expect(await source.resolvedText({ leafIndex: 2, chunkIndex: 0 }))
+      .toBe('A fresh one begins.');
+  });
+
+  test('leaves a chunk that already ends on a sentence boundary untouched', async () => {
+    const { source } = makeSource([['A complete sentence. And another.']]);
+    expect(await source.resolvedText({ leafIndex: 0, chunkIndex: 0 }))
+      .toBe('A complete sentence. And another.');
+  });
+
+  test('strips a hyphen left dangling at the very end of the book', async () => {
+    const { source } = makeSource([['The final broken wo-']]);
+    expect(await source.resolvedText({ leafIndex: 0, chunkIndex: 0 }))
+      .toBe('The final broken wo');
   });
 });
 

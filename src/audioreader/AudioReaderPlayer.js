@@ -22,6 +22,14 @@ import { cursorKey, cursorsEqual } from './ParagraphSource.js';
 export const DEFAULT_LOOKAHEAD = 5;
 
 /**
+ * Segments to synthesize to completion before playback starts (from cold or after
+ * a seek). A short pre-roll absorbs model warm-up and the high fixed cost of the
+ * first tiny "landmark" segment, so the good voice can then play uninterrupted
+ * instead of the engine dropping to a preview whenever synthesis briefly lags.
+ */
+export const DEFAULT_PREBUFFER_SEGMENTS = 3;
+
+/**
  * How long to wait after the last next/prev press before rebuilding the buffer.
  * Issue #1580 asks that seeking not "queue up more loads every time the button is
  * pressed": presses are coalesced, so a burst of ten costs one rebuild, not ten.
@@ -45,10 +53,11 @@ export default class AudioReaderPlayer {
    * @param {() => void} [opts.onChange] fired whenever observable state changes
    * @param {(cursor: ParagraphCursor) => void} [opts.onParagraphChange]
    */
-  constructor({ source, engine, lookahead = DEFAULT_LOOKAHEAD, seekDebounceMs = DEFAULT_SEEK_DEBOUNCE_MS, onChange, onParagraphChange }) {
+  constructor({ source, engine, lookahead = DEFAULT_LOOKAHEAD, prebufferSegments = DEFAULT_PREBUFFER_SEGMENTS, seekDebounceMs = DEFAULT_SEEK_DEBOUNCE_MS, onChange, onParagraphChange }) {
     this.source = source;
     this.engine = engine;
     this.lookahead = lookahead;
+    this.prebufferSegments = prebufferSegments;
     this.seekDebounceMs = seekDebounceMs;
     this._onChange = onChange || (() => {});
     this._onParagraphChange = onParagraphChange || (() => {});
@@ -72,8 +81,14 @@ export default class AudioReaderPlayer {
      * work started before it.
      */
     this._generation = 0;
-    this._pendingSeek = 0;
+    /** Coalesced seek intent, in units; see {@link DEFAULT_SEEK_DEBOUNCE_MS}. */
+    this._pendingSeek = { paragraphs: 0, sentences: 0, pages: 0 };
     this._seekTimer = null;
+    /**
+     * Word accounting for the current leaf, so the real-time progress bar can show
+     * how far through the page the reading is. Recomputed on every move/advance.
+     */
+    this._pageWords = { total: 0, before: 0 };
     /** @type {AbortController|null} controls the currently playing sound */
     this._playbackAbort = null;
     /** Whether a `_playLoop` is currently running (possibly suspended on a sound). */
@@ -126,6 +141,24 @@ export default class AudioReaderPlayer {
   }
 
   /**
+   * How far reading has progressed through the current page, by words. Drives the
+   * subtle real-time progress bar: it advances as each sentence is read and resets
+   * when the page turns. Unlike {@link _progressPercent}'s leaf position, this is
+   * sentence-granular within the page.
+   * @return {{read: number, total: number, percent: number}}
+   */
+  get pageWordProgress() {
+    const { total, before } = this._pageWords;
+    if (!total) return { read: 0, total: 0, percent: 0 };
+    let read = before;
+    for (let i = 0; i < this.segmentIndex && i < this.segments.length; i++) {
+      read += wordCount(this.segments[i].text);
+    }
+    read = Math.min(read, total);
+    return { read, total, percent: (read / total) * 100 };
+  }
+
+  /**
    * Rebuild the synthesis plan around the current cursor.
    * @private
    */
@@ -139,9 +172,9 @@ export default class AudioReaderPlayer {
     /** @type {Array<{key: string, text: string}>} */
     const plan = [];
     for (const [position, cursor] of cursors.entries()) {
-      const chunk = await this.source.at(cursor);
+      const text = await this.source.resolvedText(cursor);
       if (generation !== this._generation) return;
-      const segments = segmentParagraph(chunk?.text || '');
+      const segments = segmentParagraph(text);
 
       if (position === 0) {
         this.segments = segments;
@@ -156,6 +189,19 @@ export default class AudioReaderPlayer {
         plan.push({ key: segmentKey(cursor, segment.index), text: segment.text });
       }
     }
+
+    // Word accounting for the current leaf, for the real-time progress bar. The
+    // page is already cached from the window walk above, so this is free.
+    const pageChunks = await this.source.page(this.cursor.leafIndex);
+    if (generation !== this._generation) return;
+    let wordsBefore = 0;
+    for (let i = 0; i < this.cursor.chunkIndex && i < pageChunks.length; i++) {
+      wordsBefore += wordCount(pageChunks[i].text);
+    }
+    this._pageWords = {
+      total: pageChunks.reduce((sum, chunk) => sum + wordCount(chunk.text), 0),
+      before: wordsBefore,
+    };
 
     this._plan = plan;
     this.queue.setPlan(plan);
@@ -203,10 +249,22 @@ export default class AudioReaderPlayer {
    * Move one paragraph forward. Presses are coalesced -- see
    * {@link DEFAULT_SEEK_DEBOUNCE_MS}.
    */
-  next() { this._seek(+1); }
+  next() { this._queueSeek('paragraphs', +1); }
 
   /** Move one paragraph back. */
-  prev() { this._seek(-1); }
+  prev() { this._queueSeek('paragraphs', -1); }
+
+  /** Move forward one sentence, rolling into the next paragraph/page at the end. */
+  nextSentence() { this._queueSeek('sentences', +1); }
+
+  /** Move back one sentence, rolling into the previous paragraph/page at the start. */
+  prevSentence() { this._queueSeek('sentences', -1); }
+
+  /** Jump to the first text of the next page (leaf) that has any. */
+  nextPage() { this._queueSeek('pages', +1); }
+
+  /** Jump to the first text of the previous page (leaf) that has any. */
+  prevPage() { this._queueSeek('pages', -1); }
 
   /**
    * Jump to a specific place in the book, e.g. a table-of-contents entry.
@@ -221,10 +279,13 @@ export default class AudioReaderPlayer {
 
   /**
    * @private
-   * @param {number} delta paragraphs
+   * Record a seek intent and (re)arm the debounce. A burst of presses -- of any
+   * mix of units -- coalesces into a single rebuild.
+   * @param {'paragraphs'|'sentences'|'pages'} unit
+   * @param {number} delta
    */
-  _seek(delta) {
-    this._pendingSeek += delta;
+  _queueSeek(unit, delta) {
+    this._pendingSeek[unit] += delta;
     this.seeking = true;
 
     // Stop the current sound at once. Waiting for the debounce would leave the old
@@ -235,9 +296,9 @@ export default class AudioReaderPlayer {
     if (this._seekTimer) clearTimeout(this._seekTimer);
     this._seekTimer = setTimeout(() => {
       this._seekTimer = null;
-      const steps = this._pendingSeek;
-      this._pendingSeek = 0;
-      this._applySeek(steps);
+      const pending = this._pendingSeek;
+      this._pendingSeek = { paragraphs: 0, sentences: 0, pages: 0 };
+      this._applySeek(pending);
     }, this.seekDebounceMs);
   }
 
@@ -245,41 +306,128 @@ export default class AudioReaderPlayer {
   _cancelPendingSeek() {
     if (this._seekTimer) clearTimeout(this._seekTimer);
     this._seekTimer = null;
-    this._pendingSeek = 0;
+    this._pendingSeek = { paragraphs: 0, sentences: 0, pages: 0 };
   }
 
   /**
    * @private
-   * Walk `steps` paragraphs and settle there. One rebuild regardless of how many
-   * button presses were coalesced into `steps`.
-   * @param {number} steps
+   * Apply a coalesced seek: pages first, then paragraphs, then sentences, so a
+   * mixed burst settles somewhere sensible. One rebuild regardless of how many
+   * presses were folded together.
+   * @param {{paragraphs: number, sentences: number, pages: number}} pending
    */
-  async _applySeek(steps) {
+  async _applySeek({ paragraphs, sentences, pages }) {
     let cursor = this.cursor;
-    const step = steps > 0 ? 'next' : 'prev';
+    let segmentIndex = this.segmentIndex;
 
-    for (let i = 0; i < Math.abs(steps); i++) {
-      const candidate = await this.source[step](cursor);
-      // Walking off either end of the book just stops there.
-      if (!candidate) break;
-      cursor = candidate;
+    if (pages) {
+      cursor = await this._walkPages(cursor, pages);
+      segmentIndex = 0;
     }
 
-    await this._moveTo(cursor);
+    if (paragraphs) {
+      const step = paragraphs > 0 ? 'next' : 'prev';
+      for (let i = 0; i < Math.abs(paragraphs); i++) {
+        const candidate = await this.source[step](cursor);
+        // Walking off either end of the book just stops there.
+        if (!candidate) break;
+        cursor = candidate;
+      }
+      segmentIndex = 0;
+    }
+
+    if (sentences) {
+      ({ cursor, segmentIndex } = await this._walkSentences(cursor, segmentIndex, sentences));
+    }
+
+    await this._moveTo(cursor, segmentIndex);
+  }
+
+  /**
+   * @private
+   * Walk `delta` pages (leaves with text) from `cursor`, landing on the first
+   * paragraph of each. Stops at either end of the book.
+   * @param {ParagraphCursor} cursor
+   * @param {number} delta
+   * @return {Promise<ParagraphCursor>}
+   */
+  async _walkPages(cursor, delta) {
+    const forward = delta > 0;
+    for (let i = 0; i < Math.abs(delta); i++) {
+      const target = forward
+        ? await this.source.firstFrom(cursor.leafIndex + 1)
+        : await this._prevPageCursor(cursor.leafIndex);
+      if (!target) break;
+      cursor = target;
+    }
+    return cursor;
+  }
+
+  /**
+   * @private
+   * The first paragraph of the nearest page before `leafIndex` that has text.
+   * @param {number} leafIndex
+   * @return {Promise<ParagraphCursor|null>}
+   */
+  async _prevPageCursor(leafIndex) {
+    for (let leaf = leafIndex - 1; leaf >= 0; leaf--) {
+      const chunks = await this.source.page(leaf);
+      if (chunks.length) return { leafIndex: leaf, chunkIndex: 0 };
+    }
+    return null;
+  }
+
+  /**
+   * @private
+   * Walk `delta` sentences from (cursor, segmentIndex), crossing paragraph and
+   * page boundaries. Landing on a previous paragraph lands on its last sentence.
+   * @param {ParagraphCursor} cursor
+   * @param {number} segmentIndex
+   * @param {number} delta
+   * @return {Promise<{cursor: ParagraphCursor, segmentIndex: number}>}
+   */
+  async _walkSentences(cursor, segmentIndex, delta) {
+    const forward = delta > 0;
+    let segments = segmentParagraph(await this.source.resolvedText(cursor));
+
+    for (let i = 0; i < Math.abs(delta); i++) {
+      if (forward) {
+        if (segmentIndex + 1 < segments.length) {
+          segmentIndex++;
+        } else {
+          const candidate = await this.source.next(cursor);
+          if (!candidate) break;
+          cursor = candidate;
+          segments = segmentParagraph(await this.source.resolvedText(cursor));
+          segmentIndex = 0;
+        }
+      } else if (segmentIndex > 0) {
+        segmentIndex--;
+      } else {
+        const candidate = await this.source.prev(cursor);
+        if (!candidate) break;
+        cursor = candidate;
+        segments = segmentParagraph(await this.source.resolvedText(cursor));
+        segmentIndex = Math.max(0, segments.length - 1);
+      }
+    }
+
+    return { cursor, segmentIndex };
   }
 
   /**
    * @private
    * @param {ParagraphCursor} cursor
+   * @param {number} [segmentIndex] sentence within the paragraph to land on
    */
-  async _moveTo(cursor) {
+  async _moveTo(cursor, segmentIndex = 0) {
     const wasPlaying = this.playing;
     this._generation++;
     this._stopPlayback();
 
-    const moved = !cursorsEqual(cursor, this.cursor);
+    const moved = !cursorsEqual(cursor, this.cursor) || segmentIndex !== this.segmentIndex;
     this.cursor = cursor;
-    this.segmentIndex = 0;
+    this.segmentIndex = segmentIndex;
     this.finished = false;
     this.seeking = false;
 
@@ -316,6 +464,11 @@ export default class AudioReaderPlayer {
    * @param {number} generation
    */
   async _playLoop(generation) {
+    // Fill a short pre-roll before the first sound, so the good voice plays
+    // through rather than yielding to a preview while synthesis warms up.
+    await this._prebuffer(generation);
+    if (!this.playing || generation !== this._generation) return;
+
     while (this.playing && generation === this._generation) {
       const segment = this.currentSegment;
       if (!segment) {
@@ -363,6 +516,37 @@ export default class AudioReaderPlayer {
 
   /**
    * @private
+   * Wait for the first few planned segments to be synthesized before playback
+   * begins. Bails immediately on a seek, a pause, or a segment that will never
+   * arrive, so it can only ever delay the start, never block it indefinitely.
+   * @param {number} generation
+   */
+  async _prebuffer(generation) {
+    const wanted = this._plan.slice(0, this.prebufferSegments).map(job => job.key);
+    if (!wanted.length || wanted.every(key => this.queue.isReady(key))) return;
+
+    this.loading = true;
+    this._onChange();
+    try {
+      for (const key of wanted) {
+        if (!this.playing || generation !== this._generation) return;
+        if (this.queue.isReady(key)) continue;
+        try {
+          await this.queue.waitFor(key);
+        } catch {
+          // Seeked away, or this segment cannot be made: stop pre-rolling and let
+          // the play loop deal with whatever is current now.
+          return;
+        }
+      }
+    } finally {
+      this.loading = false;
+      this._onChange();
+    }
+  }
+
+  /**
+   * @private
    * Step to the next paragraph during continuous playback (not a seek), sliding
    * the buffer window forward by one.
    * @param {number} generation
@@ -404,4 +588,15 @@ export default class AudioReaderPlayer {
  */
 export function segmentKey(cursor, segmentIndex) {
   return `${cursorKey(cursor)}#${segmentIndex}`;
+}
+
+/**
+ * Count word-like tokens, matching {@link ParagraphSource}'s own counting so the
+ * page progress bar and the "substantial paragraph" heuristic agree.
+ * @param {string} text
+ * @return {number}
+ */
+function wordCount(text) {
+  const words = (text || '').trim().match(/\p{L}[\p{L}'’-]*/gu);
+  return words ? words.length : 0;
 }

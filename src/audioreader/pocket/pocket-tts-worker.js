@@ -162,6 +162,17 @@ async function init({ modelBase, ortBase, referenceAudioUrl }) {
   const embeddings = await synthesizer.encodeVoice(referenceSamples);
   await synthesizer.setVoiceFromEmbeddings(embeddings);
 
+  // Warm the ONNX sessions before declaring ready. The first synthesis pays
+  // session allocation and wasm JIT -- on the order of a second or two -- and
+  // without this that cost lands on the patron's first sentence, which is the
+  // worst possible place for it. Doing it here hides it inside the model load.
+  try {
+    await synthesizer.synthesize('Ready.', {});
+  } catch (error) {
+    // Warm-up is best-effort: a failure here must not stop the engine coming up.
+    console.warn('PocketTTS: warm-up synthesis failed', error);
+  }
+
   self.postMessage({
     type: 'ready',
     sampleRate: bundle.sample_rate,

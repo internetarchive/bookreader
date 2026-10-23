@@ -15,14 +15,15 @@ import './AudioReaderView.js';
  *
  * Query parameters:
  *   ocaid       archive.org identifier (required)
- *   engine      `webspeech` (default), `pocket` (PocketTTS in a worker),
- *               `hybrid` (PocketTTS with an instant WebSpeech preview), or
- *               `pcm` (measurable tones, not speech)
+ *   engine      `pocket` (default, PocketTTS in a worker), `hybrid` (PocketTTS
+ *               with an instant WebSpeech preview), `webspeech`, or `pcm`
+ *               (measurable tones, not speech)
  *   grace       ms to wait for PocketTTS before previewing, in hybrid mode
  *   fast        preview engine for hybrid mode (default `webspeech`)
  *   modelBase   where to fetch the PocketTTS bundle from (default: HuggingFace)
  *   synthDelay  ms of artificial synthesis latency, to exercise the buffering
  *   lookahead   paragraphs to keep buffered (default 5)
+ *   prebuffer   segments to synthesize before playback starts (default 2)
  *   text        `1` to show the paragraph being read (not part of the design)
  *   debug       `1` to show the buffer/plan overlay
  */
@@ -35,7 +36,12 @@ const DEFAULT_OCAID = 'theworksofplato01platiala';
  * @return {Object} an object implementing the player's TTSEngine interface
  */
 function createEngine(params, bookLanguage) {
-  const requested = params.get('engine') || 'webspeech';
+  // Default to the good voice played straight through: pure PocketTTS, with the
+  // player's pre-roll buffer absorbing warm-up so it does not drop to a preview
+  // mid-paragraph. `?engine=hybrid` trades that consistency for an instant start.
+  // Fall back to plain WebSpeech only where PocketTTS cannot run at all.
+  const fallback = PocketTtsEngine.isSupported() ? 'pocket' : 'webspeech';
+  const requested = params.get('engine') || fallback;
   const engine = buildEngine(requested, bookLanguage, params);
   return simulateLatency(engine, Number(params.get('synthDelay')) || 0);
 }
@@ -118,6 +124,7 @@ async function boot() {
   const view = document.querySelector('ia-audio-reader');
   view.debug = params.get('debug') === '1';
   view.showText = params.get('text') === '1';
+  view.readAlong = params.get('readalong') === '1';
 
   instrumentSpeech();
 
@@ -127,12 +134,13 @@ async function boot() {
 
     await view.attach(book, engine, {
       ...(params.get('lookahead') ? { lookahead: Number(params.get('lookahead')) } : {}),
+      ...(params.get('prebuffer') ? { prebufferSegments: Number(params.get('prebuffer')) } : {}),
     });
 
     // Handles for the browser tests and for poking at state in the console.
     window.audioReader = { book, engine, view, player: view.player };
     document.body.dataset.audioreaderReady = 'true';
-    console.log(`AudioReader ready: "${book.title}" (${book.numLeafs} leaves, ${book.toc.length} TOC entries, ${engine.name})`);
+    console.log(`AudioReader ready: "${book.title}" (${book.numLeafs} pages, ${book.toc.length} TOC entries, ${engine.name})`);
   } catch (error) {
     console.error(error);
     document.body.dataset.audioreaderError = error.message;
