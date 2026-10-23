@@ -367,7 +367,9 @@ describe('abort', () => {
  */
 const MODEL_PATH = path.resolve(
   process.env.POCKET_TTS_MODEL_DIR
-    || '/private/tmp/claude-501/-Users-mek/4396d9cd-bcff-49ef-b52e-949dadf9cdc6/scratchpad/pocket',
+    // The same local weights the Playwright spec serves from; fetch instructions
+    // are in tests/playwright/audioreader.spec.js. Override with POCKET_TTS_MODEL_DIR.
+    || path.resolve(__dirname, '../../../BookReaderDemo/pocket-tts-models'),
   'tokenizer.model',
 );
 const describeWithModel = fs.existsSync(MODEL_PATH) ? describe : describe.skip;
