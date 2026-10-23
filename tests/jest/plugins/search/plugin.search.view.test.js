@@ -72,6 +72,23 @@ afterEach(() => {
 });
 
 describe('View: Plugin: Search', () => {
+  describe('Toolbar search', () => {
+    test('is built when the toolbar is shown', () => {
+      br.init();
+      const { toolbarSearch } = br.plugins.search.searchView.dom;
+      expect(toolbarSearch).toBeInstanceOf(HTMLElement);
+      expect(toolbarSearch.querySelector('form.BRbooksearch')).not.toBeNull();
+    });
+
+    test('is not built when the toolbar is hidden', () => {
+      br = new BookReader({ showToolbar: false });
+      br.showProgressPopup = jest.fn();
+      br.init();
+      expect(br.plugins.search.searchView.dom.toolbarSearch).toBeNull();
+      expect(document.querySelector('.BRbooksearch')).toBeNull();
+    });
+  });
+
   describe("Search results navigation bar", () => {
     test('Search Results callback creates the results nav', () => {
       br.init();
