@@ -22,15 +22,24 @@ export default class WebTTSEngine extends AbstractTTSEngine {
    */
   static isGoodVoice(voice) {
     const badVoicePrefixes = [
-      // Exclude known novelty/undesired macOS voice families (e.g. joke/system variants)
+      // Legacy macOS voices: mostly novelty (Bubbles, Bad News, ...) or very
+      // old low-quality ones (Fred, Vicki, ...)
       'com.apple.speech.synthesis.voice.',
+      // Novelty voices (Grandma, Rocko, ...)
       'com.apple.eloquence.',
       'com.apple.voice.super-compact.',
     ];
+    // Good voices that share a prefix with the bad ones
+    const goodVoices = [
+      'com.apple.speech.synthesis.voice.Alex',
+    ];
 
-    return (
+    return Boolean(
       voice.voiceURI
-      && !badVoicePrefixes.some(prefix => voice.voiceURI.startsWith(prefix))
+      && (
+        goodVoices.includes(voice.voiceURI)
+        || !badVoicePrefixes.some(prefix => voice.voiceURI.startsWith(prefix))
+      ),
     );
   }
 
@@ -98,10 +107,12 @@ export default class WebTTSEngine extends AbstractTTSEngine {
 
   /** @override */
   getVoices() {
-    const voices = speechSynthesis.getVoices().filter(WebTTSEngine.isGoodVoice);
-    if (voices.filter(v => v.default).length != 1) {
+    const allVoices = speechSynthesis.getVoices();
+    const voices = allVoices.filter(WebTTSEngine.isGoodVoice);
+    if (allVoices.filter(v => v.default).length != 1 || !voices.some(v => v.default)) {
       // iOS bug where the default system voice is sometimes
-      // missing from the list
+      // missing from the list. Also covers the default voice
+      // being one we've filtered out.
       voices.unshift({
         voiceURI: 'bookreader.SystemDefault',
         name: 'System Default',
