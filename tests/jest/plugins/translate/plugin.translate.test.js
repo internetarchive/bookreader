@@ -5,7 +5,7 @@ jest.mock('@internetarchive/bergamot-translator/translator.js', () => ({
 }));
 
 import { render } from 'lit';
-import { BrTranslatePanel, loadRecentLanguages } from '@/src/plugins/translate/plugin.translate.js';
+import { BrTranslatePanel, TranslatePlugin, loadRecentLanguages } from '@/src/plugins/translate/plugin.translate.js';
 
 describe('BrTranslatePanel unsupported language warning', () => {
   test('shows unsupported language warning message', () => {
@@ -68,5 +68,33 @@ describe('BrTranslatePanel recent languages', () => {
   test('ignores invalid stored data', () => {
     localStorage.setItem('BrTranslateRecentLanguages', '{not json');
     expect(loadRecentLanguages()).toEqual([]);
+  });
+});
+
+describe('TranslatePlugin.getDefaultToLanguage', () => {
+  const plugin = /** @type {any} */ ({
+    translationManager: {toLanguages: [{code: 'en'}, {code: 'fr'}, {code: 'zh-Hans'}]},
+  });
+  const getDefault = (browserLanguages) => {
+    jest.spyOn(navigator, 'languages', 'get').mockReturnValue(browserLanguages);
+    return TranslatePlugin.prototype.getDefaultToLanguage.call(plugin);
+  };
+
+  beforeEach(() => localStorage.clear());
+  afterEach(() => jest.restoreAllMocks());
+
+  test('uses the browser language, matching by base language', () => {
+    expect(getDefault(['fr-CA', 'en'])).toBe('fr');
+    expect(getDefault(['zh-CN'])).toBe('zh-Hans');
+  });
+
+  test('skips browser languages without a model', () => {
+    expect(getDefault(['xx', 'fr'])).toBe('fr');
+    expect(getDefault(['xx'])).toBe('en');
+  });
+
+  test('prefers the most recently used language', () => {
+    localStorage.setItem('BrTranslateRecentLanguages', JSON.stringify(['zh-Hans']));
+    expect(getDefault(['fr'])).toBe('zh-Hans');
   });
 });

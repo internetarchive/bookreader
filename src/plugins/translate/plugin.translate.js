@@ -127,8 +127,25 @@ export class TranslatePlugin extends BookReaderPlugin {
     await this.translationManager.initWorker();
     // Note await above lets _render function properly, since it gives the browser
     // time to render the rest of bookreader, which _render depends on
-    this.langToCode = this.translationManager.toLanguages[0].code;
+    this.langToCode = this.getDefaultToLanguage();
     this._render();
+  }
+
+  /**
+   * The most recently used "To" language, else the first of the browser's languages
+   * we have a model for, else the first available language (English)
+   * @returns {string}
+   */
+  getDefaultToLanguage() {
+    const available = this.translationManager.toLanguages.map(lang => lang.code);
+    const baseLanguage = (code) => code.split('-')[0].toLowerCase();
+    const candidates = [...loadRecentLanguages(), ...(navigator.languages || [navigator.language])];
+    for (const candidate of candidates) {
+      const match = available.find(code => code.toLowerCase() === candidate.toLowerCase())
+        || available.find(code => baseLanguage(code) === baseLanguage(candidate));
+      if (match) return match;
+    }
+    return available[0];
   }
 
   /** @param {HTMLElement} page*/
