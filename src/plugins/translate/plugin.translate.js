@@ -3,13 +3,35 @@ import { css, html, LitElement } from 'lit';
 import { BookReaderPlugin } from '../../BookReaderPlugin.js';
 import { customElement, property, query } from 'lit/decorators.js';
 import { TranslationManager } from "./TranslationManager.js";
-import { toISO6391, toNativeName } from '../tts/utils.js';
+import { hasLocalStorage, toISO6391, toNativeName } from '../tts/utils.js';
 import { sortBy } from '../../../src/BookReader/utils.js';
 import { TextSelectionManager } from '../../../src/util/TextSelectionManager.js';
 import '@internetarchive/ia-activity-indicator';
 
 // @ts-ignore
 const BookReader = /** @type {typeof import('@/src/BookReader.js').default} */(window.BookReader);
+
+const RECENT_LANGUAGES_KEY = 'BrTranslateRecentLanguages';
+const MAX_RECENT_LANGUAGES = 3;
+
+/** @returns {string[]} language codes, most recent first */
+export function loadRecentLanguages() {
+  try {
+    const codes = hasLocalStorage() && JSON.parse(localStorage.getItem(RECENT_LANGUAGES_KEY));
+    return Array.isArray(codes) ? codes : [];
+  } catch {
+    return [];
+  }
+}
+
+/** @param {string[]} codes */
+function saveRecentLanguages(codes) {
+  try {
+    if (hasLocalStorage()) localStorage.setItem(RECENT_LANGUAGES_KEY, JSON.stringify(codes));
+  } catch {
+    // Storage full or blocked; recent languages just won't persist
+  }
+}
 
 export class TranslatePlugin extends BookReaderPlugin {
 
@@ -383,6 +405,7 @@ export class BrTranslatePanel extends LitElement {
   @property({ type: String }) detectedToLang = '';
   @property({ type: Boolean }) loadingModel;
   @property({ type: Boolean }) sourceLanguageSupported = true;
+  @property({ type: Array }) recentToLanguages = loadRecentLanguages(); // Codes of recently chosen "To" languages, most recent first
 
   @query('#lang-from') langFromDropdown;
   @query('#lang-to') langToDropdown;
@@ -422,13 +445,7 @@ export class BrTranslatePanel extends LitElement {
         <label>
           <span style="font-size: 12px;color: #ccc;">Translate To</span>
           <select id="lang-to" name="to" class="lang-select" style="display:block; width:100%;" @change="${this._onLangToChange}">
-          ${sortBy(this.toLanguages, ((lang) => lang.name.toLowerCase()
-    )).map((lang) => {
-      return html`<option value="${lang.code}" 
-                        ?selected=${lang.code == this.detectedToLang}
-                        > ${lang.name ? lang.name : lang.code} </option>`;
-    })
-          }
+          ${this._renderToLanguageOptions()}
           </select>
         </label>
       </div>
@@ -448,11 +465,11 @@ export class BrTranslatePanel extends LitElement {
           </summary>
           <select id="lang-from" name="from" class="lang-select" value=${this.detectedFromLang} @change="${this._onLangFromChange}" style="width:65%; margin-top: 3%; margin-bottom: 3%">
           ${sortBy(this.fromLanguages, ((lang) => lang.name.toLowerCase()
-          )).map((lang) => {
-            return html`<option value="${lang.code}"
+    )).map((lang) => {
+      return html`<option value="${lang.code}"
                       ?selected=${lang.code == this.detectedFromLang}
                       >${lang.name ? lang.name : lang.code} </option>`;
-          })
+    })
           }
           </select>
         </details>
@@ -500,6 +517,36 @@ export class BrTranslatePanel extends LitElement {
     }
     this.loadingModel = true;
     this.detectedToLang = event.target.value;
+
+    this.recentToLanguages = [event.target.value, ...this.recentToLanguages.filter(code => code !== event.target.value)]
+      .slice(0, MAX_RECENT_LANGUAGES);
+    saveRecentLanguages(this.recentToLanguages);
+  }
+
+  /**
+   * "To" language options, with recently used languages in their own group at the top
+   */
+  _renderToLanguageOptions() {
+    const option = (lang, selected) => html`<option value="${lang.code}" ?selected=${selected}>${lang.name || lang.code}</option>`;
+    const allLanguages = sortBy(this.toLanguages, (lang) => lang.name.toLowerCase());
+    const recentLanguages = this.recentToLanguages
+      .map(code => this.toLanguages.find(lang => lang.code === code))
+      .filter(Boolean);
+
+    if (!recentLanguages.length) {
+      return allLanguages.map(lang => option(lang, lang.code == this.detectedToLang));
+    }
+
+    // Recent languages also stay in the full list, but are only marked selected in the "Recent" group
+    const selectedIsRecent = recentLanguages.some(lang => lang.code == this.detectedToLang);
+    return html`
+      <optgroup label="Recent">
+        ${recentLanguages.map(lang => option(lang, lang.code == this.detectedToLang))}
+      </optgroup>
+      <optgroup label="All languages">
+        ${allLanguages.map(lang => option(lang, !selectedIsRecent && lang.code == this.detectedToLang))}
+      </optgroup>
+    `;
   }
 
   _getSelectedLang(type) {
