@@ -34,6 +34,9 @@ export class TranslationManager {
 
   publicPath = '';
 
+  /** @type {((progress: {from: string, to: string, loaded: number}) => void) | null} */
+  _onModelProgress = null;
+
   constructor() {
     //TODO Should default to the book language as the first element
     const enModel = {code: "en", name: "English (en)", type: "prod"};
@@ -64,6 +67,7 @@ export class TranslationManager {
       workers: 2,
       batchSize: 4,
       workerUrl: this.publicPath + '/translator-worker.js',
+      onmodelprogress: (progress) => this._onModelProgress?.(progress),
     });
 
     const modelType = await this.translator.backing.registry;
@@ -144,21 +148,45 @@ export class TranslationManager {
       this.currentlyTranslating[key].resolve(response.target.text);
       this.alreadyTranslated.add({index: key, response: response.target.text});
       delete this.currentlyTranslating[key];
+    }).catch((err) => {
+      this.currentlyTranslating[key].reject(err);
+      delete this.currentlyTranslating[key];
     });
 
     return promise;
   }
 
   /**
-   * Checks and updates the status of a model that is currently being retreived from IA
+   * Downloads the model(s) needed to translate between two languages. Pairs without
+   * English need two models, since they're translated through English.
    * @param {string} fromLanguage
    * @param {string} toLanguage
-   * @returns {Promise<boolean>}
+   * @param {object} [options]
+   * @param {AbortSignal} [options.signal]
+   * @param {(loaded: number, total: number) => void} [options.onProgress] bytes downloaded / total
    */
-  getTranslationModel = async(fromLanguage, toLanguage) => {
-    return this.translator.backing.getTranslationModel({from: fromLanguage, to: toLanguage})
-      .catch((err) => {
-        console.error(`An error occurred while trying to retreive the ${fromLanguage}-${toLanguage} model`);
-      });
+  loadTranslationModels = async (fromLanguage, toLanguage, {signal, onProgress} = {}) => {
+    const models = await this.translator.backing.getModels({from: fromLanguage, to: toLanguage});
+    const total = models
+      .flatMap(model => Object.values(model.files))
+      .reduce((sum, file) => sum + (file?.size || 0), 0);
+    const loadedByModel = {};
+    onProgress?.(0, total);
+
+    const handler = ({from, to, loaded}) => {
+      loadedByModel[`${from}${to}`] = loaded;
+      onProgress?.(Object.values(loadedByModel).reduce((sum, n) => sum + n, 0), total);
+    };
+    this._onModelProgress = handler;
+    try {
+      await Promise.all(models.map(({from, to}) => this.translator.backing.getTranslationModel({from, to}, {signal})));
+    } finally {
+      if (this._onModelProgress === handler) this._onModelProgress = null;
+    }
+  }
+
+  /** Drops all queued translation requests */
+  cancelTranslations() {
+    this.translator.remove(() => true);
   }
 }
