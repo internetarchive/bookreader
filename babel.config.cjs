@@ -12,9 +12,8 @@ module.exports = {
   ],
   plugins: [
     ["@babel/plugin-proposal-decorators", {
-      version: "2018-09",
-      decoratorsBeforeExport: true,
+      version: "legacy",
     }],
-    ["@babel/plugin-proposal-class-properties"],
+    ["@babel/plugin-proposal-class-properties", { loose: true }],
   ],
 };
