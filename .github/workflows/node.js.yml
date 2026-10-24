@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - uses: actions/setup-node@v7
       with:
         node-version: ${{ env.NODE_VERSION }}
@@ -32,13 +32,13 @@ jobs:
     needs: install
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - uses: actions/setup-node@v7
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
     - name: Cache BookReader/
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       id: build-cache
       with:
         # Cache the build files so we don't have to build twice for e2e tests
@@ -52,7 +52,7 @@ jobs:
     needs: install
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - uses: actions/setup-node@v7
       with:
         node-version: ${{ env.NODE_VERSION }}
@@ -61,7 +61,7 @@ jobs:
     - run: npm ci --no-audit --no-fund
     - run: npm run lint
     - run: npm run test
-    - uses: codecov/codecov-action@v4
+    - uses: codecov/codecov-action@v7
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
     
@@ -69,14 +69,14 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - uses: actions/setup-node@v7
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
     - run: npm ci --no-audit --no-fund
     - name: Load BookReader/ from cache
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         # Cache the build files so we don't have to build twice for e2e tests
         path: 'BookReader'
