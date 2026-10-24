@@ -22,6 +22,10 @@ const depNameFromNpmArg = (arg) => {
   return i === -1 ? arg : arg.slice(0, i);
 };
 
+// lit's range allows lit 2 and lit 3 on purpose, and `npm i lit@latest` would
+// narrow it to one major, so it's left out of the update:* scripts.
+const MANUALLY_UPDATED = new Set(['lit']);
+
 // Collect all packages listed in update:* scripts (excludes update:*:test variants)
 const updateScriptDeps = new Set(
   Object.entries(pkg.scripts)
@@ -40,7 +44,7 @@ describe('renovate.json', () => {
 
 describe('package.json update:* scripts', () => {
   test('all package.json dependencies appear in an update:* script', () => {
-    const missing = packageJsonDeps.filter(dep => !updateScriptDeps.has(dep));
+    const missing = packageJsonDeps.filter(dep => !updateScriptDeps.has(dep) && !MANUALLY_UPDATED.has(dep));
     expect(missing).toEqual([]);
   });
 
@@ -54,7 +58,7 @@ describe('package.json update:* scripts', () => {
       if (!script) continue;
 
       const scriptPackages = new Set(script.split(/\s+/).slice(2).map(depNameFromNpmArg));
-      const groupPackages = new Set(matchPackageNames);
+      const groupPackages = new Set(matchPackageNames.filter(dep => !MANUALLY_UPDATED.has(dep)));
       expect({ group: rule.groupName, packages: [...scriptPackages].sort() })
         .toEqual({ group: rule.groupName, packages: [...groupPackages].sort() });
     }
