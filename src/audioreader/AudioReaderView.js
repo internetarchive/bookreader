@@ -289,8 +289,8 @@ export class AudioReaderView extends LitElement {
           </svg>
         </a>
         ${this.readAlong
-    ? html`<img class="mini-cover" src=${this.book.coverUrl} alt="Cover of ${this.book.title}" />`
-    : nothing}
+      ? html`<img class="mini-cover" src=${this.book.coverUrl} alt="Cover of ${this.book.title}" />`
+      : nothing}
         <h1 class="title" title=${this.book.title}>${this.book.title}</h1>
         <button
           class="icon-toggle ${this.readAlong ? 'active' : ''}"
@@ -378,30 +378,29 @@ export class AudioReaderView extends LitElement {
   }
 
   /**
-   * A handful of ungated English voices to clone, from kyutai/tts-voices. Picking
-   * one reloads with `?referenceAudio=` set; the model bundle is cached, so the
-   * reload re-primes the voice in seconds rather than re-downloading anything.
-   * Only shown for the PocketTTS-based engines, which are the ones that clone.
+   * The two default PocketTTS voices (kyutai's `stuart_bell` and `caro_davy`,
+   * from the Voice Zero set), shipped as precomputed embeddings. Picking one
+   * reloads with `?voice=` set; the model bundle is cached, so the reload
+   * re-primes the voice in seconds rather than re-downloading anything.
+   * Only shown for the PocketTTS-based engines.
    */
   static VOICES = [
-    { label: 'Stuart Bell', url: 'https://huggingface.co/kyutai/tts-voices/resolve/main/voice-zero/stuart_bell.wav' },
-    { label: 'Bill Boerst', url: 'https://huggingface.co/kyutai/tts-voices/resolve/main/voice-zero/bill_boerst.wav' },
-    { label: 'Peter Yearsley', url: 'https://huggingface.co/kyutai/tts-voices/resolve/main/voice-zero/peter_yearsley.wav' },
-    { label: 'Caro Davy', url: 'https://huggingface.co/kyutai/tts-voices/resolve/main/voice-zero/caro_davy.wav' },
+    { id: 'stuart_bell', label: 'Stuart Bell' },
+    { id: 'caro_davy', label: 'Caro Davy' },
   ];
 
   _renderVoicePicker() {
-    // Cloning only applies to the PocketTTS-backed engines.
+    // Voice selection only applies to the PocketTTS-backed engines.
     if (!/Pocket|Hybrid/.test(this.player.engine.name || '')) return nothing;
-    // No `referenceAudio` means the engine default, which is the first voice.
-    const current = new URLSearchParams(window.location.search).get('referenceAudio')
-      || AudioReaderView.VOICES[0].url;
+    // No `voice` means the engine default, which is the first voice.
+    const current = new URLSearchParams(window.location.search).get('voice')
+      || AudioReaderView.VOICES[0].id;
 
     return html`
       <select class="voice" title="Voice — switching reloads the page" aria-label="Voice"
         @change=${this._onVoiceChange}>
         ${AudioReaderView.VOICES.map(voice => html`
-          <option value=${voice.url} ?selected=${voice.url === current}>${voice.label}</option>`)}
+          <option value=${voice.id} ?selected=${voice.id === current}>${voice.label}</option>`)}
       </select>
     `;
   }
@@ -410,8 +409,8 @@ export class AudioReaderView extends LitElement {
   _onVoiceChange(event) {
     const url = new URL(window.location.href);
     const value = /** @type {HTMLSelectElement} */ (event.target).value;
-    if (value) url.searchParams.set('referenceAudio', value);
-    else url.searchParams.delete('referenceAudio');
+    if (value) url.searchParams.set('voice', value);
+    else url.searchParams.delete('voice');
     window.location.href = url.toString();
   }
 
@@ -649,7 +648,7 @@ export class AudioReaderView extends LitElement {
   }
 
   /**
-   * PocketTTS has to fetch ~146MB of weights before it can say anything, and
+   * PocketTTS has to fetch ~28MB of weights before it can say anything, and
    * until it has, every segment falls back to the preview voice. Saying so is the
    * difference between "loading" and "why does it sound like that".
    */
@@ -674,8 +673,8 @@ export class AudioReaderView extends LitElement {
         <div class="status-head">
           <span class="status-spinner" aria-hidden="true"></span>
           <span class="status-text">${downloaded
-    ? html`Preparing voice…`
-    : html`Loading voice — ${mb(loaded)} of ${mb(total)} MB`}${
+      ? html`Preparing voice…`
+      : html`Loading voice — ${mb(loaded)} of ${mb(total)} MB`}${
   engine.fast ? html`. Reading in the preview voice meanwhile.` : nothing}</span>
         </div>
         <span class="track thin ${downloaded ? 'indeterminate' : ''}">

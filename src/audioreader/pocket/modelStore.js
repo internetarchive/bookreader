@@ -1,33 +1,42 @@
 /**
  * Fetch and cache the PocketTTS model bundle.
  *
- * The int8 English bundle is roughly 146MB across five files. Re-downloading that
- * on every page load would be indefensible, so responses go into the Cache API,
- * keyed by bundle name, and subsequent loads are served from disk.
+ * The default is kyutai's 18.2M-parameter "small" English model (the Oct 2026
+ * `pocket-tts-small` release), int8-quantized to roughly 28MB across four model
+ * files -- down from ~146MB for the 2026-04 bundle. Re-downloading that on every
+ * page load would be wasteful, so responses go into the Cache API, keyed by URL,
+ * and subsequent loads are served from disk.
  *
- * Progress is reported per byte rather than per file, because "3 of 5 files" is
- * useless when one of them is 76MB.
+ * The mimi *encoder* (used only to clone a voice from arbitrary audio) is NOT in
+ * the default file list: the two shipped voices are precomputed embeddings (see
+ * loadVoice), so the ~20MB encoder never needs to be downloaded.
+ *
+ * Progress is reported per byte rather than per file, because "3 of 4 files" is
+ * useless when one of them is 13MB.
  */
 
-/** Where the ungated ONNX bundle lives. */
-export const DEFAULT_MODEL_BASE = 'https://huggingface.co/KevinAHM/pocket-tts-onnx/resolve/main/onnx/english_2026-04';
+/** Where the ungated small ONNX bundle lives (reward-fine-tuned 18M English). */
+export const DEFAULT_MODEL_BASE = 'https://huggingface.co/ken107/pocket-tts-onnx/resolve/main/english_18m_refl_2026-10';
+
+/** Where the precomputed default-voice embeddings are served from. */
+export const DEFAULT_VOICES_BASE = '/BookReaderDemo/pocket-tts-voices';
 
 /** Cache name; bumping this invalidates every stored bundle. */
-const CACHE_NAME = 'bookreader-pocket-tts-v1';
+const CACHE_NAME = 'bookreader-pocket-tts-v2';
 
 /**
- * Approximate sizes of the int8 bundle, so a total can be shown before any
+ * Approximate sizes of the small int8 bundle, so a total can be shown before any
  * response headers arrive. Only used for progress display.
  */
 const APPROXIMATE_BYTES = {
-  'flow_lm_main_int8.onnx': 76_341_079,
-  'mimi_decoder_int8.onnx': 22_684_077,
-  'mimi_encoder_int8.onnx': 20_779_616,
-  'text_conditioner_int8.onnx': 16_388_384,
-  'flow_lm_flow_int8.onnx': 9_962_530,
+  'flow_lm_main_int8.onnx': 13_311_400,
+  'text_conditioner_int8.onnx': 8_194_566,
+  'mimi_decoder_int8.onnx': 5_516_637,
+  'flow_lm_flow_int8.onnx': 915_805,
+  'mimi_encoder_int8.onnx': 20_405_732,
   'tokenizer.model': 59_339,
-  'bos_before_voice.npy': 4_224,
-  'bundle.json': 40_000,
+  'bos_before_voice.npy': 2_176,
+  'bundle.json': 30_031,
 };
 
 /**
@@ -105,7 +114,6 @@ export async function loadBundleFiles({
     'text_conditioner_int8.onnx',
     'flow_lm_flow_int8.onnx',
     'mimi_decoder_int8.onnx',
-    'mimi_encoder_int8.onnx',
     'flow_lm_main_int8.onnx',
   ],
   signal,
@@ -117,8 +125,8 @@ export async function loadBundleFiles({
   /** @type {Object<string, ArrayBuffer>} */
   const result = {};
 
-  // Sequential on purpose: eight parallel fetches of a 146MB bundle competes for
-  // bandwidth with the book's own text requests and makes progress meaningless.
+  // Sequential on purpose: parallel fetches of the bundle compete for bandwidth
+  // with the book's own text requests and make progress reporting meaningless.
   for (const file of files) {
     const { buffer, fromCache } = await fetchFile(base, file, {
       signal,
@@ -134,8 +142,38 @@ export async function loadBundleFiles({
 }
 
 /**
+ * Load a precomputed voice embedding by id.
+ *
+ * Voices are shipped as a `voices.json` manifest plus one Float32LE `.f32` per
+ * voice (the mimi-encoder output, ~210KB). Loading one is cheap and needs no
+ * model: the worker feeds it straight to `setVoiceFromEmbeddings`, which primes
+ * the voice through flow_lm_main. This is why the 20MB mimi encoder is not in the
+ * default bundle -- the two shipped voices never need to be cloned at runtime.
+ *
+ * @param {Object} [opts]
+ * @param {string} [opts.voicesBase] where voices.json and the `.f32` files live
+ * @param {string} [opts.voiceId] which voice; defaults to the first in the manifest
+ * @param {AbortSignal} [opts.signal]
+ * @return {Promise<{id: string, label: string, data: Float32Array, dims: number[]}>}
+ */
+export async function loadVoice({ voicesBase = DEFAULT_VOICES_BASE, voiceId, signal } = {}) {
+  const manifestResponse = await fetch(`${voicesBase}/voices.json`, { signal });
+  if (!manifestResponse.ok) {
+    throw new Error(`PocketTTS: HTTP ${manifestResponse.status} fetching voices.json`);
+  }
+  const manifest = await manifestResponse.json();
+  const voice = (voiceId && manifest.voices.find(v => v.id === voiceId)) || manifest.voices[0];
+  if (!voice) throw new Error(`PocketTTS: no voice "${voiceId}" in voices.json`);
+
+  const { buffer } = await fetchFile(voicesBase, voice.file, { signal });
+  // A Float32Array needs a byte offset that is a multiple of 4; a fresh ArrayBuffer
+  // from the Cache/network is aligned, so wrapping it directly is safe.
+  return { id: voice.id, label: voice.label, data: new Float32Array(buffer), dims: voice.dims };
+}
+
+/**
  * Whether a bundle is already cached, so the UI can say "ready" instead of
- * "146MB download" before the patron commits to it.
+ * "download" before the patron commits to it.
  * @param {Object} [opts]
  * @param {string} [opts.base]
  * @param {string[]} [opts.files]
