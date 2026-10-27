@@ -21,6 +21,8 @@ import './AudioReaderView.js';
  *   grace       ms to wait for PocketTTS before previewing, in hybrid mode
  *   fast        preview engine for hybrid mode (default `webspeech`)
  *   modelBase   where to fetch the PocketTTS bundle from (default: HuggingFace)
+ *   voice       precomputed voice id: `stuart_bell` (default) or `caro_davy`
+ *   voicesBase  where to fetch the precomputed voice embeddings from
  *   synthDelay  ms of artificial synthesis latency, to exercise the buffering
  *   lookahead   paragraphs to keep buffered (default 5)
  *   prebuffer   segments to synthesize before playback starts (default 2)
@@ -90,8 +92,11 @@ function buildPocketEngine(params) {
     throw new Error('AudioReader: this browser cannot run PocketTTS (needs Workers, WASM and Web Audio)');
   }
   return new PocketTtsEngine({
-    // Point at a local copy to avoid a ~146MB download from HuggingFace.
+    // `modelBase` can point at a local copy to avoid the ~28MB HuggingFace fetch.
     ...(params.get('modelBase') ? { modelBase: params.get('modelBase') } : {}),
+    ...(params.get('voicesBase') ? { voicesBase: params.get('voicesBase') } : {}),
+    ...(params.get('voice') ? { voice: params.get('voice') } : {}),
+    // Escape hatch: clone a voice from an arbitrary clip (pulls in the encoder).
     ...(params.get('referenceAudio') ? { referenceAudioUrl: params.get('referenceAudio') } : {}),
   });
 }

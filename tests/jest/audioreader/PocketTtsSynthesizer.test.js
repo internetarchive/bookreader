@@ -159,7 +159,7 @@ const fakeTokenizer = {
 function makeSynthesizer(overrides = {}) {
   const { sessions, calls, feeds } = overrides.harness || makeSessions();
   const synthesizer = new PocketTtsSynthesizer({
-    bundle: makeBundle(),
+    bundle: overrides.bundle || makeBundle(),
     sessions,
     tokenizer: overrides.tokenizer || fakeTokenizer,
     runtime,
@@ -169,6 +169,71 @@ function makeSynthesizer(overrides = {}) {
   });
   return { synthesizer, sessions, calls, feeds };
 }
+
+describe('drifting flow (small 18M "refl" bundle)', () => {
+  /** Replace the flow session with the small model's one-step signature. */
+  function makeDriftingHarness() {
+    const base = makeSessions();
+    base.sessions.flowLmFlow = {
+      // The small bundle's flow net takes only (c, x) and returns the latent.
+      inputNames: ['c', 'x'],
+      outputNames: ['latent'],
+      run: async (input) => {
+        base.calls.flowLmFlow++;
+        base.feeds.flowLmFlow.push(input);
+        return { latent: new FakeTensor('float32', new Float32Array(LATENT_DIM).fill(0.25), [1, LATENT_DIM]) };
+      },
+    };
+    return base;
+  }
+
+  const driftingBundle = () => ({
+    ...makeBundle(),
+    flow_type: 'drifting',
+    default_temperature: 0.3,
+    default_eos_threshold: -1.0,
+    min_frames_before_eos: 0,
+    replace_characters: { '—': ',' },
+  });
+
+  async function setup() {
+    const harness = makeDriftingHarness();
+    const { synthesizer, calls, feeds } = makeSynthesizer({ harness, bundle: driftingBundle() });
+    await synthesizer.setVoiceFromEmbeddings({ data: new Float32Array(CONDITIONING_DIM), dims: [1, 1, CONDITIONING_DIM] });
+    return { synthesizer, calls, feeds };
+  }
+
+  test('reads flow_type from the bundle', async () => {
+    const { synthesizer } = await setup();
+    expect(synthesizer.flowType).toBe('drifting');
+  });
+
+  test('calls the flow net exactly once per frame (no s/t integration)', async () => {
+    const { synthesizer, calls, feeds } = await setup();
+    const { samples } = await synthesizer.synthesize('one two three');
+
+    // One flow call per generated frame (single-step), each carrying c and x only.
+    expect(calls.flowLmFlow).toBeGreaterThan(0);
+    expect(calls.flowLmFlow).toBe(feeds.flowLmFlow.length);
+    for (const feed of feeds.flowLmFlow) {
+      expect(Object.keys(feed).sort()).toEqual(['c', 'x']);
+    }
+    // The flow output is used directly as the latent, so real audio comes out.
+    expect(samples.some(s => s !== 0)).toBe(true);
+  });
+
+  test('honors the bundle EOS threshold', async () => {
+    const { synthesizer } = await setup();
+    expect(synthesizer.eosThreshold).toBe(-1.0);
+  });
+
+  test('applies replace_characters before tokenizing', async () => {
+    const { synthesizer } = await setup();
+    const { text } = synthesizer.prepareTextPrompt('a—b');
+    expect(text).not.toContain('—');
+    expect(text.toLowerCase()).toContain('a,b');
+  });
+});
 
 describe('voice handling', () => {
   test('refuses to synthesize before a voice is set', async () => {
@@ -365,14 +430,17 @@ describe('abort', () => {
  * chunk sizes are measured in real tokens and a stub would not catch a budget
  * mistake.
  */
-const MODEL_PATH = path.resolve(
-  process.env.POCKET_TTS_MODEL_DIR
-    // The same local weights the Playwright spec serves from; fetch instructions
-    // are in tests/playwright/audioreader.spec.js. Override with POCKET_TTS_MODEL_DIR.
-    || path.resolve(__dirname, '../../../BookReaderDemo/pocket-tts-models'),
-  'tokenizer.model',
-);
-const describeWithModel = fs.existsSync(MODEL_PATH) ? describe : describe.skip;
+const MODEL_DIRS = process.env.POCKET_TTS_MODEL_DIR
+  ? [process.env.POCKET_TTS_MODEL_DIR]
+  // The same local weights the Playwright spec serves from (small bundle first,
+  // then the older one); fetch instructions are in tests/playwright/audioreader.spec.js.
+  : [
+    path.resolve(__dirname, '../../../BookReaderDemo/pocket-tts-models-small'),
+    path.resolve(__dirname, '../../../BookReaderDemo/pocket-tts-models'),
+  ];
+const MODEL_DIR = MODEL_DIRS.find(dir => fs.existsSync(path.join(dir, 'tokenizer.model')));
+const MODEL_PATH = MODEL_DIR && path.join(MODEL_DIR, 'tokenizer.model');
+const describeWithModel = MODEL_PATH ? describe : describe.skip;
 
 describeWithModel('text preparation with the real tokenizer', () => {
   /** @type {PocketTtsSynthesizer} */

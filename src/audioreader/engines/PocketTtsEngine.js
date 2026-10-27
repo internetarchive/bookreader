@@ -1,5 +1,5 @@
 import PcmAudioOutput from './PcmAudioOutput.js';
-import { DEFAULT_MODEL_BASE } from '../pocket/modelStore.js';
+import { DEFAULT_MODEL_BASE, DEFAULT_VOICES_BASE } from '../pocket/modelStore.js';
 
 /**
  * PocketTTS as an audio-reader engine: synthesis in a Web Worker, playback
@@ -16,14 +16,18 @@ export default class PocketTtsEngine {
    * @param {string} [opts.workerUrl]
    * @param {string} [opts.modelBase] where the ONNX bundle is served from
    * @param {string} [opts.ortBase] where onnxruntime's wasm files are served from
-   * @param {string} [opts.referenceAudioUrl] voice to clone
+   * @param {string} [opts.voicesBase] where precomputed voice embeddings are served
+   * @param {string} [opts.voice] which precomputed voice to use (e.g. 'stuart_bell')
+   * @param {string} [opts.referenceAudioUrl] clone a voice from this clip instead
    * @param {(progress: Object) => void} [opts.onProgress]
    */
   constructor({
     workerUrl = '/BookReader/pocket-tts-worker.js',
     modelBase = DEFAULT_MODEL_BASE,
     ortBase = '/BookReader/ort/',
-    referenceAudioUrl = 'https://huggingface.co/kyutai/tts-voices/resolve/main/voice-zero/stuart_bell.wav',
+    voicesBase = DEFAULT_VOICES_BASE,
+    voice = 'stuart_bell',
+    referenceAudioUrl = null,
     onProgress,
   } = {}) {
     this.name = 'PocketTTS';
@@ -32,10 +36,12 @@ export default class PocketTtsEngine {
 
     this.modelBase = modelBase;
     this.ortBase = ortBase;
+    this.voicesBase = voicesBase;
+    this.voice = voice;
     this.referenceAudioUrl = referenceAudioUrl;
     this._onProgress = onProgress || (() => {});
 
-    /** Loading state, surfaced in the UI while ~146MB of weights arrive. */
+    /** Loading state, surfaced in the UI while ~28MB of weights arrive. */
     this.status = 'loading';
     this.progress = { loaded: 0, total: 1, file: null };
     this.sampleRate = null;
@@ -63,7 +69,9 @@ export default class PocketTtsEngine {
       type: 'init',
       modelBase: this.modelBase,
       ortBase: this.ortBase,
-      referenceAudioUrl: this.referenceAudioUrl,
+      voicesBase: this.voicesBase,
+      voice: this.voice,
+      ...(this.referenceAudioUrl ? { referenceAudioUrl: this.referenceAudioUrl } : {}),
     });
   }
 
@@ -90,6 +98,7 @@ export default class PocketTtsEngine {
       this.status = 'ready';
       this.sampleRate = message.sampleRate;
       this.voiceFrames = message.voiceFrames;
+      if (message.voice) this.voice = message.voice;
       this._readyResolve(this);
       this._onProgress(this.progress);
       return;

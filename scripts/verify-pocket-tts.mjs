@@ -9,8 +9,9 @@
  * Usage:
  *   node scripts/verify-pocket-tts.mjs [modelDir] [outputWav] ["text to say"]
  *
- * The model directory must contain the ungated `english_2026-04` int8 bundle:
- * bundle.json, tokenizer.model, bos_before_voice.npy, text_conditioner_int8.onnx,
+ * The model directory must contain an int8 bundle -- either the 2026-04 bundle or
+ * an Oct-2026 18M "small" bundle (the port handles both flow types): bundle.json,
+ * tokenizer.model, bos_before_voice.npy, text_conditioner_int8.onnx,
  * flow_lm_main_int8.onnx, flow_lm_flow_int8.onnx, mimi_decoder_int8.onnx,
  * mimi_encoder_int8.onnx, plus reference_sample.wav for the voice.
  */

@@ -7,11 +7,18 @@
 /** @typedef {import('./SentencePieceUnigram.js').default} SentencePieceUnigram */
 
 /**
- * PocketTTS inference, ported from the reference Python runtime
- * (`pocket_tts_onnx.py` in the ungated `KevinAHM/pocket-tts-onnx` HF repo).
+ * PocketTTS inference, ported from kyutai's reference implementation
+ * (`pocket_tts/models/flow_lm.py` in kyutai-labs/pocket-tts).
+ *
+ * Works with two ONNX bundle families, distinguished by `bundle.flow_type`:
+ *   - the 2026-04 bundle (no flow_type): an LSD / flow-matching field integrated
+ *     over `lsdSteps` (flow session c, s, t, x -> flow_dir)
+ *   - the Oct-2026 18M "small" bundles (flow_type "drifting"): a one-step
+ *     noise-to-data generator (flow session c, x -> latent)
+ * State layouts and dims come from `bundle.json`, so the same code drives both.
  *
  * There is no JS runtime for this model, so this is a direct port of the
- * flow-matching generation loop:
+ * generation loop:
  *
  *   1. `text_conditioner(token_ids)` -> text embeddings
  *   2. prime `flow_lm_main` with the voice state and those embeddings
@@ -58,7 +65,8 @@ export default class PocketTtsSynthesizer {
    */
   constructor({
     bundle, sessions, tokenizer, bosBeforeVoice = null, runtime,
-    temperature = DEFAULT_TEMPERATURE, lsdSteps = DEFAULT_LSD_STEPS, random = gaussian,
+    temperature = bundle.default_temperature ?? DEFAULT_TEMPERATURE,
+    lsdSteps = DEFAULT_LSD_STEPS, random = gaussian,
   }) {
     this.bundle = bundle;
     this.sessions = sessions;
@@ -78,6 +86,21 @@ export default class PocketTtsSynthesizer {
     this.removeSemicolons = !!bundle.remove_semicolons;
     this.padShortInputs = !!bundle.pad_with_spaces_for_short_inputs;
     this.recommendedFramesAfterEos = bundle.model_recommended_frames_after_eos ?? null;
+
+    /**
+     * How the per-frame latent is drawn from `flow_lm_flow`. The 2026-04 bundle
+     * has no `flow_type` and uses an LSD / flow-matching field integrated over
+     * `lsdSteps` (session inputs c, s, t, x -> flow_dir). The 18M "refl" small
+     * bundles declare `flow_type: "drifting"`: a one-step noise-to-data generator
+     * whose session (c, x -> latent) returns the latent directly, no integration.
+     */
+    this.flowType = bundle.flow_type || 'lsd';
+    /** EOS logit above which the model is considered finished. Bundle-driven. */
+    this.eosThreshold = bundle.default_eos_threshold ?? EOS_LOGIT_THRESHOLD;
+    /** Earliest frame an EOS is honored, so short prompts are not cut off. */
+    this.minFramesBeforeEos = bundle.min_frames_before_eos ?? 0;
+    /** Text substitutions the bundle asks for before tokenizing (e.g. en-dash -> comma). */
+    this.replaceCharacters = bundle.replace_characters ?? null;
 
     /**
      * `bos_before_voice.npy` holds a single (1, n, conditioningDim) block that is
@@ -109,6 +132,8 @@ export default class PocketTtsSynthesizer {
 
     this._updateStateFromOutputs(state, outputs, this.flowStateManifest, 2);
     this._voiceState = state;
+    /** Number of frames in the voice embedding, for reporting. */
+    this.voiceFrames = embeddings.dims[1];
   }
 
   /**
@@ -173,6 +198,13 @@ export default class PocketTtsSynthesizer {
    */
   prepareTextPrompt(text) {
     let prepared = text.replace(/[\n\r]/g, ' ').replace(/ {2}/g, ' ').trim();
+    // Bundle-specified substitutions (e.g. en/em-dash -> comma, curly -> straight
+    // quotes), applied before tokenizing so OCR punctuation matches training.
+    if (this.replaceCharacters) {
+      for (const [from, to] of Object.entries(this.replaceCharacters)) {
+        prepared = prepared.split(from).join(to);
+      }
+    }
     if (this.removeSemicolons) prepared = prepared.replace(/;/g, ',');
     if (!prepared) return { text: '', framesAfterEosGuess: 1 };
 
@@ -327,32 +359,49 @@ export default class PocketTtsSynthesizer {
       const eosLogit = outputs[1];
       this._updateStateFromOutputs(state, outputs, this.flowStateManifest, 2);
 
-      if (eosLogit.data[0] > EOS_LOGIT_THRESHOLD && eosStep === null) eosStep = step;
+      if (step >= this.minFramesBeforeEos && eosLogit.data[0] > this.eosThreshold && eosStep === null) {
+        eosStep = step;
+      }
       if (eosStep !== null && step >= eosStep + framesAfterEos) break;
 
-      // Integrate the flow field from a Gaussian sample to this frame's latent.
+      // Draw the frame's starting noise. `std = temp**0.5` matches the reference
+      // (FlowNet.forward in pocket_tts/models/flow_lm.py).
       let x = new Float32Array(this.latentDim);
       if (this.temperature > 0) {
         const deviation = Math.sqrt(this.temperature);
         for (let i = 0; i < x.length; i++) x[i] = this._random() * deviation;
       }
 
-      for (let j = 0; j < this.lsdSteps; j++) {
-        const s = j / this.lsdSteps;
+      let latent;
+      if (this.flowType === 'drifting') {
+        // One-step generator: `drifting_decode(v_t, x_0) = v_t(x_0)`. The flow
+        // net maps the Gaussian sample straight to the latent; its output IS the
+        // latent (no s/t, no Euler integration).
         const flowOutputs = await this._run(this.sessions.flowLmFlow, {
           c: conditioning,
-          s: this._tensor('float32', Float32Array.of(s), [1, 1]),
-          t: this._tensor('float32', Float32Array.of(s + dt), [1, 1]),
           x: this._tensor('float32', x, [1, this.latentDim]),
         });
-        const flow = flowOutputs[0].data;
-        const next = new Float32Array(this.latentDim);
-        for (let i = 0; i < next.length; i++) next[i] = x[i] + flow[i] * dt;
-        x = next;
+        latent = Float32Array.from(flowOutputs[0].data);
+      } else {
+        // LSD / flow-matching: integrate the flow field across the unit interval.
+        for (let j = 0; j < this.lsdSteps; j++) {
+          const s = j / this.lsdSteps;
+          const flowOutputs = await this._run(this.sessions.flowLmFlow, {
+            c: conditioning,
+            s: this._tensor('float32', Float32Array.of(s), [1, 1]),
+            t: this._tensor('float32', Float32Array.of(s + dt), [1, 1]),
+            x: this._tensor('float32', x, [1, this.latentDim]),
+          });
+          const flow = flowOutputs[0].data;
+          const next = new Float32Array(this.latentDim);
+          for (let i = 0; i < next.length; i++) next[i] = x[i] + flow[i] * dt;
+          x = next;
+        }
+        latent = x;
       }
 
-      frames.push(x);
-      current = this._tensor('float32', x, [1, 1, this.latentDim]);
+      frames.push(latent);
+      current = this._tensor('float32', latent, [1, 1, this.latentDim]);
     }
 
     return frames;
