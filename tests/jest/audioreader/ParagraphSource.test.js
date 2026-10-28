@@ -154,6 +154,21 @@ describe('window', () => {
     const window = await source.window({ leafIndex: 4, chunkIndex: 1 }, 5);
     expect(window).toHaveLength(2);
   });
+
+  test('skips paragraphs absorbed into a neighbour, so the lookahead stays readable', async () => {
+    // A chunk whose text is wholly pulled into the previous paragraph's trailing
+    // sentence resolves to "" and must not eat a lookahead slot (3:0 here).
+    const { source } = makeSource(PAGES);
+    jest.spyOn(source, 'resolvedText').mockImplementation(
+      async cursor => (cursor.leafIndex === 3 ? '' : 'real text'));
+
+    const window = await source.window({ leafIndex: 1, chunkIndex: 0 }, 3);
+    expect(window).toEqual([
+      { leafIndex: 1, chunkIndex: 0 },
+      { leafIndex: 1, chunkIndex: 1 },
+      { leafIndex: 4, chunkIndex: 0 },
+    ]);
+  });
 });
 
 describe('isSpeakable', () => {

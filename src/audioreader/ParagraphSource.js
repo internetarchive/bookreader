@@ -208,7 +208,13 @@ export default class ParagraphSource {
     const cursors = [];
     let current = cursor;
     while (current && cursors.length < count) {
-      cursors.push(current);
+      // Skip paragraphs that resolve to no text once sentence-stitching has run:
+      // an OCR chunk can be wholly absorbed into the previous paragraph's trailing
+      // sentence, leaving it nothing of its own to read. Such a paragraph must not
+      // consume a lookahead slot, or the buffer holds fewer readable paragraphs
+      // than asked. The starting cursor is always kept -- it is where playback sits.
+      const keep = cursors.length === 0 || (await this.resolvedText(current)).trim().length > 0;
+      if (keep) cursors.push(current);
       current = await this.next(current);
     }
     return cursors;
