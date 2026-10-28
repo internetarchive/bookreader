@@ -1,0 +1,29 @@
+{
+  "bundle": "english_18m_refl_2026-10",
+  "conditioning_dim": 512,
+  "sample_rate": 24000,
+  "voices": [
+    {
+      "id": "stuart_bell",
+      "label": "Stuart Bell",
+      "gender": "m",
+      "file": "stuart_bell.f32",
+      "dims": [
+        1,
+        105,
+        512
+      ]
+    },
+    {
+      "id": "caro_davy",
+      "label": "Caro Davy",
+      "gender": "f",
+      "file": "caro_davy.f32",
+      "dims": [
+        1,
+        105,
+        512
+      ]
+    }
+  ]
+}

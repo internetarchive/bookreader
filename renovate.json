@@ -28,6 +28,7 @@
       "matchPackageNames": [
         "@babel/eslint-parser",
         "@open-wc/testing-helpers",
+        "@playwright/test",
         "@types/jest",
         "eslint",
         "eslint-plugin-no-jquery",
@@ -82,6 +83,7 @@
         "jquery-ui-touch-punch",
         "jquery.browser",
         "lit",
+        "onnxruntime-web",
         "soundmanager2"
       ]
     }

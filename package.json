@@ -62,6 +62,7 @@
     "jquery-ui-touch-punch": "0.2.3",
     "jquery.browser": "0.1.0",
     "lit": "2.8.0",
+    "onnxruntime-web": "1.27.0",
     "soundmanager2": "2.97.20170602"
   },
   "devDependencies": {
@@ -73,6 +74,7 @@
     "@iiif/presentation-2": "1.0.4",
     "@iiif/presentation-3": "2.2.4",
     "@open-wc/testing-helpers": "3.0.1",
+    "@playwright/test": "1.62.1",
     "@types/jest": "30.0.0",
     "@webcomponents/webcomponentsjs": "2.6.0",
     "babel-loader": "10.1.1",
@@ -120,7 +122,7 @@
     "preversion": "node scripts/preversion.js",
     "version": "node scripts/version.js",
     "postversion": "node scripts/postversion.js",
-    "build": "npm run clean && npx concurrently --group npm:build-js npm:build-css npm:build-assets npm:build-hypothesis npm:build-bergamot",
+    "build": "npm run clean && npx concurrently --group npm:build-js npm:build-css npm:build-assets npm:build-hypothesis npm:build-bergamot npm:build-ort",
     "build-assets": "npx cpx \"src/assets/**/*\" BookReader && npx svgo -f BookReader/icons && npx svgo -f BookReader/images",
     "build-assets:watch": "npx cpx --watch --verbose \"src/assets/**/*\" BookReader",
     "build-bergamot": "npx cpx \"node_modules/@internetarchive/bergamot-translator/worker/*\" BookReader/",
@@ -142,7 +144,7 @@
     "test:e2e": "npm run build && npx testcafe",
     "test:e2e:dev": "npx testcafe --live --dev",
     "DOCS:update:test-deps": "If CI succeeds, these should be good to update",
-    "update:test-deps": "npm i @babel/eslint-parser@latest @open-wc/testing-helpers@latest @types/jest@latest eslint@7 eslint-plugin-no-jquery@latest eslint-plugin-testcafe@latest jest@latest jest-environment-jsdom@latest sinon@latest testcafe@latest",
+    "update:test-deps": "npm i @babel/eslint-parser@latest @open-wc/testing-helpers@latest @playwright/test@latest @types/jest@latest eslint@7 eslint-plugin-no-jquery@latest eslint-plugin-testcafe@latest jest@latest jest-environment-jsdom@latest sinon@latest testcafe@latest",
     "update:test-deps:test": "npm run lint && npm run test && npm run test:e2e",
     "DOCS:update:build-deps": "These can cause strange changes, so do an npm run build + check file size (git diff --stat), and check the site is as expected",
     "update:build-deps": "npm i @babel/core@latest @babel/preset-env@latest @babel/plugin-proposal-class-properties@latest @babel/plugin-proposal-decorators@latest babel-loader@latest core-js@latest css-loader@latest regenerator-runtime@latest sass@latest sass-loader@latest svgo@latest webpack@latest webpack-cli@latest",
@@ -150,9 +152,11 @@
     "DOCS:update:dev-deps": "Packages used for development",
     "update:dev-deps": "npm i @iiif/presentation-2@latest @iiif/presentation-3@latest concurrently@latest cpx2@latest http-server@latest hypothesis@latest live-server@latest testcafe-browser-provider-browserstack@latest",
     "DOCS:update:runtime-deps": "Core runtime dependencies; do an npm run build + visual check after updating",
-    "update:runtime-deps": "npm i @webcomponents/webcomponentsjs@latest interactjs@latest iso-language-codes@latest jquery@latest jquery-colorbox@latest jquery-ui@latest jquery-ui-touch-punch@latest jquery.browser@latest lit@latest soundmanager2@latest",
+    "update:runtime-deps": "npm i @webcomponents/webcomponentsjs@latest interactjs@latest iso-language-codes@latest jquery@latest jquery-colorbox@latest jquery-ui@latest jquery-ui-touch-punch@latest jquery.browser@latest lit@latest onnxruntime-web@latest soundmanager2@latest",
     "update:runtime-deps:test": "npm run build",
     "DOCS:update:ia-deps": "Packages by @internetarchive",
-    "update:ia-deps": "npm i @internetarchive/bergamot-translator@latest @internetarchive/ia-activity-indicator@latest @internetarchive/ia-item-navigator@latest @internetarchive/icon-bookmark@latest @internetarchive/icon-close@latest @internetarchive/icon-dl@latest @internetarchive/icon-edit-pencil@latest @internetarchive/icon-ellipses@latest @internetarchive/icon-ia-logo@latest @internetarchive/icon-magnify-minus@latest @internetarchive/icon-magnify-plus@latest @internetarchive/icon-search@latest @internetarchive/icon-share@latest @internetarchive/icon-toc@latest @internetarchive/icon-visual-adjustment@latest @internetarchive/modal-manager@latest @internetarchive/shared-resize-observer@latest"
+    "update:ia-deps": "npm i @internetarchive/bergamot-translator@latest @internetarchive/ia-activity-indicator@latest @internetarchive/ia-item-navigator@latest @internetarchive/icon-bookmark@latest @internetarchive/icon-close@latest @internetarchive/icon-dl@latest @internetarchive/icon-edit-pencil@latest @internetarchive/icon-ellipses@latest @internetarchive/icon-ia-logo@latest @internetarchive/icon-magnify-minus@latest @internetarchive/icon-magnify-plus@latest @internetarchive/icon-search@latest @internetarchive/icon-share@latest @internetarchive/icon-toc@latest @internetarchive/icon-visual-adjustment@latest @internetarchive/modal-manager@latest @internetarchive/shared-resize-observer@latest",
+    "build-ort": "npx cpx \"node_modules/onnxruntime-web/dist/*.{wasm,mjs}\" BookReader/ort/",
+    "build-ort:watch": "npx cpx --watch \"node_modules/onnxruntime-web/dist/*.{wasm,mjs}\" BookReader/ort/"
   }
 }

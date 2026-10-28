@@ -1,0 +1,166 @@
+import IaAudioBook from './IaAudioBook.js';
+import WebSpeechEngine from './engines/WebSpeechEngine.js';
+import SyntheticPcmEngine from './engines/SyntheticPcmEngine.js';
+import PocketTtsEngine from './engines/PocketTtsEngine.js';
+import HybridTtsEngine from './engines/HybridTtsEngine.js';
+import simulateLatency from './engines/simulateLatency.js';
+import './AudioReaderView.js';
+
+/**
+ * Entry point for the audio-first reading mode (issue #1580).
+ *
+ * Boots a standalone `<ia-audio-reader>` against an archive.org item. Deliberately
+ * does not load BookReader itself: this mode renders no page images, so none of
+ * the page model, viewing modes, or image-oriented plugins are wanted. See cq #2.
+ *
+ * Query parameters:
+ *   book        archive.org identifier (aliases: `ocaid`, `id`); the book to read
+ *   engine      `pocket` (default, PocketTTS in a worker), `hybrid` (PocketTTS
+ *               with an instant WebSpeech preview), `webspeech`, or `pcm`
+ *               (measurable tones, not speech)
+ *   grace       ms to wait for PocketTTS before previewing, in hybrid mode
+ *   fast        preview engine for hybrid mode (default `webspeech`)
+ *   qualityDelay  ms of artificial latency on the hybrid's quality engine
+ *               (exercises the preview path with a fast model)
+ *   modelBase   where to fetch the PocketTTS bundle from (default: HuggingFace)
+ *   voice       precomputed voice id: `stuart_bell` (default) or `caro_davy`
+ *   voicesBase  where to fetch the precomputed voice embeddings from
+ *   synthDelay  ms of artificial synthesis latency, to exercise the buffering
+ *   lookahead   paragraphs to keep buffered (default 5)
+ *   prebuffer   segments to synthesize before playback starts (default 2)
+ *   text        `1` to show the paragraph being read (not part of the design)
+ *   debug       `1` to show the buffer/plan overlay
+ */
+
+const DEFAULT_OCAID = 'theworksofplato01platiala';
+
+/**
+ * @param {URLSearchParams} params
+ * @param {string} bookLanguage
+ * @return {Object} an object implementing the player's TTSEngine interface
+ */
+function createEngine(params, bookLanguage) {
+  // Default to the good voice played straight through: pure PocketTTS, with the
+  // player's pre-roll buffer absorbing warm-up so it does not drop to a preview
+  // mid-paragraph. `?engine=hybrid` trades that consistency for an instant start.
+  // Fall back to plain WebSpeech only where PocketTTS cannot run at all.
+  const fallback = PocketTtsEngine.isSupported() ? 'pocket' : 'webspeech';
+  const requested = params.get('engine') || fallback;
+  const engine = buildEngine(requested, bookLanguage, params);
+  return simulateLatency(engine, Number(params.get('synthDelay')) || 0);
+}
+
+/**
+ * @param {string} requested
+ * @param {string} bookLanguage
+ * @return {Object}
+ */
+function buildEngine(requested, bookLanguage, params) {
+  if (requested === 'webspeech') {
+    if (!WebSpeechEngine.isSupported()) {
+      throw new Error('AudioReader: this browser has no speechSynthesis');
+    }
+    return new WebSpeechEngine({ bookLanguage });
+  }
+
+  if (requested === 'pcm') {
+    if (!SyntheticPcmEngine.isSupported()) {
+      throw new Error('AudioReader: this browser has no Web Audio');
+    }
+    return new SyntheticPcmEngine();
+  }
+
+  if (requested === 'pocket') return buildPocketEngine(params);
+
+  if (requested === 'hybrid') {
+    // The arrangement issue #1580 suggests: PocketTTS for quality, with an
+    // instant preview voice whenever the buffer has not caught up.
+    return new HybridTtsEngine({
+      fast: buildEngine(params.get('fast') || 'webspeech', bookLanguage, params),
+      // `qualityDelay` slows only the quality engine, so the preview path can be
+      // exercised deterministically even when the model synthesizes faster than
+      // real time (the small model does); off by default.
+      quality: simulateLatency(buildPocketEngine(params), Number(params.get('qualityDelay')) || 0),
+      ...(params.get('grace') ? { graceMs: Number(params.get('grace')) } : {}),
+    });
+  }
+
+  throw new Error(`AudioReader: unknown engine "${requested}"`);
+}
+
+/**
+ * @param {URLSearchParams} params
+ * @return {PocketTtsEngine}
+ */
+function buildPocketEngine(params) {
+  if (!PocketTtsEngine.isSupported()) {
+    throw new Error('AudioReader: this browser cannot run PocketTTS (needs Workers, WASM and Web Audio)');
+  }
+  return new PocketTtsEngine({
+    // `modelBase` can point at a local copy to avoid the ~28MB HuggingFace fetch.
+    ...(params.get('modelBase') ? { modelBase: params.get('modelBase') } : {}),
+    ...(params.get('voicesBase') ? { voicesBase: params.get('voicesBase') } : {}),
+    ...(params.get('voice') ? { voice: params.get('voice') } : {}),
+    // Escape hatch: clone a voice from an arbitrary clip (pulls in the encoder).
+    ...(params.get('referenceAudio') ? { referenceAudioUrl: params.get('referenceAudio') } : {}),
+  });
+}
+
+/**
+ * Record speech events on `window.__audioReaderEvents` so an automated browser
+ * test can assert that audio really started rather than inferring it from the
+ * absence of an error.
+ */
+function instrumentSpeech() {
+  const log = [];
+  window.__audioReaderEvents = log;
+
+  if (typeof SpeechSynthesisUtterance === 'undefined') return;
+
+  const nativeSpeak = speechSynthesis.speak.bind(speechSynthesis);
+  speechSynthesis.speak = (utterance) => {
+    const record = { text: utterance.text, voice: utterance.voice?.name || null, spoke: false };
+    log.push({ type: 'speak', ...record });
+    utterance.addEventListener('start', () => log.push({ type: 'start', text: utterance.text }));
+    utterance.addEventListener('end', () => log.push({ type: 'end', text: utterance.text }));
+    utterance.addEventListener('error', ev => log.push({ type: 'error', text: utterance.text, error: ev.error }));
+    return nativeSpeak(utterance);
+  };
+}
+
+async function boot() {
+  const params = new URLSearchParams(window.location.search);
+  // `book` and `id` are friendlier aliases for the archive.org identifier.
+  const ocaid = params.get('ocaid') || params.get('book') || params.get('id') || DEFAULT_OCAID;
+  const view = document.querySelector('ia-audio-reader');
+  view.debug = params.get('debug') === '1';
+  view.showText = params.get('text') === '1';
+  view.readAlong = params.get('readalong') === '1';
+
+  instrumentSpeech();
+
+  try {
+    const book = await IaAudioBook.load(ocaid);
+    const engine = createEngine(params, book.language);
+
+    await view.attach(book, engine, {
+      ...(params.get('lookahead') ? { lookahead: Number(params.get('lookahead')) } : {}),
+      ...(params.get('prebuffer') ? { prebufferSegments: Number(params.get('prebuffer')) } : {}),
+    });
+
+    // Handles for the browser tests and for poking at state in the console.
+    window.audioReader = { book, engine, view, player: view.player };
+    document.body.dataset.audioreaderReady = 'true';
+    console.log(`AudioReader ready: "${book.title}" (${book.numLeafs} pages, ${book.toc.length} TOC entries, ${engine.name})`);
+  } catch (error) {
+    console.error(error);
+    document.body.dataset.audioreaderError = error.message;
+    view.innerHTML = '';
+    const message = document.createElement('p');
+    message.className = 'audioreader-error';
+    message.textContent = error.message;
+    document.body.append(message);
+  }
+}
+
+boot();
