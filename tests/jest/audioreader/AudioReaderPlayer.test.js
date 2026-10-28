@@ -48,7 +48,8 @@ function makeEngine({ instantSynth = true, instantPlay = true } = {}) {
     pause: jest.fn(() => { calls.pause++; }),
     resume: jest.fn(() => { calls.resume++; }),
     stop: jest.fn(() => { calls.stop++; }),
-    setVoice: jest.fn(() => Promise.resolve()),
+    voice: undefined,
+    setVoice: jest.fn((v) => { engine.voice = v; return Promise.resolve(); }),
   };
 
   return {
@@ -459,6 +460,8 @@ describe('housekeeping', () => {
     expect(engine.setVoice).toHaveBeenCalledWith('caro_davy');
     expect(player.cursor).toEqual(before);           // position kept
     expect(engine.synthesize).toHaveBeenCalled();    // buffer refilled in the new voice
+    // The buffer is scoped to the new voice, so old-voice audio can never be served.
+    expect(player._plan.every(job => job.key.endsWith('@caro_davy'))).toBe(true);
   });
 
   test('paragraphText reassembles the paragraph being read', async () => {

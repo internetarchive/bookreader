@@ -120,10 +120,19 @@ export default class AudioReaderPlayer {
     return this.segments[this.segmentIndex] || null;
   }
 
-  /** @return {string|null} cache key of the current segment */
+  /**
+   * The voice audio is synthesized in, used as part of the cache key so that a
+   * voice switch can never serve audio rendered in the previous voice.
+   * @return {string}
+   */
+  get _voiceTag() {
+    return this.engine?.voice ?? 'default';
+  }
+
+  /** @return {string|null} cache key of the current segment, scoped to the voice */
   get currentKey() {
     const segment = this.currentSegment;
-    return segment ? segmentKey(this.cursor, segment.index) : null;
+    return segment ? `${segmentKey(this.cursor, segment.index)}@${this._voiceTag}` : null;
   }
 
   /** @return {string} full text of the paragraph being read */
@@ -186,7 +195,7 @@ export default class AudioReaderPlayer {
       // buffer is for what is coming, not what is behind us.
       const from = position === 0 ? this.segmentIndex : 0;
       for (const segment of segments.slice(from)) {
-        plan.push({ key: segmentKey(cursor, segment.index), text: segment.text });
+        plan.push({ key: `${segmentKey(cursor, segment.index)}@${this._voiceTag}`, text: segment.text });
       }
     }
 
