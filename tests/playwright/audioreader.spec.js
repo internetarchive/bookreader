@@ -38,7 +38,9 @@ const reader = page => page.locator('ia-audio-reader');
 
 test.describe('minimal audio-first view', () => {
   test('shows cover, title, table of contents and controls -- and no page images', async ({ page }) => {
-    const { consoleErrors, imageRequests } = await openReader(page);
+    // WebSpeech keeps this structural check deterministic and off the network --
+    // the default (pocket) would start fetching the model bundle on load.
+    const { consoleErrors, imageRequests } = await openReader(page, '&engine=webspeech');
 
     const cover = reader(page).locator('.cover');
     await expect(cover).toBeVisible();
@@ -48,13 +50,17 @@ test.describe('minimal audio-first view', () => {
     await expect(reader(page).locator('.title')).toContainText('works of Plato');
     await expect(reader(page).locator('.byline')).toContainText('Plato');
     await expect(reader(page).locator('.play')).toBeVisible();
-    await expect(reader(page).locator('.skip')).toHaveCount(2);
+    // Transport: previous/next page and previous/next sentence.
+    await expect(reader(page).locator('.skip')).toHaveCount(4);
+    await expect(reader(page).locator('.skip[aria-label="Next page"]')).toBeVisible();
+    await expect(reader(page).locator('.skip[aria-label="Next sentence"]')).toBeVisible();
     // The design shows chapters as an always-visible card, not behind a toggle.
     await expect(reader(page).locator('.chapters')).toBeVisible();
     await expect(reader(page).locator('.chapters h2')).toHaveText('Chapters');
     await expect(reader(page).locator('.chapter').first()).toBeVisible();
-    // Scrub bar with position labels, per the design.
-    await expect(reader(page).locator('.scrubber .track')).toBeVisible();
+    // Scrub bar with position labels, per the design. (There are two scrubbers --
+    // the draggable page bar and a real-time word-progress bar; assert the first.)
+    await expect(reader(page).locator('.scrubber .track').first()).toBeVisible();
 
     // Core requirement of the issue: this mode fetches text only.
     expect(imageRequests).toEqual([]);
@@ -93,12 +99,15 @@ test.describe('minimal audio-first view', () => {
 
 test.describe('playback', () => {
   test('play speaks the real OCR text aloud', async ({ page }) => {
-    await openReader(page);
+    // These assert WebSpeech behavior (speechSynthesis + utterance events), so
+    // request it explicitly -- the default engine is now pocket.
+    await openReader(page, '&engine=webspeech');
 
     const expectedFirstSegment = await page.evaluate(
       () => window.audioReader.player.segments[0].text);
-    // The landmark the issue asks for: the first three words.
-    expect(expectedFirstSegment.split(' ')).toHaveLength(3);
+    // Chunking is sentence-first by default (the 3-word landmark split is opt-in),
+    // so the first segment is the paragraph's opening sentence: real, non-empty text.
+    expect(expectedFirstSegment.trim().length).toBeGreaterThan(0);
 
     await reader(page).locator('.play').click();
 
@@ -121,7 +130,7 @@ test.describe('playback', () => {
   });
 
   test('pause stops speech and play resumes it', async ({ page }) => {
-    await openReader(page);
+    await openReader(page, '&engine=webspeech');
 
     await reader(page).locator('.play').click();
     await expect.poll(() => page.evaluate(() => speechSynthesis.speaking)).toBe(true);
@@ -134,7 +143,7 @@ test.describe('playback', () => {
   });
 
   test('hands every segment of the paragraph to the speech engine in order', async ({ page }) => {
-    await openReader(page);
+    await openReader(page, '&engine=webspeech');
     await reader(page).locator('.play').click();
 
     await expect.poll(
@@ -183,8 +192,9 @@ test.describe('audio output and continuous reading (PCM engine)', () => {
     expect(stats.peakAmplitude).toBeGreaterThan(0.01);
     expect(stats.soundsPlayed).toBeGreaterThan(0);
 
-    expect(await page.evaluate(() => window.audioReader.engine.output.context.state))
-      .toBe('running');
+    // PcmAudioOutput plays through an <audio> element (pitch-preserving speed);
+    // the element exists once a sound has been handed to the device.
+    expect(await page.evaluate(() => !!window.audioReader.engine.output._audio)).toBe(true);
   });
 
   /**
@@ -256,9 +266,9 @@ test.describe('audio output and continuous reading (PCM engine)', () => {
 
 test.describe('buffering and progressive rendering', () => {
   test('preloads the landmark, then the sentence, then the paragraph, then ahead', async ({ page }) => {
-    // Slow synthesis makes the ordering observable; instant WebSpeech synthesis
-    // would have the whole buffer ready before the first assertion.
-    await openReader(page, '&synthDelay=900&debug=1');
+    // Slow synthesis makes the ordering observable; WebSpeech keeps it fast and
+    // deterministic (off the network), and synthDelay paces the hydration.
+    await openReader(page, '&engine=webspeech&synthDelay=900&debug=1');
 
     const plan = await page.evaluate(() => window.audioReader.player._plan.map(job => job.text));
     const segments = await page.evaluate(() => window.audioReader.player.segments.map(s => s.text));
@@ -267,10 +277,13 @@ test.describe('buffering and progressive rendering', () => {
     expect(plan[1]).toBe(segments[1]);
     expect(plan.slice(0, segments.length)).toEqual(segments);
 
-    // Exactly five paragraphs are buffered -- not the rest of the book.
-    const paragraphs = await page.evaluate(
-      () => [...new Set(window.audioReader.player._plan.map(job => job.key.split('#')[0]))]);
-    expect(paragraphs).toHaveLength(5);
+    // Exactly five paragraphs are buffered -- not the rest of the book. The
+    // window walks `next` across pages (async fetches), so let it reach depth.
+    await expect.poll(
+      () => page.evaluate(
+        () => new Set(window.audioReader.player._plan.map(job => job.key.split('#')[0])).size),
+      { timeout: 20_000 },
+    ).toBe(5);
 
     // Segments become ready in plan order, one at a time.
     await expect.poll(
@@ -317,7 +330,9 @@ test.describe('steady-state buffering', () => {
     const paragraphsInPlan = () => page.evaluate(
       () => new Set(window.audioReader.player._plan.map(job => job.key.split('#')[0])).size);
 
-    expect(await paragraphsInPlan()).toBe(5);
+    // The window walks `next` across pages (async fetches), so let the initial
+    // lookahead finish hydrating to its full depth before sampling it.
+    await expect.poll(paragraphsInPlan, { timeout: 20_000 }).toBe(5);
 
     await reader(page).locator('.play').click();
     const cursorNow = () => page.evaluate(() => JSON.stringify(window.audioReader.player.cursor));
@@ -356,28 +371,27 @@ test.describe('steady-state buffering', () => {
 /**
  * PocketTTS end to end in a real browser, against the real weights.
  *
- * ~146MB of ONNX models are fetched, so these point `modelBase` at a locally
- * served copy rather than HuggingFace. Populate it with:
+ * The small 18M "refl" bundle (~28MB of ONNX) is fetched, so these point
+ * `modelBase` at a locally served copy rather than HuggingFace. Populate it with:
  *
- *   mkdir -p BookReaderDemo/pocket-tts-models
- *   base=https://huggingface.co/KevinAHM/pocket-tts-onnx/resolve/main
+ *   mkdir -p BookReaderDemo/pocket-tts-models-small
+ *   base=https://huggingface.co/ken107/pocket-tts-onnx/resolve/main/english_18m_refl_2026-10
  *   for f in bundle.json tokenizer.model bos_before_voice.npy \
  *            text_conditioner_int8.onnx flow_lm_flow_int8.onnx \
- *            mimi_decoder_int8.onnx mimi_encoder_int8.onnx flow_lm_main_int8.onnx; do
- *     curl -sL "$base/onnx/english_2026-04/$f" -o "BookReaderDemo/pocket-tts-models/$f"
+ *            mimi_decoder_int8.onnx flow_lm_main_int8.onnx; do
+ *     curl -sL "$base/$f" -o "BookReaderDemo/pocket-tts-models-small/$f"
  *   done
- *   curl -sL "$base/reference_sample.wav" -o BookReaderDemo/pocket-tts-models/reference_sample.wav
  *
- * The directory is gitignored. Without it these tests skip rather than fail, so a
- * clean checkout still runs the rest of the suite.
+ * The directory is gitignored. The default voices (precomputed embeddings in the
+ * committed BookReaderDemo/pocket-tts-voices/) need no download. Without the model
+ * dir these tests skip rather than fail, so a clean checkout still runs the rest.
  */
 test.describe('PocketTTS in the browser', () => {
-  const MODEL_BASE = '/BookReaderDemo/pocket-tts-models';
+  const MODEL_BASE = '/BookReaderDemo/pocket-tts-models-small';
   // Kept separate from the engine parameter: URLSearchParams.get returns the
   // *first* value, so a query carrying both engine=pocket and engine=hybrid
-  // silently runs the wrong one.
-  const MODEL_QUERY = `&debug=1&modelBase=${MODEL_BASE}`
-    + `&referenceAudio=${MODEL_BASE}/reference_sample.wav`;
+  // silently runs the wrong one. Voices are precomputed, so no referenceAudio.
+  const MODEL_QUERY = `&debug=1&modelBase=${MODEL_BASE}`;
   const POCKET_QUERY = `&engine=pocket${MODEL_QUERY}`;
   const HYBRID_QUERY = `&engine=hybrid&grace=0${MODEL_QUERY}`;
   // The takeover half of the hybrid cannot be watched with WebSpeech as the
@@ -397,7 +411,7 @@ test.describe('PocketTTS in the browser', () => {
   // Model download, five session creations, voice cloning and synthesis.
   test.setTimeout(240_000);
 
-  test('loads the model bundle, clones a voice, and synthesizes non-silent speech', async ({ page }) => {
+  test('loads the small bundle, primes the default voice, and synthesizes non-silent speech', async ({ page }) => {
     await openReader(page, POCKET_QUERY);
 
     await expect(reader(page).locator('.engine-status')).toBeVisible();
@@ -408,13 +422,15 @@ test.describe('PocketTTS in the browser', () => {
       { message: 'the worker should finish loading the bundle', timeout: 180_000 },
     ).toBe('ready');
 
-    // Voice cloned through the mimi encoder, matching the Node verification run.
+    // Precomputed voice primed through flow_lm_main; Stuart Bell is the default.
     const engine = await page.evaluate(() => ({
       sampleRate: window.audioReader.engine.sampleRate,
       voiceFrames: window.audioReader.engine.voiceFrames,
+      voice: window.audioReader.engine.voice,
     }));
     expect(engine.sampleRate).toBe(24000);
     expect(engine.voiceFrames).toBeGreaterThan(0);
+    expect(engine.voice).toBe('stuart_bell');
 
     await reader(page).locator('.play').click();
 
@@ -466,10 +482,53 @@ test.describe('PocketTTS in the browser', () => {
     await page.screenshot({ path: `${SHOTS}/13-pocket-playing.png` });
   });
 
+  test('offers Stuart Bell and Caro Davy, and primes the chosen one', async ({ page }) => {
+    await openReader(page, `${POCKET_QUERY}&voice=caro_davy`);
+
+    await expect.poll(
+      () => page.evaluate(() => window.audioReader.engine.status),
+      { message: 'the worker should finish loading the bundle', timeout: 180_000 },
+    ).toBe('ready');
+
+    // The requested precomputed voice is the one that got primed.
+    expect(await page.evaluate(() => window.audioReader.engine.voice)).toBe('caro_davy');
+
+    // The overflow menu lists exactly the two default voices.
+    await reader(page).locator('header .icon-toggle[aria-label="Voice"]').click();
+    const options = await reader(page).locator('select.voice option').allTextContents();
+    expect(options).toEqual(['Stuart Bell', 'Caro Davy']);
+    // Caro Davy is the selected option, reflecting ?voice=.
+    const selected = await reader(page).locator('select.voice').inputValue();
+    expect(selected).toBe('caro_davy');
+    await page.screenshot({ path: `${SHOTS}/16-voice-menu.png` });
+
+    // And it actually synthesizes non-silent speech with that voice.
+    await reader(page).locator('.menu-backdrop').click();
+    await reader(page).locator('.play').click();
+    const audio = await page.evaluate(async () => {
+      const player = window.audioReader.player;
+      const deadline = Date.now() + 150_000;
+      while (Date.now() < deadline) {
+        const key = player.queue.readyKeys()[0];
+        const sound = key && player.queue.get(key);
+        if (sound?.samples?.length) {
+          let peak = 0;
+          for (const s of sound.samples) peak = Math.max(peak, Math.abs(s));
+          return { length: sound.samples.length, peak };
+        }
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      return null;
+    });
+    expect(audio, 'Caro Davy should have produced a buffer').not.toBeNull();
+    expect(audio.peak).toBeGreaterThan(0.02);
+  });
+
   test('hybrid mode speaks immediately instead of waiting for PocketTTS', async ({ page }) => {
-    // A grace period of 0 forces the preview path on the first segment, which is
-    // the cold-seek case the hybrid exists for.
-    await openReader(page, HYBRID_QUERY);
+    // grace=0 produces a preview instantly; qualityDelay keeps PocketTTS busy so
+    // the preview actually plays rather than being upgraded first -- the small
+    // model otherwise synthesizes fast enough to win the race and skip the preview.
+    await openReader(page, `${HYBRID_QUERY}&qualityDelay=4000`);
 
     await expect.poll(
       () => page.evaluate(() => window.audioReader.engine.status),
@@ -551,14 +610,14 @@ test.describe('PocketTTS in the browser', () => {
 
     const stats = await page.evaluate(() => window.audioReader.engine.stats);
     expect(stats.peakAmplitude).toBeGreaterThan(0.02);
-    expect(await page.evaluate(() => window.audioReader.engine.output.context.state))
-      .toBe('running');
+    // Played through PcmAudioOutput's <audio> element (the same path for both engines).
+    expect(await page.evaluate(() => !!window.audioReader.engine.output._audio)).toBe(true);
   });
 });
 
 test.describe('seek throttling', () => {
   test('a burst of next presses rebuilds the buffer once, not once per press', async ({ page }) => {
-    await openReader(page, '&synthDelay=600&debug=1');
+    await openReader(page, '&engine=webspeech&synthDelay=600&debug=1');
 
     // Count buffer rebuilds by wrapping the method the player calls to hydrate.
     await page.evaluate(() => {
@@ -569,7 +628,8 @@ test.describe('seek throttling', () => {
     });
 
     const startLeaf = await page.evaluate(() => window.audioReader.player.cursor.leafIndex);
-    const next = reader(page).locator('.skip').nth(1);
+    // "Next page" advances the leaf deterministically; a burst should coalesce.
+    const next = reader(page).locator('.skip[aria-label="Next page"]');
     for (let i = 0; i < 6; i++) await next.click({ delay: 0 });
 
     await expect.poll(() => page.evaluate(() => window.audioReader.player.seeking)).toBe(false);
@@ -577,7 +637,7 @@ test.describe('seek throttling', () => {
 
     expect(await page.evaluate(() => window.__rebuilds)).toBe(1);
 
-    // And it landed six paragraphs on.
+    // And it landed several pages on (one coalesced seek, not six).
     const endLeaf = await page.evaluate(() => window.audioReader.player.cursor.leafIndex);
     expect(endLeaf).toBeGreaterThan(startLeaf);
 

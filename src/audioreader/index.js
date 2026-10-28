@@ -20,6 +20,8 @@ import './AudioReaderView.js';
  *               (measurable tones, not speech)
  *   grace       ms to wait for PocketTTS before previewing, in hybrid mode
  *   fast        preview engine for hybrid mode (default `webspeech`)
+ *   qualityDelay  ms of artificial latency on the hybrid's quality engine
+ *               (exercises the preview path with a fast model)
  *   modelBase   where to fetch the PocketTTS bundle from (default: HuggingFace)
  *   voice       precomputed voice id: `stuart_bell` (default) or `caro_davy`
  *   voicesBase  where to fetch the precomputed voice embeddings from
@@ -75,7 +77,10 @@ function buildEngine(requested, bookLanguage, params) {
     // instant preview voice whenever the buffer has not caught up.
     return new HybridTtsEngine({
       fast: buildEngine(params.get('fast') || 'webspeech', bookLanguage, params),
-      quality: buildPocketEngine(params),
+      // `qualityDelay` slows only the quality engine, so the preview path can be
+      // exercised deterministically even when the model synthesizes faster than
+      // real time (the small model does); off by default.
+      quality: simulateLatency(buildPocketEngine(params), Number(params.get('qualityDelay')) || 0),
       ...(params.get('grace') ? { graceMs: Number(params.get('grace')) } : {}),
     });
   }
