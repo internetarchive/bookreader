@@ -45,6 +45,8 @@ export default class PocketTtsEngine {
     this.status = 'loading';
     this.progress = { loaded: 0, total: 1, file: null };
     this.sampleRate = null;
+    /** Model metadata from the bundle, filled on 'ready'; shown in the UI. */
+    this.modelInfo = null;
 
     this._worker = new Worker(workerUrl);
     this._worker.addEventListener('message', event => this._onMessage(event.data));
@@ -98,6 +100,7 @@ export default class PocketTtsEngine {
       this.status = 'ready';
       this.sampleRate = message.sampleRate;
       this.voiceFrames = message.voiceFrames;
+      this.modelInfo = message.model || null;
       if (message.voice) this.voice = message.voice;
       this._readyResolve(this);
       this._onProgress(this.progress);

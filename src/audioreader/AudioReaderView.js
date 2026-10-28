@@ -257,11 +257,11 @@ export class AudioReaderView extends LitElement {
 
     return html`
       <div class="reader">
+        ${this._renderEngineStatus()}
         ${this._renderHeader()}
         ${this._renderMenu()}
         <div class="scroller">
           ${this.readAlong ? this._renderReadAlong() : this._renderCover()}
-          ${this._renderEngineStatus()}
           ${this._renderScrubber()}
           ${this._renderTransport()}
           ${this.showText || this.debug ? this._renderReadingText() : nothing}
@@ -350,11 +350,23 @@ export class AudioReaderView extends LitElement {
   }
 
   _renderOverflowPanel() {
-    // Speed lives in the transport now; the overflow menu holds just the voice.
+    // Speed lives in the transport now; the overflow menu holds the voice and a
+    // small debug readout of the model in use.
+    const engine = this.player.engine;
+    // HybridTtsEngine keeps the model on its quality sub-engine.
+    const info = engine.modelInfo ?? engine.quality?.modelInfo ?? null;
+
     return html`
       <div class="menu-group">
         <div class="menu-label">Voice</div>
         ${this._renderVoicePicker()}
+      </div>
+      <div class="menu-group">
+        <div class="menu-label">Model</div>
+        <div class="menu-model">${engine.name || 'engine'}</div>
+        ${info
+    ? html`<div class="menu-model-sub">${info.name} · schema v${info.schemaVersion} · ${info.flowType} · ${Math.round(info.sampleRate / 1000)}kHz</div>`
+    : html`<div class="menu-model-sub">loading…</div>`}
       </div>
     `;
   }
@@ -521,6 +533,9 @@ export class AudioReaderView extends LitElement {
   _renderTransport() {
     const player = this.player;
     const rate = player.engine.rate ?? 1;
+    // No point driving playback before the voice can speak: lock the transport
+    // until the engine is ready.
+    const loading = player.engine.status === 'loading';
     return html`
       <div class="transport">
         <button
@@ -531,20 +546,20 @@ export class AudioReaderView extends LitElement {
         >${rate}×</button>
 
         <button class="skip page" title="Previous page" aria-label="Previous page"
-          @click=${() => player.prevPage()}>«</button>
+          ?disabled=${loading} @click=${() => player.prevPage()}>«</button>
         <button class="skip sentence" title="Previous sentence" aria-label="Previous sentence"
-          @click=${() => player.prevSentence()}>‹</button>
+          ?disabled=${loading} @click=${() => player.prevSentence()}>‹</button>
 
         <button class="play" aria-label=${player.playing ? 'Pause' : 'Play'}
-          ?disabled=${player.finished}
+          ?disabled=${player.finished || loading}
           @click=${() => player.togglePlayPause()}>
-          <span class="play-glyph">${player.playing ? '❚❚' : '▶'}</span>
+          <span class="play-glyph">${loading ? '●' : (player.playing ? '❚❚' : '▶')}</span>
         </button>
 
         <button class="skip sentence" title="Next sentence" aria-label="Next sentence"
-          @click=${() => player.nextSentence()}>›</button>
+          ?disabled=${loading} @click=${() => player.nextSentence()}>›</button>
         <button class="skip page" title="Next page" aria-label="Next page"
-          @click=${() => player.nextPage()}>»</button>
+          ?disabled=${loading} @click=${() => player.nextPage()}>»</button>
 
         <button
           class="clap ${this._clapsHere ? 'active' : ''}"
@@ -973,6 +988,14 @@ export class AudioReaderView extends LitElement {
       color: var(--ink-soft);
     }
     .menu .voice { max-width: 100%; width: 100%; }
+    .menu-model { font-size: 0.82rem; color: var(--ink); }
+    .menu-model-sub {
+      margin-top: 0.15rem;
+      font-size: 0.7rem;
+      color: var(--ink-soft);
+      font-variant-numeric: tabular-nums;
+      word-break: break-word;
+    }
     .menu-rates { display: flex; flex-wrap: wrap; gap: 0.35rem; }
     .menu-rate {
       flex: none;
@@ -1169,6 +1192,7 @@ export class AudioReaderView extends LitElement {
     .skip.page { font-size: 1.7rem; color: var(--ink-soft); }
     .skip.sentence { font-size: 1.9rem; }
     .skip:hover { color: var(--ink-strong); }
+    .skip:disabled { opacity: 0.35; cursor: default; }
 
     .play {
       width: 4.4rem;
@@ -1231,19 +1255,21 @@ export class AudioReaderView extends LitElement {
     .chapter-dash { flex: none; color: var(--ink-soft); }
     .chapter-title { flex: 1; }
 
+    /* A full-width strip at the very top of the reader while the voice loads. */
     .engine-status {
+      flex: none;
       display: flex;
       flex-direction: column;
-      margin: 1.25rem 0 0;
-      padding: 0.6rem 0.75rem;
-      border: 1px solid #e0d6c2;
-      border-radius: 0.5rem;
+      margin: 0;
+      padding: 0.55rem 1.25rem;
+      border: 0;
+      border-bottom: 1px solid #e0d6c2;
       background: #fbf6ea;
       font-size: 0.78rem;
       color: #6b5c3f;
     }
     .engine-status.error {
-      border-color: #e5c4c4;
+      border-bottom-color: #e5c4c4;
       background: #fdf1f1;
       color: #8a4141;
     }

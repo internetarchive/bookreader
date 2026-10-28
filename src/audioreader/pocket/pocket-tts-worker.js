@@ -201,6 +201,15 @@ async function init({ modelBase, ortBase, voicesBase, voice, referenceAudioUrl }
     sampleRate: bundle.sample_rate,
     voiceFrames: synthesizer.voiceFrames,
     voice: voiceId,
+    // Straight from the model's own bundle.json, so the UI can show which model
+    // version is in use without anything being hard-coded here.
+    model: {
+      name: bundle.bundle_name,
+      schemaVersion: bundle.schema_version,
+      flowType: bundle.flow_type,
+      sampleRate: bundle.sample_rate,
+      frameRate: bundle.frame_rate,
+    },
   });
 }
 
