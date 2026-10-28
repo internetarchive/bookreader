@@ -269,6 +269,22 @@ self.addEventListener('message', async (event) => {
     return;
   }
 
+  if (message.type === 'setVoice') {
+    // Swap the voice on the live synthesizer -- chained so it never lands in the
+    // middle of a synthesis. Only the ~210KB embedding is fetched; the model
+    // stays loaded, so there is no reload and no re-download.
+    chain = chain.then(async () => {
+      try {
+        const picked = await loadVoice({ voicesBase: message.voicesBase, voiceId: message.voiceId });
+        await synthesizer.setVoiceFromEmbeddings({ data: picked.data, dims: picked.dims });
+        self.postMessage({ type: 'voiceReady', voice: picked.id });
+      } catch (error) {
+        self.postMessage({ type: 'voiceError', message: error.message });
+      }
+    });
+    return;
+  }
+
   try {
     if (message.type === 'init') await init(message);
     else if (message.type === 'synthesize') enqueueSynthesis(message);

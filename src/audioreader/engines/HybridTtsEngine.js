@@ -188,6 +188,16 @@ export default class HybridTtsEngine {
     this.quality.setRate?.(rate);
   }
 
+  /** The cloned voice lives on the quality (PocketTTS) engine. @param {string} voiceId */
+  setVoice(voiceId) {
+    return this.quality.setVoice?.(voiceId);
+  }
+
+  /** @return {Object|null} model metadata from the quality engine */
+  get modelInfo() {
+    return this.quality.modelInfo ?? null;
+  }
+
   destroy() {
     this.fast.destroy?.();
     this.quality.destroy?.();

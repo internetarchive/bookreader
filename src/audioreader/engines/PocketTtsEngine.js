@@ -107,6 +107,19 @@ export default class PocketTtsEngine {
       return;
     }
 
+    if (message.type === 'voiceReady') {
+      if (message.voice) this.voice = message.voice;
+      this._voiceChange?.resolve(message.voice);
+      this._voiceChange = null;
+      return;
+    }
+
+    if (message.type === 'voiceError') {
+      this._voiceChange?.reject(new Error(`PocketTTS: ${message.message}`));
+      this._voiceChange = null;
+      return;
+    }
+
     if (message.type === 'audio') {
       this._pending.get(message.id)?.resolve({
         samples: message.samples,
@@ -174,6 +187,21 @@ export default class PocketTtsEngine {
   setRate(rate) {
     this.rate = rate;
     this.output.setRate(rate);
+  }
+
+  /**
+   * Swap the voice in place -- fetches only the ~210KB embedding and re-primes the
+   * already-loaded model, so no reload and no re-download.
+   * @param {string} voiceId
+   * @return {Promise<void>}
+   */
+  async setVoice(voiceId) {
+    await this.ready;
+    this.voice = voiceId;
+    return new Promise((resolve, reject) => {
+      this._voiceChange = { resolve, reject };
+      this._worker.postMessage({ type: 'setVoice', voiceId, voicesBase: this.voicesBase });
+    });
   }
 
   destroy() {

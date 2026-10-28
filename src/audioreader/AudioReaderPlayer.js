@@ -278,6 +278,28 @@ export default class AudioReaderPlayer {
   }
 
   /**
+   * Switch to a different voice without losing the reading position. Audio already
+   * synthesized in the old voice is dropped and the buffer is refilled in the new
+   * one, so playback continues from the same spot.
+   * @param {string} voiceId
+   */
+  async setVoice(voiceId) {
+    const wasPlaying = this.playing;
+    this.playing = false;
+    this._generation++;
+    this._stopPlayback();
+
+    await this.engine.setVoice?.(voiceId);
+
+    // Everything cached was spoken in the old voice -- drop it and refill.
+    this.queue.clear();
+    await this._hydrate();
+    this._onChange();
+
+    if (wasPlaying) this.play();
+  }
+
+  /**
    * @private
    * Record a seek intent and (re)arm the debounce. A burst of presses -- of any
    * mix of units -- coalesces into a single rebuild.

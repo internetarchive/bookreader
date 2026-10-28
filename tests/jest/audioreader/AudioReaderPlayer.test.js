@@ -48,6 +48,7 @@ function makeEngine({ instantSynth = true, instantPlay = true } = {}) {
     pause: jest.fn(() => { calls.pause++; }),
     resume: jest.fn(() => { calls.resume++; }),
     stop: jest.fn(() => { calls.stop++; }),
+    setVoice: jest.fn(() => Promise.resolve()),
   };
 
   return {
@@ -443,6 +444,21 @@ describe('housekeeping', () => {
     expect(segmentKey({ leafIndex: 3, chunkIndex: 1 }, 2)).toBe('3:1#2');
     expect(segmentKey({ leafIndex: 3, chunkIndex: 1 }, 2))
       .not.toBe(segmentKey({ leafIndex: 3, chunkIndex: 2 }, 1));
+  });
+
+  test('setVoice re-primes the engine and refills the buffer at the same position', async () => {
+    const { player, engine } = makePlayer();
+    await player.start({ leafIndex: 2, chunkIndex: 0 });
+    await settle();
+    const before = player.cursor;
+    engine.synthesize.mockClear();
+
+    await player.setVoice('caro_davy');
+    await settle();
+
+    expect(engine.setVoice).toHaveBeenCalledWith('caro_davy');
+    expect(player.cursor).toEqual(before);           // position kept
+    expect(engine.synthesize).toHaveBeenCalled();    // buffer refilled in the new voice
   });
 
   test('paragraphText reassembles the paragraph being read', async () => {

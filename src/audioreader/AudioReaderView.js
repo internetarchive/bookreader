@@ -409,7 +409,7 @@ export class AudioReaderView extends LitElement {
       || AudioReaderView.VOICES[0].id;
 
     return html`
-      <select class="voice" title="Voice — switching reloads the page" aria-label="Voice"
+      <select class="voice" title="Voice" aria-label="Voice"
         @change=${this._onVoiceChange}>
         ${AudioReaderView.VOICES.map(voice => html`
           <option value=${voice.id} ?selected=${voice.id === current}>${voice.label}</option>`)}
@@ -418,12 +418,17 @@ export class AudioReaderView extends LitElement {
   }
 
   /** @private @param {Event} event */
-  _onVoiceChange(event) {
+  async _onVoiceChange(event) {
+    const voiceId = /** @type {HTMLSelectElement} */ (event.target).value;
+    // Reflect in the URL (shareable, survives a manual reload) without navigating.
     const url = new URL(window.location.href);
-    const value = /** @type {HTMLSelectElement} */ (event.target).value;
-    if (value) url.searchParams.set('voice', value);
-    else url.searchParams.delete('voice');
-    window.location.href = url.toString();
+    url.searchParams.set('voice', voiceId);
+    history.replaceState(null, '', url);
+    this._openMenu = null;
+    this._tick++;
+    // Swap the voice on the running engine -- no reload, no re-download.
+    await this.player.setVoice(voiceId);
+    this._tick++;
   }
 
   _renderCover() {
@@ -431,7 +436,7 @@ export class AudioReaderView extends LitElement {
       <div class="cover-wrap">
         <img class="cover" src=${this.book.coverUrl} alt="Cover of ${this.book.title}" />
       </div>
-      ${this.book.author ? html`<div class="byline">${this.book.author}</div>` : nothing}
+      ${this.book.author ? html`<div class="byline"><span class="byline-by">by</span> ${this.book.author}</div>` : nothing}
     `;
   }
 
@@ -688,10 +693,11 @@ export class AudioReaderView extends LitElement {
         <div class="status-head">
           <span class="status-spinner" aria-hidden="true"></span>
           <span class="status-text">${downloaded
-      ? html`Preparing voice…`
-      : html`Loading voice — ${mb(loaded)} of ${mb(total)} MB`}${
+      ? html`Updating voices — almost ready…`
+      : html`Updating voices — ${mb(loaded)} of ${mb(total)} MB`}${
   engine.fast ? html`. Reading in the preview voice meanwhile.` : nothing}</span>
         </div>
+        <div class="status-note">One-time ${mb(total)} MB download — cached on this device for next time.</div>
         <span class="track thin ${downloaded ? 'indeterminate' : ''}">
           <span class="track-fill" style=${downloaded ? '' : `width:${percent}%`}></span>
         </span>
@@ -1037,6 +1043,7 @@ export class AudioReaderView extends LitElement {
       font-size: 0.85rem;
       color: var(--ink-soft);
     }
+    .byline-by { font-style: italic; opacity: 0.75; }
 
     .scrubber { margin: 1.5rem 0 0; }
 
@@ -1274,6 +1281,7 @@ export class AudioReaderView extends LitElement {
       color: #8a4141;
     }
     .status-head { display: flex; align-items: center; gap: 0.45rem; }
+    .status-note { margin: 0.25rem 0 0 1.25rem; font-size: 0.7rem; opacity: 0.85; }
     .status-spinner {
       flex: none;
       width: 0.8rem;
