@@ -790,6 +790,8 @@ export class AudioReaderView extends LitElement {
       --rule: #e8e1d4;
       --control: #2f2621;
       --on-control: #ffffff;
+      --control-hover: #3b302a;
+      --control-disabled: #cfc7b8;
       --ink-strong: #000000;
       --track: #d9d1c2;
       --track-soft: #e4ddcf;
@@ -817,6 +819,8 @@ export class AudioReaderView extends LitElement {
       --rule: #2a2e36;
       --control: #e7e2d8;
       --on-control: #15171c;
+      --control-hover: #d6cfc0;
+      --control-disabled: #3a3f49;
       --ink-strong: #ffffff;
       --track: #2b2f37;
       --track-soft: #23262d;
@@ -1213,8 +1217,10 @@ export class AudioReaderView extends LitElement {
       align-items: center;
       justify-content: center;
     }
-    .play:hover { background: #3b302a; }
-    .play:disabled { background: #b9b0a4; cursor: default; }
+    .play:hover { background: var(--control-hover); }
+    /* Disabled (while the voice loads): a muted circle with a still-legible glyph
+       in both themes -- not a near-black disc that reads as broken. */
+    .play:disabled { background: var(--control-disabled); color: var(--ink-soft); cursor: default; }
     .play-glyph { font-size: 1.35rem; line-height: 1; }
 
     .chapters {
