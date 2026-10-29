@@ -678,9 +678,10 @@ export class Mode2UpLit extends LitElement {
 
     const $page = $(ev.target).closest('.BRpagecontainer');
     if (!$page.length) return;
-    if ($page.data('side') == 'L') {
+    const pageBoundingBox = $page[0].getBoundingClientRect();
+    if ($page.data('side') == 'L' && ev.clientX < pageBoundingBox.left + pageBoundingBox.width * 2 / 3) {
       this.br.left();
-    } else if ($page.data('side') == 'R') {
+    } else if ($page.data('side') == 'R' && ev.clientX > pageBoundingBox.right - pageBoundingBox.width * 2 / 3) {
       this.br.right();
     }
   }

@@ -14,6 +14,11 @@ export class ModeAbstract {
   /** @type {BookModel} */
   book;
 
+  /** @type {HTMLElement} */
+  get scrollContainer() {
+    throw new Error('Not implemented');
+  }
+
   /**
    * Get the page at the given index or direction
    * @param {PageIndex | 'left' | 'right' | 'next' | 'prev'} indexOrDirection

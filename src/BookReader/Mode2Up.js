@@ -9,6 +9,10 @@ import { ModeAbstract } from './ModeAbstract.js';
 export class Mode2Up extends ModeAbstract {
   name = '2up';
 
+  get scrollContainer() {
+    return this.mode2UpLit;
+  }
+
   /**
    * @param {BookReader} br
    * @param {BookModel} bookModel
