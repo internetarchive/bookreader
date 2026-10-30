@@ -6,8 +6,8 @@ name: Node.js CI
 on:
   push:
     branches: [ master ]
+  # Unfiltered so stacked PRs, which target another branch, run CI too.
   pull_request:
-    branches: [ master ]
 
 permissions:
   contents: read
@@ -83,4 +83,35 @@ jobs:
         key: ${{ runner.os }}-${{ github.sha }}
     # GitHub Actions machines usually have 4 cores (see https://docs.github.com/en/actions/reference/runners/github-hosted-runners )
     # Quarantine mode (sigh) to catch unstable tests (see https://devexpress.github.io/testcafe/documentation/guides/basic-guides/run-tests.html#quarantine-mode )
+    - run: npx testcafe --concurrency 4 --quarantine-mode
+
+  # BookReader supports lit 2 and lit 3 (package.json allows both, the lockfile
+  # pins 2.8.0). Run the unit tests, the build and the e2e tests against each.
+  lit-versions:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        lit: ['2.8.0', '^3.3.2']
+    name: lit ${{ matrix.lit }}
+    env:
+      LIT_DEV: ${{ matrix.lit != '2.8.0' && '1' || '' }}
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-node@v7
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+    - run: npm ci --no-audit --no-fund
+    - run: npm install --no-save --no-audit --no-fund lit@'${{ matrix.lit }}'
+    - name: Check the installed lit version
+      run: |
+        installed=$(node -p "JSON.parse(require('fs').readFileSync('node_modules/lit/package.json', 'utf8')).version")
+        echo "lit $installed"
+        case "${{ matrix.lit }}" in
+          2.8.0) [ "$installed" = "2.8.0" ] ;;
+          *) case "$installed" in 3.*) ;; *) exit 1 ;; esac ;;
+        esac
+    - run: npm run test
+    - run: npm run build
     - run: npx testcafe --concurrency 4 --quarantine-mode
