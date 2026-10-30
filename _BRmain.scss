@@ -1,0 +1,268 @@
+#{$brScope} {
+  /* Shared root element rules */
+  font-family: $brFontFamily;
+  font-size: $brFontSizeBase;
+  line-height: 1.2;
+  -webkit-text-size-adjust: none;
+
+
+  /* Some helper functional css utilities  */
+  .larger { font-size: 1.2em; }
+
+  /* Desktop-only */
+  @media (min-width: ($brBreakPointMobile + 1)) {
+    .mv20-lg { margin-top: 20px; margin-bottom: 20px; }
+  }
+
+  /* Element-level rules */
+  h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #dedede;
+  }
+  button {
+    cursor: pointer;
+  }
+
+  a.logo {
+    display: inline-block;
+    width: auto;
+    height: 100%;
+    margin: 0 10px;
+    background: transparent url(images/icon_home.svg) no-repeat center center;
+    background-size: contain;
+  }
+}
+
+.BookReader {
+  margin: 0;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+  background-color: $brColorMainBg;
+
+  contain: strict;
+}
+
+.BRcontainer {
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: scroll;
+  position: absolute;
+  -webkit-overflow-scrolling: touch;
+}
+
+.BRprogresspopup {
+  margin: 80px auto auto;
+  position: relative;
+  width: 320px;
+  background-color: white;
+  font-size: 1.5em;
+  padding: 20px;
+  border: 2px solid #999;
+  z-index: $brZindexPopup;
+  color: $gray13;
+
+  .close-popup {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 30px;
+    width: 30px;
+    padding: 0;
+    border: 0;
+    background-color: transparent;
+
+    .icon.icon-close-dark {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+    }
+  }
+}
+
+.BRprogressbar {
+  background-image: url("images/progressbar.gif");
+  background-repeat:no-repeat;
+  background-position:center top;
+}
+
+/* Share dialog */
+.BRshare {
+  &.BRfloat { width: 600px; }
+
+  .share-title { margin: 15px 15px 0; font-weight: bold; font-size: 18px; line-height: 22px; }
+  .share-social { display: flex; flex-direction: column; gap: 10px; margin: 15px;}
+  .share-social button {
+    width: 25%;
+    padding: 10px 15px;
+    height: 40px;
+    text-align: left;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 1%;
+  }
+  .share-social button > i { margin-right: 5px; }
+  .share-social > div { display: block; width: 100%;}
+  .share-embed { margin-top: 20px; }
+
+  label.sub.open-to-this-page {
+    display: block;
+  }
+
+  button[type=button].share-finished {
+    background-color: rgb(74,144,226);
+    border: 0;
+    color: white;
+    border-radius: 3px;
+    padding: 10px 25px;
+    font-size: 15px;
+    margin-top: 15px;
+    width: auto;
+  }
+}
+
+/* Info dialog */
+.BRinfoValueWrapper { margin-bottom: 10px; }
+.BRinfoValue { font-size: $brFontSizeLarger; }
+.BRinfoLabel { font-size: $brFontSizeSmaller; color: #999; }
+.BRinfoMoreInfoWrapper {
+  background-color: $brColorThemeBlue3;
+  border-radius: 2px;
+  padding: 8px;
+  text-align: center;
+  &:active { background-color: rgb(80, 155, 242); }
+}
+.BRinfoOtherFormats { margin-bottom: 40px; }
+.BRinfoRightCol > div { margin-bottom: 15px; }
+.BRinfoFooter { text-align: right; }
+
+/* Fullscreen rules */
+.BookReader {
+  &.fullscreenActive {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    background-color: black;
+    top: 0;
+    left: 0;
+    margin: 0;
+    z-index: $brZindexFullscreen;
+
+    .BRmobileHamburgerWrapper {
+      z-index: $brZindexFullscreen + 2;
+    }
+  }
+}
+body.BRfullscreenActive {
+  overflow: hidden;
+
+  .mm-menu {
+    z-index: $brZindexFullscreen - 1;
+  }
+}
+
+.BRaction {
+  margin-left: 5px;
+  margin-right: 5px;
+  padding: 8px 30px;
+  font-size: $brFontSizeBase;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  min-width: 150px;
+  text-align: center;
+  line-height: 1;
+  &:active { background-color: rgb(171, 171, 171); }
+  &.default {
+    background-color: rgb(193,193,193);
+    color: white;
+  }
+  &.primary {
+    background-color: #4990E2;
+    &:active { background-color: #2a76cd; }
+  }
+  &.orangeButton {
+    background-color: transparent;
+    border: 2px solid orange;
+    color: orange;
+    &:active { border-color: rgb(249, 198, 19); }
+  }
+  &.skinny { min-width: 50px; }
+  &.facebook-share-button { background-color: #3a5998; }
+  &.twitter-share-button { background-color: #429aff; }
+  &.email-share-button { background-color: #c1c1c1; }
+}
+
+/* Mobile Only */
+@media (max-width: $brBreakPointMobile) {
+  .BRinfoLeftCol { font-size: $brFontSizeBase; }
+  .BRimageW {text-align: center; margin-bottom: 10px;}
+  .BRimageW img { height: 200px; width: auto;}
+  .BRinfoValue.larger { font-size: $brFontSizeLarger; }
+  .BRinfoMoreInfoWrapper a {
+    font-size: inherit;
+    color: white;
+    text-decoration: none;
+  }
+  .BRinfoOtherFormatsFormat { margin-bottom: 6px; }
+  .BRinfoFooter { margin-bottom: 10px; text-align: left; }
+  .BRinfoFooter a { display: block;}
+  .BRfloatFoot.BRinfoFooter {
+    margin: initial;
+    padding: initial;
+    border: initial;
+    font-size: inherit;
+  }
+
+  #{$brScope} {
+    .fieldset-embed { display: none; }
+    .BRaction {
+      padding: 8px 10px;
+      margin-left: 0; margin-bottom: 10px;
+    }
+  }
+}
+
+/* Desktop Only */
+@media (min-width: ($brBreakPointMobile + 1)) {
+  .BRinfoW { font-size: $brFontSizeBase; position: relative; padding: 15px; }
+  .BRinfoLeftCol { float: left; width: 40%; min-height: 1px; }
+  .BRinfoRightCol { float: left; width: 58%; }
+  .BRimageW {text-align: center; margin-bottom: 10px; margin-right: 26px;}
+  .BRimageW img { height:auto; width: 100%;}
+  .BRinfoValue.larger { font-size: 20px; line-height: 1.2; }
+  .BRinfoMoreInfoWrapper a { font-size: $brFontSizeBase; color: white; text-decoration: none; font-weight: bold; }
+  .BRinfoOtherFormatsFormat { display: inline; margin-right: 10px; }
+  .BRinfoFooter { font-size: 1em; clear:both; }
+  .BRinfoFooter a { display: inline; margin-right: 10px;}
+
+  #{$brScope} {
+    .BRaction { padding: 8px 16px; }
+  }
+}
+
+/* filters */
+.filter-applied {
+  .BRpagediv1up { background-color: white; }
+  .BRpagedivthumb { background-color: white; }  
+}
+
+.BRfullscreenAnimation .br-mode-2up__book {
+  transition: transform .2s ease-in-out;
+}
+
+.fullscreenActive.BRmodeThumb .BRcontainer,
+.fullscreenActive.BRmode1up .BRcontainer {
+  animation: flash 0.3s ease-in-out;
+}
+
+@keyframes flash {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
