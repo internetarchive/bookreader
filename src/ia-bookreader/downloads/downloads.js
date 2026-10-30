@@ -147,4 +147,6 @@ export class IABookDownloads extends LitElement {
     return [buttonStyles, mainCss];
   }
 }
-customElements.define('ia-book-downloads', IABookDownloads);
+if (!customElements.get('ia-book-downloads')) {
+  customElements.define('ia-book-downloads', IABookDownloads);
+}
