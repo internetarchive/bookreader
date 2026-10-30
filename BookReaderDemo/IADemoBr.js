@@ -18,6 +18,8 @@ const ocaid = isDetailsPage ? window.location.pathname.split('/')[2] : urlParams
 const openFullImmersionTheater = urlParams.get('view') === 'theater';
 const ui = urlParams.get('ui');
 const searchTerm = urlParams.get('q');
+// Opt-in so the demo matches archive.org by default; ?multipage=true to exercise batching
+const multipageTextSelection = getFromUrl('multipage', 'false') === 'true';
 
 if (isDetailsPage) {
   /** @type {NodeListOf<HTMLAnchorElement>} */
@@ -56,8 +58,31 @@ iaBookReader.modal = modal;
 BookReader.optionOverrides = BookReader.optionOverrides || {};
 BookReader.optionOverrides.imagesBaseURL = '/BookReader/images/';
 
+/**
+ * BookReaderGetTextWrapper.php only accepts a comma-separated `page` list when told to;
+ * without `multipage=true` it returns an empty body for such a request.
+ * @param {object} manifestData
+ */
+const enableTextSelectionBatching = (manifestData) => {
+  if (!multipageTextSelection) return;
+
+  const textSelection = manifestData.brOptions?.plugins?.textSelection;
+  if (!textSelection?.singlePageDjvuXmlUrl) {
+    console.warn('?multipage=true ignored; no singlePageDjvuXmlUrl in manifest', manifestData);
+    return;
+  }
+  textSelection.supportsBatches = true;
+  // String-wise rather than via URL(), which would percent-encode the {{var}} templates
+  const [base, query = ''] = textSelection.singlePageDjvuXmlUrl.split('?');
+  const params = query.split('&').filter(param => param && !param.startsWith('multipage='));
+  params.push('multipage=true');
+  textSelection.singlePageDjvuXmlUrl = `${base}?${params.join('&')}`;
+  console.log('Text selection batching enabled', textSelection.singlePageDjvuXmlUrl);
+};
+
 const initializeBookReader = (brManifest) => {
   console.log('initializeBookReader', brManifest);
+  enableTextSelectionBatching(brManifest.data);
 
   const options = {
     el: '#BookReader',
@@ -113,12 +138,24 @@ showLCP.addEventListener('click', async () => {
   await iaBr.updateComplete;
 });
 
+const multipageStatus = document.querySelector('#multipage-status');
+multipageStatus.innerText = multipageTextSelection
+  ? 'batched (multipage=true)'
+  : 'one request per page';
+document.querySelector('#toggle-multipage').addEventListener('click', () => {
+  // Via URL() rather than location.search, to keep the #page/... hash across the reload
+  const url = new URL(window.location);
+  url.searchParams.set('multipage', multipageTextSelection ? 'false' : 'true');
+  window.location.assign(url);
+});
+
 const multiVolume = document.querySelector('#multi-volume');
 multiVolume.addEventListener('click', () => {
   // remove everything
   $('#BookReader').empty();
   delete window.br;
   // and re-mount with a new book
+  enableTextSelectionBatching(custvolumesManifest);
   BookReaderJSIAinit(custvolumesManifest, extraVolOptions);
 });
 
