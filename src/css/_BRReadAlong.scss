@@ -1,0 +1,40 @@
+#{$brScope} {
+  .readAlongLineLayer, .readAlongWordLayer {
+    pointer-events: none;
+    z-index: 4;
+  }
+  .readAlongLineLayer rect {
+    fill: rgba(255, 220, 0, 0.25);
+  }
+  .readAlongWordLayer rect {
+    fill: rgba(255, 140, 0, 0.35);
+    stroke: rgb(255, 140, 0);
+    stroke-width: 3px;
+  }
+
+  .BRicon.read-along {
+    background-image: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &.active { color: #e33; }
+  }
+
+  .BRreadAlong__status {
+    position: absolute;
+    left: 10px;
+    bottom: 60px;
+    z-index: 100;
+    max-width: min(480px, calc(100% - 20px));
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+    font-size: 13px;
+    line-height: 1.4;
+    pointer-events: none;
+  }
+  .BRreadAlong__match { opacity: 0.75; }
+}

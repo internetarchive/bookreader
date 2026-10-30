@@ -58,6 +58,7 @@ const bookreaderEntries = {
   'plugins/plugin.experiments.js': { import: './src/plugins/plugin.experiments.js', dependOn: 'ia-bookreader.js' },
   'plugins/plugin.iframe.js': { import: './src/plugins/plugin.iframe.js', dependOn: 'ia-bookreader.js' },
   'plugins/plugin.iiif.js': { import: './src/plugins/plugin.iiif.js', dependOn: 'ia-bookreader.js' },
+  'plugins/plugin.read_along.js': { import: './src/plugins/read_along/plugin.read_along.js', dependOn: 'ia-bookreader.js' },
   'plugins/plugin.resume.js': { import: './src/plugins/plugin.resume.js', dependOn: 'ia-bookreader.js' },
   'plugins/plugin.search.js': { import: './src/plugins/search/plugin.search.js', dependOn: 'ia-bookreader.js' },
   'plugins/plugin.text_selection.js': { import: './src/plugins/plugin.text_selection.js', dependOn: 'ia-bookreader.js' },

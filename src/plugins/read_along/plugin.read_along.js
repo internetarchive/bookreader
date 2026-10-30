@@ -1,0 +1,355 @@
+// @ts-check
+import { renderBoxesInPageContainerLayer } from '../../BookReader/PageContainer.js';
+import { BookReaderPlugin } from '../../BookReaderPlugin.js';
+import { toISO6391 } from '../tts/utils.js';
+import { ReadAlongAligner, normalizeWord, tokenize } from './aligner.js';
+
+const BookReader = /** @type {typeof import('../../BookReader').default} */(window.BookReader);
+
+/** @typedef {{ l: number, r: number, b: number, t: number }} Box */
+
+/**
+ * @typedef {object} BookWord
+ * @property {string} norm normalized text used for matching
+ * @property {string} text
+ * @property {number} pageIndex
+ * @property {string} lineKey unique per OCR line
+ * @property {Box[]} boxes more than one when hyphenated across lines
+ */
+
+const SpeechRecognitionImpl = window.SpeechRecognition || /** @type {any} */(window).webkitSpeechRecognition;
+
+/**
+ * Highlights the line and word being read aloud by the user, using the
+ * browser's speech recognition and the OCR text layer.
+ */
+export class ReadAlongPlugin extends BookReaderPlugin {
+  options = {
+    enabled: true,
+    /** Show the recognized text and match details while listening */
+    debug: true,
+    /** Ask the browser to recognize on-device, where supported */
+    processLocally: false,
+  }
+
+  active = false;
+  /** @type {any} */
+  recognition = null;
+  aligner = new ReadAlongAligner();
+  /** @type {BookWord[]} The loaded pages' words, in reading order */
+  words = [];
+  /** @type {Map<number, BookWord[]>} */
+  pageWords = new Map();
+  /** @type {BookWord | null} */
+  currentWord = null;
+  /** @type {{ [pageIndex: number]: { lines: Box[], words: Box[] } }} */
+  _boxesByIndex = {};
+  /** Recognized text of the recognition sessions before the current one */
+  _priorTranscript = '';
+
+  static isSupported() {
+    return !!SpeechRecognitionImpl;
+  }
+
+  /** @override */
+  init() {
+    if (!this.options.enabled) return;
+    this.br.on(BookReader.eventNames.pageChanged, () => {
+      if (this.active) this.loadPages();
+    });
+  }
+
+  /**
+   * @override
+   * @param {JQuery<HTMLElement>} $navBar
+   */
+  extendNavBar($navBar) {
+    if (!this.options.enabled || !ReadAlongPlugin.isSupported()) return;
+    this.$button = $(`<li>
+        <button class="BRicon read-along js-tooltip" title="Read along">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <path fill="currentColor" d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/>
+          </svg>
+          <span class="BRtooltip">Read along</span>
+        </button>
+      </li>`);
+    this.$button.find('button').on('click', () => {
+      this.toggle();
+      return false;
+    });
+    const $zoomOut = $navBar.find('.BRcontrols .BRicon.zoom_out').closest('li');
+    if ($zoomOut.length) this.$button.insertBefore($zoomOut);
+    else $navBar.find('.BRcontrols').append(this.$button);
+  }
+
+  /**
+   * @override
+   * @param {import('../../BookReader/PageContainer.js').PageContainer} pageContainer
+   */
+  _configurePageContainer(pageContainer) {
+    const boxes = pageContainer.page && this._boxesByIndex[pageContainer.page.index];
+    if (this.active && boxes) {
+      this._renderBoxes(pageContainer.page, pageContainer.$container[0], boxes);
+    }
+  }
+
+  toggle() {
+    if (this.active) this.stop();
+    else this.start();
+  }
+
+  async start() {
+    if (this.active) return;
+    this.br.plugins.tts?.ttsEngine?.playing && this.br.plugins.tts.stop();
+    this.br.plugins.autoplay?.stop();
+    if (this.br.mode == this.br.constModeThumb) this.br.switchMode(this.br.constMode1up);
+
+    this.active = true;
+    this.$button?.find('button').addClass('active');
+    this._renderStatus('Loading text…');
+    this.aligner.pos = -1;
+    this.currentWord = null;
+    await this.loadPages();
+    this._startRecognition();
+  }
+
+  stop() {
+    this.active = false;
+    this.$button?.find('button').removeClass('active');
+    this.recognition?.abort();
+    this.recognition = null;
+    this._removeHighlights();
+    this.$status?.remove();
+    this.$status = null;
+  }
+
+  _startRecognition() {
+    const rec = new SpeechRecognitionImpl();
+    rec.lang = this._recognitionLang();
+    rec.continuous = true;
+    rec.interimResults = true;
+    if (this.options.processLocally && 'processLocally' in rec) rec.processLocally = true;
+    this._priorTranscript = '';
+
+    let sessionTranscript = '';
+    rec.onresult = (/** @type {any} */ ev) => {
+      const results = Array.from(ev.results);
+      sessionTranscript = results.map((/** @type {any} */ r) => r[0].transcript).join(' ');
+      const lastIsPartial = results.length > 0 && !results[results.length - 1].isFinal;
+      this.onSpeech(`${this._priorTranscript} ${sessionTranscript}`, lastIsPartial);
+    };
+    rec.onerror = (/** @type {any} */ ev) => {
+      // no-speech/aborted are routine; recognition ends and restarts below
+      if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') {
+        this._renderStatus('Microphone access was denied.');
+        this.active = false;
+        this.$button?.find('button').removeClass('active');
+      } else if (!['no-speech', 'aborted'].includes(ev.error)) {
+        console.warn('ReadAlong: speech recognition error', ev.error, ev.message);
+      }
+    };
+    // Recognition stops on its own after silence or a time limit, so keep
+    // restarting it while active.
+    rec.onend = () => {
+      if (!this.active || this.recognition !== rec) return;
+      this._priorTranscript = `${this._priorTranscript} ${sessionTranscript}`.split(/\s+/).slice(-20).join(' ');
+      try {
+        rec.start();
+      } catch (e) {
+        console.warn('ReadAlong: failed to restart speech recognition', e);
+      }
+    };
+    rec.onstart = () => this._renderStatus('Listening…');
+    this.recognition = rec;
+    rec.start();
+  }
+
+  /**
+   * Prefer the user's locale variant of the book's language (e.g. en-GB),
+   * since accents matter to the recognizer.
+   */
+  _recognitionLang() {
+    const bookLang = toISO6391(this.br.options.bookLanguage);
+    const userLangs = navigator.languages || [navigator.language];
+    if (!bookLang) return userLangs[0];
+    return userLangs.find(l => l.split('-')[0] == bookLang) || bookLang;
+  }
+
+  /**
+   * @param {string} transcript all recently recognized text
+   * @param {boolean} lastIsPartial
+   */
+  onSpeech(transcript, lastIsPartial) {
+    const spoken = tokenize(transcript);
+    if (!spoken.length || !this.words.length) return;
+    const match = this.aligner.update(spoken, { lastIsPartial });
+    if (match) this.setCurrentWord(this.words[match.end]);
+    if (this.options.debug) {
+      const query = spoken.slice(-this.aligner.queryLength).join(' ');
+      this._renderStatus(
+        `<div class="BRreadAlong__heard">${escapeHtml(query)}</div>` +
+        `<div class="BRreadAlong__match">${match ?
+          `→ "${escapeHtml(this.words[match.end].text)}" (p${this.words[match.end].pageIndex}, matched ${match.matched}, score ${match.score.toFixed(1)})` :
+          'no confident match'}</div>`,
+      );
+    }
+  }
+
+  /**
+   * @param {BookWord} word
+   */
+  setCurrentWord(word) {
+    const prevWord = this.currentWord;
+    if (prevWord === word) return;
+    this.currentWord = word;
+    if (!this.br._isIndexDisplayed(word.pageIndex)) {
+      this.br.jumpToIndex(word.pageIndex, { ariaLive: false });
+    }
+
+    const lineBoxes = this.words.filter(w => w.lineKey === word.lineKey).flatMap(w => w.boxes);
+    this._boxesByIndex = {
+      [word.pageIndex]: {
+        lines: [boundingBox(lineBoxes)],
+        words: word.boxes,
+      },
+    };
+    this._removeHighlights(false);
+    for (const [pageIndex, boxes] of Object.entries(this._boxesByIndex)) {
+      const page = this.br.book.getPage(parseFloat(pageIndex));
+      for (const container of this.br.getActivePageContainerElementsForIndex(page.index)) {
+        this._renderBoxes(page, container, boxes);
+      }
+    }
+    if (prevWord?.lineKey !== word.lineKey) this._maybeScrollToLine();
+  }
+
+  /**
+   * @param {import('../../BookReader/BookModel.js').PageModel} page
+   * @param {HTMLElement} container
+   * @param {{ lines: Box[], words: Box[] }} boxes
+   */
+  _renderBoxes(page, container, { lines, words }) {
+    renderBoxesInPageContainerLayer('readAlongLineLayer', lines, page, container);
+    renderBoxesInPageContainerLayer('readAlongWordLayer', words, page, container);
+  }
+
+  _maybeScrollToLine() {
+    if (this.br.mode == this.br.constModeThumb) return;
+    const lineRect = this.br.$('.readAlongLineLayer rect')[0];
+    const scrollEl = this.br.refs.$brContainer[0];
+    if (!lineRect) return;
+    const lineBounds = lineRect.getBoundingClientRect();
+    const viewBounds = scrollEl.getBoundingClientRect();
+    const relTop = (lineBounds.top - viewBounds.top) / viewBounds.height;
+    if (relTop < 0.1 || relTop > 0.7) {
+      this.br.scrollIntoView(lineRect, { block: 'center', inline: 'center', behavior: 'smooth' });
+    }
+  }
+
+  /**
+   * Make sure the displayed pages, and the page after them, are loaded,
+   * keeping the reading position.
+   */
+  async loadPages() {
+    const displayed = this.br.displayedIndices?.length ? this.br.displayedIndices : [this.br.currentIndex()];
+    const lastIndex = this.br.book.getNumLeafs() - 1;
+    const wanted = new Set([...displayed, Math.min(Math.max(...displayed) + 1, lastIndex)]);
+    // Keep the page being read even if the user scrolled away
+    if (this.currentWord) wanted.add(this.currentWord.pageIndex);
+
+    await Promise.all([...wanted].filter(i => !this.pageWords.has(i)).map(async i => {
+      this.pageWords.set(i, await this._loadPageWords(i));
+    }));
+    for (const i of this.pageWords.keys()) {
+      if (!wanted.has(i)) this.pageWords.delete(i);
+    }
+
+    this.words = [...this.pageWords.keys()].sort((a, b) => a - b).flatMap(i => this.pageWords.get(i));
+    const pos = this.currentWord ? this.words.indexOf(this.currentWord) : -1;
+    this.aligner.setWords(this.words.map(w => w.norm), pos);
+  }
+
+  /**
+   * @param {number} pageIndex
+   * @returns {Promise<BookWord[]>}
+   */
+  async _loadPageWords(pageIndex) {
+    const ocrPage = await this.br.plugins.textSelection?.getPageText(pageIndex);
+    if (!ocrPage) return [];
+
+    /** @type {BookWord[]} */
+    const words = [];
+    /** @type {BookWord | null} */
+    let hyphenated = null;
+    const paragraphs = Array.from(ocrPage.querySelectorAll('PARAGRAPH'))
+      // Running headers, footers and page numbers aren't read aloud
+      .filter(p => !p.getAttribute('x-role'));
+    for (const [paragraphIndex, paragraph] of paragraphs.entries()) {
+      for (const [lineIndex, line] of Array.from(paragraph.querySelectorAll('LINE')).entries()) {
+        const lineKey = `${pageIndex}/${paragraphIndex}/${lineIndex}`;
+        const wordEls = Array.from(line.querySelectorAll('WORD'));
+        for (const wordEl of wordEls) {
+          const text = wordEl.textContent.trim();
+          const [l, b, r, t] = wordEl.getAttribute('coords').split(',').map(parseFloat);
+          const box = { l, r, b, t };
+          if (hyphenated) {
+            hyphenated.text = hyphenated.text.slice(0, -1) + text;
+            hyphenated.norm = normalizeWord(hyphenated.text);
+            hyphenated.boxes.push(box);
+            hyphenated = null;
+            continue;
+          }
+          const norm = normalizeWord(text);
+          if (!norm) continue;
+          const word = { norm, text, pageIndex, lineKey, boxes: [box] };
+          words.push(word);
+          if (text.endsWith('-') && wordEl === wordEls[wordEls.length - 1]) {
+            hyphenated = word;
+          }
+        }
+      }
+      hyphenated = null;
+    }
+    return words;
+  }
+
+  /**
+   * @param {boolean} [clearBoxes]
+   */
+  _removeHighlights(clearBoxes = true) {
+    $(this.br.getActivePageContainerElements()).find('.readAlongLineLayer, .readAlongWordLayer').remove();
+    if (clearBoxes) this._boxesByIndex = {};
+  }
+
+  /**
+   * @param {string} html
+   */
+  _renderStatus(html) {
+    if (!this.$status) {
+      this.$status = $('<div class="BRreadAlong__status" aria-live="polite"></div>').appendTo(this.br.refs.$br);
+    }
+    this.$status.html(html);
+  }
+}
+
+/**
+ * @param {Box[]} boxes
+ * @returns {Box}
+ */
+function boundingBox(boxes) {
+  return {
+    l: Math.min(...boxes.map(b => b.l)),
+    r: Math.max(...boxes.map(b => b.r)),
+    t: Math.min(...boxes.map(b => b.t)),
+    b: Math.max(...boxes.map(b => b.b)),
+  };
+}
+
+/**
+ * @param {string} s
+ */
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
+}
+
+BookReader?.registerPlugin('readAlong', ReadAlongPlugin);
