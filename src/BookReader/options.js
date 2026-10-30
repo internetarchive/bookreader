@@ -154,6 +154,8 @@ export const DEFAULT_OPTIONS = {
     autoplay: {},
     /** @type {Partial<import('../plugins/plugin.chapters.js').ChaptersPlugin['options']>} */
     chapters: {},
+    /** @type {Partial<import('../plugins/deep_read/plugin.deep_read.js').DeepReadPlugin['options']>} */
+    deepRead: {},
     /** @type {Partial<import('../plugins/plugin.experiments.js').ExperimentsPlugin['options']>} */
     experiments: {},
     /** @type {Partial<import('../plugins/plugin.iiif.js').IiifPlugin['options']>} */
