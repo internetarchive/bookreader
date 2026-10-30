@@ -103,7 +103,7 @@ svg.BRPageLayer {
 // Hides page layers during page flip animation
 .BRpageFlipping {
   // If the text layer has an annotation, don't hide it
-  .BRpagecontainer:not(:has(hypothesis-highlight)):not(:has(.BRhighlight)) .BRtextLayer {
+  .BRpagecontainer:not(:has(hypothesis-highlight)):not(:has(.BRhighlight)):not(:has(.BRlinkElement)) .BRtextLayer {
     display: none;
   }
 }
