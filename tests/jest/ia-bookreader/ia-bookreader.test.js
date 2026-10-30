@@ -74,6 +74,7 @@ describe('<ia-bookreader>', () => {
       test('Listens for Global Event @BookReader:PostInit', async () => {
         const brStub = {
           resize: sinon.fake(),
+          initShell: sinon.fake(),
           currentIndex: sinon.fake(),
           jumpToIndex: sinon.fake(),
           options: { enableMultipleBooks: false }, // for multipleBooks
