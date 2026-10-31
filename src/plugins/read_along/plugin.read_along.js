@@ -3,7 +3,7 @@ import { renderBoxesInPageContainerLayer } from '../../BookReader/PageContainer.
 import { BookReaderPlugin } from '../../BookReaderPlugin.js';
 import { toISO6391 } from '../tts/utils.js';
 import { ReadAlongAligner, normalizeWord, tokenize } from './aligner.js';
-import { MAX_CUE_JUMP, SoundscapePlayer, resolveCues } from './soundscape.js';
+import { MAX_CUE_JUMP, SoundscapePlayer, compareCueToWord, loopStateAt, resolveCues } from './soundscape.js';
 
 const BookReader = /** @type {typeof import('../../BookReader').default} */(window.BookReader);
 
@@ -18,6 +18,9 @@ const BookReader = /** @type {typeof import('../../BookReader').default} */(wind
  * @property {string} lineKey unique per OCR line
  * @property {Box[]} boxes more than one when hyphenated across lines
  */
+
+/** Seconds to fade sounds in/out when the reader jumps */
+const SEEK_FADE = 1.5;
 
 /** How far past the displayed pages to look for the next page with text */
 const MAX_LOOKAHEAD_PAGES = 4;
@@ -258,27 +261,45 @@ export class ReadAlongPlugin extends BookReaderPlugin {
   }
 
   /**
-   * Fire the cues read past going from `prevWord` to `word`
+   * Fire the cues read past going from `prevWord` to `word`. If that's a jump
+   * rather than reading, instead fade the looping sounds to what they'd be at
+   * `word` had everything before it been read.
    * @param {BookWord | null} prevWord
    * @param {BookWord} word
    */
   _fireCues(prevWord, word) {
     if (!this.soundscapePlayer || !this.cues.length) return;
     const index = this.words.indexOf(word);
-    // When first finding the position, the words that located it were just read
-    const prevIndex = prevWord ? this.words.indexOf(prevWord) : index - this.aligner.queryLength;
-    if (prevWord && prevIndex == -1) return;
-    if (index <= prevIndex || index - prevIndex > MAX_CUE_JUMP) return;
+    const prevIndex = prevWord ? this.words.indexOf(prevWord) : -1;
+    const isReading = prevIndex != -1 && index > prevIndex && index - prevIndex <= MAX_CUE_JUMP;
+    if (isReading) {
+      this._runCues(this.words[prevIndex], word, () => true);
+      return;
+    }
 
-    const wordKey = (/** @type {{ pageIndex: number }} */ w, /** @type {number} */ i) => [w.pageIndex, i];
-    const compare = ([pa, ia], [pb, ib]) => pa - pb || ia - ib;
-    const fromKey = prevIndex < 0 ? [-Infinity, 0] : wordKey(this.words[prevIndex], this.words[prevIndex].indexInPage);
-    const toKey = wordKey(word, word.indexInPage);
+    const state = loopStateAt(this.soundscape, this.cues, word.pageIndex, word.indexInPage);
+    this.soundscapePlayer.applyLoopState(state, SEEK_FADE);
+    this._lastCueText = `jumped; looping ${[...state].map(([name, v]) => `${name}@${v}`).join(', ') || 'nothing'}`;
+    // The words that located the position were just read, so their one-shots
+    // should still play
+    const from = this.words[Math.max(index - this.aligner.queryLength, 0)];
+    this._runCues(from, word, action => action.action == 'play' && !this.soundscape.sounds[action.sound]?.loop);
+  }
+
+  /**
+   * Run the actions of cues after `from`, up to and including `to`
+   * @param {BookWord} from
+   * @param {BookWord} to
+   * @param {(action: import('./soundscape.js').SoundAction) => boolean} filter
+   */
+  _runCues(from, to, filter) {
     for (const cue of this.cues) {
-      const cueKey = wordKey(cue, cue.wordIndex);
-      if (compare(cueKey, fromKey) > 0 && compare(cueKey, toKey) <= 0) {
-        for (const action of cue.spec.actions) this.soundscapePlayer.run(action);
-        this._lastCueText = `"${cue.spec.at.quote}": ${cue.spec.actions.map(a => `${a.action} ${a.sound ?? ''}`.trim()).join(', ')}`;
+      if (compareCueToWord(cue, from.pageIndex, from.indexInPage) <= 0) continue;
+      if (compareCueToWord(cue, to.pageIndex, to.indexInPage) > 0) break;
+      const actions = cue.spec.actions.filter(filter);
+      for (const action of actions) this.soundscapePlayer.run(action);
+      if (actions.length) {
+        this._lastCueText = `"${cue.spec.at.quote}": ${actions.map(a => `${a.action} ${a.sound ?? ''}`.trim()).join(', ')}`;
       }
     }
   }

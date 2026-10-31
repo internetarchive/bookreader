@@ -1,5 +1,5 @@
 import { tokenize } from '@/src/plugins/read_along/aligner.js';
-import { resolveCues, resolveQuote } from '@/src/plugins/read_along/soundscape.js';
+import { loopStateAt, resolveCues, resolveQuote } from '@/src/plugins/read_along/soundscape.js';
 
 const PAGE = tokenize(`
   Goody Two Shoes cuddled down in the soft hay, glad of a chance to rest her
@@ -40,6 +40,38 @@ describe('resolveCues', () => {
       ],
     };
     const cues = resolveCues(spec, new Map([[6, PAGE]]));
-    expect(cues.map(c => PAGE[c.wordIndex])).toEqual(['rain', 'thunder']);
+    expect(cues.map(c => PAGE[c.wordIndex])).toEqual(['rain', 'thunder', undefined]);
+    expect(cues[2]).toMatchObject({ pageIndex: 9, wordIndex: null });
+  });
+});
+
+describe('loopStateAt', () => {
+  const spec = {
+    version: 1,
+    sounds: { rain: { src: '', loop: true }, wind: { src: '', loop: true }, thunder: { src: '' } },
+    cues: [
+      { at: { pageIndex: 2, quote: 'x' }, actions: [{ action: 'play', sound: 'wind', volume: 0.5 }] },
+      { at: { pageIndex: 6, quote: 'down rattled the rain' }, actions: [{ action: 'play', sound: 'rain' }, { action: 'play', sound: 'thunder' }] },
+      { at: { pageIndex: 6, quote: 'the old barn trembled' }, actions: [{ action: 'volume', sound: 'rain', volume: 0.4 }, { action: 'stop', sound: 'wind' }] },
+      { at: { pageIndex: 9, quote: 'x' }, actions: [{ action: 'stop', sound: 'rain' }] },
+    ],
+  };
+  // Pages 2 and 9 aren't loaded
+  const cues = resolveCues(spec, new Map([[6, PAGE]]));
+  const at = (/** @type {string} */ word) => Object.fromEntries(loopStateAt(spec, cues, 6, PAGE.indexOf(word)));
+
+  test('includes loops started on earlier, unloaded pages', () => {
+    expect(at('cuddled')).toEqual({ wind: 0.5 });
+  });
+
+  test('applies cues up to and including the current word, skipping one-shots', () => {
+    expect(at('rattled')).toEqual({ wind: 0.5, rain: 1 });
+    expect(at('thunder')).toEqual({ wind: 0.5, rain: 1 });
+    expect(at('old')).toEqual({ rain: 0.4 });
+  });
+
+  test('ignores cues on later pages', () => {
+    expect(at('did')).toEqual({ rain: 0.4 });
+    expect(Object.fromEntries(loopStateAt(spec, cues, 9, 0))).toEqual({});
   });
 });

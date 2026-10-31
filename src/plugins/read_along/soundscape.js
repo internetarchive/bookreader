@@ -41,7 +41,8 @@ import { ReadAlongAligner, tokenize } from './aligner.js';
  * @typedef {object} ResolvedCue
  * @property {CueSpec} spec
  * @property {number} pageIndex
- * @property {number} wordIndex index of the anchor word among the page's read-along words
+ * @property {number | null} wordIndex index of the anchor word among the page's read-along
+ *   words; null if the page isn't loaded, in which case only its page orders it
  */
 
 /** Cues further than this many words from the previous position aren't fired, since that's a jump, not reading */
@@ -70,14 +71,17 @@ export function resolveQuote(pageWords, quote, position = 'start') {
 /**
  * @param {SoundscapeSpec} spec
  * @param {Map<number, string[]>} normsByPage normalized words of the loaded pages
- * @returns {ResolvedCue[]} cues on the loaded pages, in reading order
+ * @returns {ResolvedCue[]} all cues, in reading order
  */
 export function resolveCues(spec, normsByPage) {
   /** @type {ResolvedCue[]} */
   const resolved = [];
   for (const cue of spec.cues) {
     const norms = normsByPage.get(cue.at.pageIndex);
-    if (!norms) continue;
+    if (!norms) {
+      resolved.push({ spec: cue, pageIndex: cue.at.pageIndex, wordIndex: null });
+      continue;
+    }
     const wordIndex = resolveQuote(norms, cue.at.quote, cue.at.position);
     if (wordIndex == -1) {
       console.warn(`Soundscape: couldn't find "${cue.at.quote}" on page index ${cue.at.pageIndex}`);
@@ -85,7 +89,41 @@ export function resolveCues(spec, normsByPage) {
     }
     resolved.push({ spec: cue, pageIndex: cue.at.pageIndex, wordIndex });
   }
-  return resolved.sort((a, b) => a.pageIndex - b.pageIndex || a.wordIndex - b.wordIndex);
+  return resolved.sort((a, b) => a.pageIndex - b.pageIndex || (a.wordIndex ?? 0) - (b.wordIndex ?? 0));
+}
+
+/**
+ * @param {ResolvedCue} cue
+ * @param {number} pageIndex
+ * @param {number} wordIndex
+ * @returns {number} negative if the cue is before the word, 0 if on it, positive if after
+ */
+export function compareCueToWord(cue, pageIndex, wordIndex) {
+  return cue.pageIndex - pageIndex || (cue.wordIndex ?? 0) - wordIndex;
+}
+
+/**
+ * The looping sounds that should be playing at a position, as if everything
+ * before it had been read. One-shots are left out, since they'd have finished.
+ * @param {SoundscapeSpec} spec
+ * @param {ResolvedCue[]} cues in reading order
+ * @param {number} pageIndex
+ * @param {number} wordIndex
+ * @returns {Map<string, number>} sound name -> volume
+ */
+export function loopStateAt(spec, cues, pageIndex, wordIndex) {
+  /** @type {Map<string, number>} */
+  const state = new Map();
+  for (const cue of cues) {
+    if (compareCueToWord(cue, pageIndex, wordIndex) > 0) break;
+    for (const { action, sound, volume = 1 } of cue.spec.actions) {
+      if (action == 'stopAll') state.clear();
+      if (!spec.sounds[sound]?.loop) continue;
+      if (action == 'play' || (action == 'volume' && state.has(sound))) state.set(sound, volume);
+      else if (action == 'stop') state.delete(sound);
+    }
+  }
+  return state;
 }
 
 /**
@@ -223,6 +261,18 @@ export class SoundscapePlayer {
     this.playing.delete(name);
     rampTo(entry.gain.gain, 0, fade, this.ctx.currentTime);
     entry.source?.stop(this.ctx.currentTime + Math.max(fade, 0.05));
+  }
+
+  /**
+   * Fade the looping sounds to the given state
+   * @param {Map<string, number>} state sound name -> volume
+   * @param {number} fade
+   */
+  applyLoopState(state, fade) {
+    for (const name of [...this.playing.keys()]) {
+      if (this.spec.sounds[name].loop && !state.has(name)) this.stop(name, fade);
+    }
+    for (const [name, volume] of state) this.play(name, volume, fade);
   }
 
   /**
