@@ -19,6 +19,9 @@ const BookReader = /** @type {typeof import('../../BookReader').default} */(wind
  * @property {Box[]} boxes more than one when hyphenated across lines
  */
 
+/** How far past the displayed pages to look for the next page with text */
+const MAX_LOOKAHEAD_PAGES = 4;
+
 const SpeechRecognitionImpl = window.SpeechRecognition || /** @type {any} */(window).webkitSpeechRecognition;
 
 /**
@@ -309,14 +312,21 @@ export class ReadAlongPlugin extends BookReaderPlugin {
    */
   async loadPages() {
     const displayed = this.br.displayedIndices?.length ? this.br.displayedIndices : [this.br.currentIndex()];
-    const lastIndex = this.br.book.getNumLeafs() - 1;
-    const wanted = new Set([...displayed, Math.min(Math.max(...displayed) + 1, lastIndex)]);
+    const wanted = new Set(displayed);
     // Keep the page being read even if the user scrolled away
     if (this.currentWord) wanted.add(this.currentWord.pageIndex);
-
-    await Promise.all([...wanted].filter(i => !this.pageWords.has(i)).map(async i => {
+    const loadWanted = () => Promise.all([...wanted].filter(i => !this.pageWords.has(i)).map(async i => {
       this.pageWords.set(i, await this._loadPageWords(i));
     }));
+    await loadWanted();
+
+    // Also load up to the next page with text, skipping e.g. illustration plates
+    const lastIndex = this.br.book.getNumLeafs() - 1;
+    for (let i = Math.max(...displayed) + 1; i <= Math.min(lastIndex, Math.max(...displayed) + MAX_LOOKAHEAD_PAGES); i++) {
+      wanted.add(i);
+      await loadWanted();
+      if (this.pageWords.get(i)?.length) break;
+    }
     for (const i of this.pageWords.keys()) {
       if (!wanted.has(i)) this.pageWords.delete(i);
     }

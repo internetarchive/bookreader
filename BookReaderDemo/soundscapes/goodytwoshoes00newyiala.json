@@ -18,12 +18,8 @@
   },
   "cues": [
     {
-      "at": { "pageIndex": 6, "quote": "Presently a drop fell on Goody's face", "position": "end" },
-      "actions": [{ "action": "play", "sound": "rain", "volume": 0.15, "fade": 3 }]
-    },
-    {
-      "at": { "pageIndex": 6, "quote": "and just then down rattled the rain", "position": "end" },
-      "actions": [{ "action": "play", "sound": "rain", "volume": 1, "fade": 1 }]
+      "at": { "pageIndex": 6, "quote": "and just then down rattled the rain", "position": "start" },
+      "actions": [{ "action": "play", "sound": "rain", "volume": 1, "fade": 2 }]
     },
     {
       "at": { "pageIndex": 6, "quote": "the thunder roared" },
@@ -34,7 +30,7 @@
       "actions": [{ "action": "volume", "sound": "rain", "volume": 0.4, "fade": 4 }]
     },
     {
-      "at": { "pageIndex": 6, "quote": "they spoke quite loudly", "position": "end" },
+      "at": { "pageIndex": 9, "quote": "and all kept a close watch both inside and outside", "position": "end" },
       "actions": [{ "action": "stop", "sound": "rain", "fade": 8 }]
     }
   ]
