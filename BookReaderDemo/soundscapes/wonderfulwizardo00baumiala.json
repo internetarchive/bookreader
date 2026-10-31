@@ -1,0 +1,147 @@
+{
+  "version": 1,
+  "styles": [
+    ".BookReader { transition: background-color 4s; }",
+    ".BookReader.soundscape-stormsky { background-color: #1d2127; }",
+    "@keyframes soundscape-shake {",
+    "  0%, 100% { transform: translate(0, 0); }",
+    "  15% { transform: translate(-3px, 1px); }",
+    "  30% { transform: translate(3px, -2px); }",
+    "  45% { transform: translate(-2px, 2px); }",
+    "  60% { transform: translate(2px, -1px); }",
+    "  80% { transform: translate(-1px, 1px); }",
+    "}",
+    ".BookReader.soundscape-shake .BRcontainer { animation: soundscape-shake 0.25s linear 4; }"
+  ],
+  "sounds": {
+    "prairieWind": {
+      "src": "https://cdn.freesound.org/previews/675/675711_2524442-hq.mp3",
+      "loop": true,
+      "loopStart": 30,
+      "loopEnd": 71,
+      "start": 0,
+      "gain": 1,
+      "credit": "\"S21-18 Jim Cook's wind; bluster; prairie wind\" by craigsmith, CC0, https://freesound.org/people/craigsmith/sounds/675711/"
+    },
+    "howl": {
+      "src": "https://cdn.freesound.org/previews/521/521736_9395330-hq.mp3",
+      "loop": true,
+      "loopStart": 1,
+      "loopEnd": 59,
+      "gain": 1,
+      "credit": "\"Howling Wind\" by Fission9, CC0, https://freesound.org/people/Fission9/sounds/521736/"
+    },
+    "houseCreak": {
+      "src": "https://cdn.freesound.org/previews/473/473862_10005243-hq.mp3",
+      "loop": true,
+      "gain": 0.4,
+      "credit": "\"HouseCreakingWithWind-Loop-0001.wav\" by Kragnour, CC0, https://freesound.org/people/Kragnour/sounds/473862/"
+    },
+    "whistle": {
+      "src": "https://cdn.freesound.org/previews/218/218386_3299593-hq.mp3",
+      "gain": 1.2,
+      "credit": "\"Whistling Wind.wav\" by Motion_S, CC0, https://freesound.org/people/Motion_S/sounds/218386/"
+    },
+    "cow": {
+      "src": "https://cdn.freesound.org/previews/546/546481_11588763-hq.mp3",
+      "gain": 12,
+      "credit": "\"Cow Moo\" by invertedturtle, CC0, https://freesound.org/people/invertedturtle/sounds/546481/"
+    },
+    "horse": {
+      "src": "https://cdn.freesound.org/previews/347/347036_1708499-hq.mp3",
+      "start": 1,
+      "gain": 0.7,
+      "credit": "\"horse's whinny\" by Kubuzz, CC0, https://freesound.org/people/Kubuzz/sounds/347036/"
+    },
+    "dishes": {
+      "src": "https://cdn.freesound.org/previews/209/209009_140737-hq.mp3",
+      "gain": 2,
+      "credit": "\"Kitchen Dish Clank\" by OwlStorm, CC0, https://freesound.org/people/OwlStorm/sounds/209009/"
+    },
+    "yelp": {
+      "src": "https://cdn.freesound.org/previews/452/452180_612689-hq.mp3",
+      "start": 0.7,
+      "gain": 0.7,
+      "credit": "\"bark yelp dog small int.flac\" by kyles, CC0, https://freesound.org/people/kyles/sounds/452180/"
+    },
+    "trapdoor": {
+      "src": "https://cdn.freesound.org/previews/422/422434_6613494-hq.mp3",
+      "gain": 0.8,
+      "credit": "\"trap door open .wav\" by BehanSean, CC0, https://freesound.org/people/BehanSean/sounds/422434/"
+    }
+  },
+  "cues": [
+    {
+      "at": { "pageIndex": 17, "quote": "low wail on the wind" },
+      "actions": [{ "action": "play", "sound": "prairieWind", "volume": 0.3, "fade": 4 }]
+    },
+    {
+      "at": { "pageIndex": 17, "quote": "bowed in waves before the coming storm", "position": "end" },
+      "actions": [{ "action": "volume", "sound": "prairieWind", "volume": 0.5, "fade": 3 }]
+    },
+    {
+      "at": { "pageIndex": 17, "quote": "sharp whistling in the air" },
+      "actions": [
+        { "action": "play", "sound": "whistle", "volume": 0.7 },
+        { "action": "play", "sound": "whistle", "volume": 0.4, "delay": 2.5 }
+      ]
+    },
+    {
+      "at": { "pageIndex": 17, "quote": "ripples in the grass coming from that direction also", "position": "end" },
+      "actions": [{ "action": "volume", "sound": "prairieWind", "volume": 0.65, "fade": 2 }]
+    },
+    {
+      "at": { "pageIndex": 17, "quote": "a cyclone coming, Em" },
+      "actions": [{ "action": "css", "class": "stormsky" }]
+    },
+    {
+      "at": { "pageIndex": 17, "quote": "cows and horses were kept" },
+      "actions": [
+        { "action": "play", "sound": "cow" },
+        { "action": "play", "sound": "horse", "delay": 1.3 }
+      ]
+    },
+    {
+      "at": { "pageIndex": 17, "quote": "dropped her work and came to the door" },
+      "actions": [{ "action": "play", "sound": "dishes" }]
+    },
+    {
+      "at": { "pageIndex": 17, "quote": "run for the cellar" },
+      "actions": [{ "action": "volume", "sound": "prairieWind", "volume": 0.85, "fade": 1.5 }]
+    },
+    {
+      "at": { "pageIndex": 17, "quote": "jumped out of Dorothy's arms and hid under the bed" },
+      "actions": [{ "action": "play", "sound": "yelp" }]
+    },
+    {
+      "at": { "pageIndex": 17, "quote": "threw open the trap-door", "position": "end" },
+      "actions": [{ "action": "play", "sound": "trapdoor" }]
+    },
+    {
+      "at": { "pageIndex": 17, "quote": "great shriek from the wind" },
+      "actions": [{ "action": "play", "sound": "howl", "volume": 1, "fade": 1.5 }]
+    },
+    {
+      "at": { "pageIndex": 17, "quote": "the house shook so hard" },
+      "actions": [
+        { "action": "play", "sound": "houseCreak", "volume": 0.9, "fade": 0.3 },
+        { "action": "css", "class": "shake", "duration": 1.2 }
+      ]
+    },
+    {
+      "at": { "pageIndex": 17, "quote": "whirled around two or three times" },
+      "actions": [
+        { "action": "volume", "sound": "houseCreak", "volume": 1, "fade": 1 },
+        { "action": "css", "class": "shake", "duration": 1.2 }
+      ]
+    },
+    {
+      "at": { "pageIndex": 19, "quote": "Dorothy soon closed her eyes and fell fast asleep", "position": "end" },
+      "actions": [
+        { "action": "volume", "sound": "howl", "volume": 0.3, "fade": 6 },
+        { "action": "volume", "sound": "houseCreak", "volume": 0.35, "fade": 6 },
+        { "action": "volume", "sound": "prairieWind", "volume": 0.3, "fade": 6 }
+      ]
+    }
+  ]
+}
