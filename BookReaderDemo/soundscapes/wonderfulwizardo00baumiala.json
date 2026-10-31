@@ -65,6 +65,8 @@
     "lurch": {
       "src": "https://cdn.freesound.org/previews/218/218163_2737063-hq.mp3",
       "start": 4.4,
+      "end": 8.0,
+      "fadeOut": 0.6,
       "gain": 1.2,
       "credit": "\"Slow wooden creaks x5\" by peridactyloptrix, CC0, https://freesound.org/people/peridactyloptrix/sounds/218163/"
     },
@@ -82,6 +84,8 @@
     "whimper": {
       "src": "https://cdn.freesound.org/previews/742/742053_3939935-hq.mp3",
       "start": 1.5,
+      "end": 4.6,
+      "fadeOut": 0.4,
       "gain": 0.6,
       "credit": "\"Dog whine\" (a Jack Russell terrier) by T_saurus, CC0, https://freesound.org/people/T_saurus/sounds/742053/"
     },
@@ -121,6 +125,8 @@
     "sparkle": {
       "src": "https://cdn.freesound.org/previews/660/660493_2407572-hq.mp3",
       "start": 8.8,
+      "end": 12.3,
+      "fadeOut": 1,
       "gain": 0.8,
       "credit": "\"Chimes Sparkle\" by lukabea, CC0, https://freesound.org/people/lukabea/sounds/660493/"
     }
@@ -199,8 +205,7 @@
       "at": { "pageIndex": 17, "quote": "he ran toward the sheds" },
       "actions": [
         { "action": "start", "sound": "running", "volume": 0.8, "fade": 0.2 },
-        { "action": "set", "sound": "running", "volume": 0, "fade": 4, "delay": 0.8 },
-        { "action": "stop", "sound": "running", "delay": 5 }
+        { "action": "stop", "sound": "running", "fade": 4, "delay": 0.8 }
       ]
     },
     {
@@ -267,7 +272,6 @@
       "at": { "pageIndex": 18, "quote": "the house tipped badly" },
       "actions": [
         { "action": "start", "sound": "lurch" },
-        { "action": "stop", "sound": "lurch", "fade": 0.6, "delay": 3 },
         { "action": "start", "effect": "lurch", "duration": 1.6 }
       ]
     },
@@ -337,10 +341,7 @@
     },
     {
       "at": { "pageIndex": 22, "quote": "whined dismally" },
-      "actions": [
-        { "action": "start", "sound": "whimper" },
-        { "action": "stop", "sound": "whimper", "fade": 0.4, "delay": 2.7 }
-      ]
+      "actions": [{ "action": "start", "sound": "whimper" }]
     },
     {
       "at": { "pageIndex": 22, "quote": "the bright sunshine came in at the window" },
@@ -390,10 +391,7 @@
     },
     {
       "at": { "pageIndex": 23, "quote": "glistened in the sun like diamonds" },
-      "actions": [
-        { "action": "start", "sound": "sparkle" },
-        { "action": "stop", "sound": "sparkle", "fade": 1, "delay": 2.5 }
-      ]
+      "actions": [{ "action": "start", "sound": "sparkle" }]
     }
   ]
 }

@@ -234,6 +234,7 @@ export class SoundscapeView {
         ['file', `<a href="${escapeHtml(resource.src)}" target="_blank" rel="noopener">${escapeHtml(resource.src.split('/').pop())}</a>`],
         ['loop', resource.loop ? `yes${resource.loopStart != null || resource.loopEnd != null ? ` (${resource.loopStart ?? 0}s–${resource.loopEnd != null ? `${resource.loopEnd}s` : 'end'})` : ''}` : 'no (one-shot)'],
         ['start', resource.start != null && `${resource.start}s`],
+        ['end', resource.end != null && `${resource.end}s${resource.fadeOut ? ` (fading out over ${resource.fadeOut}s)` : ''}`],
         ['gain', resource.gain != null && `${resource.gain}`],
         ['credit', resource.credit && linkify(resource.credit)],
       ] : [

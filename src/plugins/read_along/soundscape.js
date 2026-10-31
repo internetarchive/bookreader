@@ -18,6 +18,8 @@ import { ReadAlongAligner, tokenize } from './aligner.js';
  * @property {number} [loopStart] seconds
  * @property {number} [loopEnd] seconds
  * @property {number} [start] seconds into the file to start playing from
+ * @property {number} [end] one-shots: seconds into the file to stop at, to use only part of it
+ * @property {number} [fadeOut] one-shots with an `end`: seconds to fade out before it
  * @property {number} [gain] Base level of the file, so cue volumes can be 0-1 across sounds
  * @property {string} [credit]
  *
@@ -316,12 +318,24 @@ export class SoundscapePlayer {
     source.loop = !!soundSpec.loop;
     if (soundSpec.loopStart) source.loopStart = soundSpec.loopStart;
     if (soundSpec.loopEnd) source.loopEnd = soundSpec.loopEnd;
-    source.connect(gain);
     source.onended = () => {
       if (this.playing.get(name) === entry) this.playing.delete(name);
     };
     entry.source = source;
-    source.start(0, soundSpec.start ?? soundSpec.loopStart ?? 0);
+    const offset = soundSpec.start ?? soundSpec.loopStart ?? 0;
+    if (!soundSpec.loop && soundSpec.end != null) {
+      // The trim's fade has its own gain, so `set`s on `gain` can't cancel it
+      const length = Math.max(soundSpec.end - offset, 0);
+      const trimGain = this.ctx.createGain();
+      const now = this.ctx.currentTime;
+      trimGain.gain.setValueAtTime(1, now + Math.max(length - (soundSpec.fadeOut ?? 0), 0));
+      trimGain.gain.linearRampToValueAtTime(0, now + length);
+      source.connect(trimGain).connect(gain);
+      source.start(0, offset, length);
+    } else {
+      source.connect(gain);
+      source.start(0, offset);
+    }
   }
 
   /**
