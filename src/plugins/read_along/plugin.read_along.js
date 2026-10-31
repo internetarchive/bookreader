@@ -3,6 +3,7 @@ import { renderBoxesInPageContainerLayer } from '../../BookReader/PageContainer.
 import { BookReaderPlugin } from '../../BookReaderPlugin.js';
 import { toISO6391 } from '../tts/utils.js';
 import { ReadAlongAligner, normalizeWord, tokenize } from './aligner.js';
+import { MAX_CUE_JUMP, SoundscapePlayer, resolveCues } from './soundscape.js';
 
 const BookReader = /** @type {typeof import('../../BookReader').default} */(window.BookReader);
 
@@ -13,6 +14,7 @@ const BookReader = /** @type {typeof import('../../BookReader').default} */(wind
  * @property {string} norm normalized text used for matching
  * @property {string} text
  * @property {number} pageIndex
+ * @property {number} indexInPage
  * @property {string} lineKey unique per OCR line
  * @property {Box[]} boxes more than one when hyphenated across lines
  */
@@ -30,6 +32,8 @@ export class ReadAlongPlugin extends BookReaderPlugin {
     debug: true,
     /** Ask the browser to recognize on-device, where supported */
     processLocally: false,
+    /** URL of a soundscape JSON for the book (see soundscape.js); sound cues fire as the reader reads past them */
+    soundscapeUrl: null,
   }
 
   active = false;
@@ -46,6 +50,13 @@ export class ReadAlongPlugin extends BookReaderPlugin {
   _boxesByIndex = {};
   /** Recognized text of the recognition sessions before the current one */
   _priorTranscript = '';
+  /** @type {import('./soundscape.js').SoundscapeSpec | null} */
+  soundscape = null;
+  /** @type {SoundscapePlayer | null} */
+  soundscapePlayer = null;
+  /** @type {import('./soundscape.js').ResolvedCue[]} Cues on the loaded pages */
+  cues = [];
+  _lastCueText = '';
 
   static isSupported() {
     return !!SpeechRecognitionImpl;
@@ -54,6 +65,7 @@ export class ReadAlongPlugin extends BookReaderPlugin {
   /** @override */
   init() {
     if (!this.options.enabled) return;
+    if (this.options.soundscapeUrl) this.loadSoundscape(this.options.soundscapeUrl);
     this.br.on(BookReader.eventNames.pageChanged, () => {
       if (this.active) this.loadPages();
     });
@@ -93,6 +105,20 @@ export class ReadAlongPlugin extends BookReaderPlugin {
     }
   }
 
+  /**
+   * @param {string} url
+   */
+  async loadSoundscape(url) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return;
+      this.soundscape = await res.json();
+      this.soundscapePlayer = new SoundscapePlayer(this.soundscape);
+    } catch (e) {
+      console.warn('ReadAlong: failed to load soundscape', url, e);
+    }
+  }
+
   toggle() {
     if (this.active) this.stop();
     else this.start();
@@ -100,6 +126,8 @@ export class ReadAlongPlugin extends BookReaderPlugin {
 
   async start() {
     if (this.active) return;
+    // Still synchronous with the click, so audio is allowed to start
+    this.soundscapePlayer?.unlock();
     this.br.plugins.tts?.ttsEngine?.playing && this.br.plugins.tts.stop();
     this.br.plugins.autoplay?.stop();
     if (this.br.mode == this.br.constModeThumb) this.br.switchMode(this.br.constMode1up);
@@ -118,6 +146,7 @@ export class ReadAlongPlugin extends BookReaderPlugin {
     this.$button?.find('button').removeClass('active');
     this.recognition?.abort();
     this.recognition = null;
+    this.soundscapePlayer?.stopAll(1);
     this._removeHighlights();
     this.$status?.remove();
     this.$status = null;
@@ -190,7 +219,8 @@ export class ReadAlongPlugin extends BookReaderPlugin {
         `<div class="BRreadAlong__heard">${escapeHtml(query)}</div>` +
         `<div class="BRreadAlong__match">${match ?
           `→ "${escapeHtml(this.words[match.end].text)}" (p${this.words[match.end].pageIndex}, matched ${match.matched}, score ${match.score.toFixed(1)})` :
-          'no confident match'}</div>`,
+          'no confident match'}</div>` +
+        (this._lastCueText ? `<div class="BRreadAlong__cue">♪ ${escapeHtml(this._lastCueText)}</div>` : ''),
       );
     }
   }
@@ -221,6 +251,33 @@ export class ReadAlongPlugin extends BookReaderPlugin {
       }
     }
     if (prevWord?.lineKey !== word.lineKey) this._maybeScrollToLine();
+    this._fireCues(prevWord, word);
+  }
+
+  /**
+   * Fire the cues read past going from `prevWord` to `word`
+   * @param {BookWord | null} prevWord
+   * @param {BookWord} word
+   */
+  _fireCues(prevWord, word) {
+    if (!this.soundscapePlayer || !this.cues.length) return;
+    const index = this.words.indexOf(word);
+    // When first finding the position, the words that located it were just read
+    const prevIndex = prevWord ? this.words.indexOf(prevWord) : index - this.aligner.queryLength;
+    if (prevWord && prevIndex == -1) return;
+    if (index <= prevIndex || index - prevIndex > MAX_CUE_JUMP) return;
+
+    const wordKey = (/** @type {{ pageIndex: number }} */ w, /** @type {number} */ i) => [w.pageIndex, i];
+    const compare = ([pa, ia], [pb, ib]) => pa - pb || ia - ib;
+    const fromKey = prevIndex < 0 ? [-Infinity, 0] : wordKey(this.words[prevIndex], this.words[prevIndex].indexInPage);
+    const toKey = wordKey(word, word.indexInPage);
+    for (const cue of this.cues) {
+      const cueKey = wordKey(cue, cue.wordIndex);
+      if (compare(cueKey, fromKey) > 0 && compare(cueKey, toKey) <= 0) {
+        for (const action of cue.spec.actions) this.soundscapePlayer.run(action);
+        this._lastCueText = `"${cue.spec.at.quote}": ${cue.spec.actions.map(a => `${a.action} ${a.sound ?? ''}`.trim()).join(', ')}`;
+      }
+    }
   }
 
   /**
@@ -267,6 +324,10 @@ export class ReadAlongPlugin extends BookReaderPlugin {
     this.words = [...this.pageWords.keys()].sort((a, b) => a - b).flatMap(i => this.pageWords.get(i));
     const pos = this.currentWord ? this.words.indexOf(this.currentWord) : -1;
     this.aligner.setWords(this.words.map(w => w.norm), pos);
+    if (this.soundscape) {
+      const normsByPage = new Map([...this.pageWords].map(([i, words]) => [i, words.map(w => w.norm)]));
+      this.cues = resolveCues(this.soundscape, normsByPage);
+    }
   }
 
   /**
@@ -301,7 +362,7 @@ export class ReadAlongPlugin extends BookReaderPlugin {
           }
           const norm = normalizeWord(text);
           if (!norm) continue;
-          const word = { norm, text, pageIndex, lineKey, boxes: [box] };
+          const word = { norm, text, pageIndex, indexInPage: words.length, lineKey, boxes: [box] };
           words.push(word);
           if (text.endsWith('-') && wordEl === wordEls[wordEls.length - 1]) {
             hyphenated = word;

@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "sounds": {
+    "rain": {
+      "src": "https://archive.org/download/aporee_39549_45202/ForetPluieVent2003181204.mp3",
+      "loop": true,
+      "loopStart": 2,
+      "loopEnd": 66,
+      "gain": 3,
+      "credit": "\"Rain in forest\" by Nicolas Germain, public domain, https://archive.org/details/aporee_39549_45202"
+    },
+    "thunder": {
+      "src": "https://archive.org/download/446753-bluedelta-heavy-thunder-strike-no-rain-quadro/446753__bluedelta__heavy-thunder-strike-no-rain-quadro.mp3",
+      "start": 0.8,
+      "gain": 0.7,
+      "credit": "\"Heavy thunder strike\" by BlueDelta, public domain, https://archive.org/details/446753-bluedelta-heavy-thunder-strike-no-rain-quadro"
+    }
+  },
+  "cues": [
+    {
+      "at": { "pageIndex": 6, "quote": "Presently a drop fell on Goody's face", "position": "end" },
+      "actions": [{ "action": "play", "sound": "rain", "volume": 0.15, "fade": 3 }]
+    },
+    {
+      "at": { "pageIndex": 6, "quote": "and just then down rattled the rain", "position": "end" },
+      "actions": [{ "action": "play", "sound": "rain", "volume": 1, "fade": 1 }]
+    },
+    {
+      "at": { "pageIndex": 6, "quote": "the thunder roared" },
+      "actions": [{ "action": "play", "sound": "thunder" }]
+    },
+    {
+      "at": { "pageIndex": 6, "quote": "three men came into the barn", "position": "end" },
+      "actions": [{ "action": "volume", "sound": "rain", "volume": 0.4, "fade": 4 }]
+    },
+    {
+      "at": { "pageIndex": 6, "quote": "they spoke quite loudly", "position": "end" },
+      "actions": [{ "action": "stop", "sound": "rain", "fade": 8 }]
+    }
+  ]
+}
