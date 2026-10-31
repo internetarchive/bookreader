@@ -510,22 +510,22 @@ export class ReadAlongPlugin extends BookReaderPlugin {
         const lineKey = `${pageIndex}/${paragraphIndex}/${lineIndex}`;
         const wordEls = Array.from(line.querySelectorAll('WORD'));
         for (const wordEl of wordEls) {
-          const text = wordEl.textContent.trim();
           const [l, b, r, t] = wordEl.getAttribute('coords').split(',').map(parseFloat);
-          const box = { l, r, b, t };
-          if (hyphenated) {
-            hyphenated.text = hyphenated.text.slice(0, -1) + text;
-            hyphenated.norm = normalizeWord(hyphenated.text);
-            hyphenated.boxes.push(box);
-            hyphenated = null;
-            continue;
-          }
-          const norm = normalizeWord(text);
-          if (!norm) continue;
-          const word = { norm, text, pageIndex, indexInPage: words.length, lineKey, boxes: [box] };
-          words.push(word);
-          if (text.endsWith('-') && wordEl === wordEls[wordEls.length - 1]) {
-            hyphenated = word;
+          const pieces = splitOcrWord(wordEl.textContent, { l, r, b, t });
+          for (const [pieceIndex, { text, box }] of pieces.entries()) {
+            if (hyphenated) {
+              hyphenated.text = hyphenated.text.slice(0, -1) + text;
+              hyphenated.norm = normalizeWord(hyphenated.text);
+              hyphenated.boxes.push(box);
+              hyphenated = null;
+              continue;
+            }
+            const norm = normalizeWord(text);
+            if (!norm) continue;
+            const word = { norm, text, pageIndex, indexInPage: words.length, lineKey, boxes: [box] };
+            words.push(word);
+            const isLineEnd = wordEl === wordEls[wordEls.length - 1] && pieceIndex === pieces.length - 1;
+            if (text.endsWith('-') && isLineEnd) hyphenated = word;
           }
         }
       }
@@ -554,6 +554,26 @@ export class ReadAlongPlugin extends BookReaderPlugin {
       `<div class="BRreadAlong__diag">${escapeHtml(this._recInfo)}<br>${escapeHtml(this._recEvents.join(' → '))}</div>` : '';
     this.$status.html(html + diagnostics);
   }
+}
+
+/**
+ * Some OCR puts several words in one <WORD> (e.g. "straightway disappeared,").
+ * Split them, sharing the box out by length, so each can be read and matched.
+ * @param {string} text the <WORD>'s text
+ * @param {Box} box
+ * @returns {Array<{ text: string, box: Box }>}
+ */
+export function splitOcrWord(text, box) {
+  const pieces = text.trim().split(/\s+/).filter(Boolean);
+  if (pieces.length <= 1) return [{ text: text.trim(), box }];
+  const totalLength = pieces.reduce((sum, piece) => sum + piece.length, 0);
+  let left = box.l;
+  return pieces.map(piece => {
+    const width = (box.r - box.l) * piece.length / totalLength;
+    const pieceBox = { ...box, l: left, r: left + width };
+    left += width;
+    return { text: piece, box: pieceBox };
+  });
 }
 
 /**
