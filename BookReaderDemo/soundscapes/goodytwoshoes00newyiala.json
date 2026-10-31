@@ -14,6 +14,13 @@
       "start": 0.8,
       "gain": 0.7,
       "credit": "\"Heavy thunder strike\" by BlueDelta, public domain, https://archive.org/details/446753-bluedelta-heavy-thunder-strike-no-rain-quadro"
+    },
+    "running": {
+      "src": "https://cdn.freesound.org/previews/816/816777_17552599-hq.mp3",
+      "loop": true,
+      "loopStart": 0.4,
+      "gain": 0.6,
+      "credit": "\"run in mud 2 edit\" by Luisa_Sanchez, CC0, https://freesound.org/people/Luisa_Sanchez/sounds/816777/"
     }
   },
   "cues": [
@@ -28,6 +35,18 @@
     {
       "at": { "pageIndex": 6, "quote": "three men came into the barn", "position": "end" },
       "actions": [{ "action": "volume", "sound": "rain", "volume": 0.4, "fade": 4 }]
+    },
+    {
+      "at": { "pageIndex": 9, "quote": "dashed out of the barn" },
+      "actions": [
+        { "action": "play", "sound": "running", "fade": 0.3 },
+        { "action": "volume", "sound": "rain", "volume": 1, "fade": 1.5 },
+        { "action": "play", "sound": "thunder", "volume": 0.8, "delay": 1 }
+      ]
+    },
+    {
+      "at": { "pageIndex": 9, "quote": "till she came to the Squire's house", "position": "end" },
+      "actions": [{ "action": "stop", "sound": "running", "fade": 1.5 }]
     },
     {
       "at": { "pageIndex": 9, "quote": "and all kept a close watch both inside and outside", "position": "end" },
