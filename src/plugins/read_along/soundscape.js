@@ -57,21 +57,30 @@ export const MAX_CUE_JUMP = 40;
 /**
  * @param {string[]} pageWords normalized words of the page
  * @param {string} quote
+ * @returns {{ start: number, end: number } | null} indices of the quote's first and last words
+ */
+export function resolveQuoteSpan(pageWords, quote) {
+  const tokens = tokenize(quote);
+  if (!tokens.length) return null;
+  for (let i = 0; i + tokens.length <= pageWords.length; i++) {
+    if (tokens.every((t, j) => pageWords[i + j] === t)) return { start: i, end: i + tokens.length - 1 };
+  }
+  // Fall back to fuzzy, for OCR errors in the quoted text
+  const match = new ReadAlongAligner(pageWords).bestMatch(tokens, false);
+  if (!match) return null;
+  return { start: Math.max(0, match.end - tokens.length + 1), end: match.end };
+}
+
+/**
+ * @param {string[]} pageWords normalized words of the page
+ * @param {string} quote
  * @param {'start' | 'end'} [position]
  * @returns {number} index of the anchor word, or -1
  */
 export function resolveQuote(pageWords, quote, position = 'start') {
-  const tokens = tokenize(quote);
-  if (!tokens.length) return -1;
-  const pick = (/** @type {number} */ start) => position == 'end' ? start + tokens.length - 1 : start;
-
-  for (let i = 0; i + tokens.length <= pageWords.length; i++) {
-    if (tokens.every((t, j) => pageWords[i + j] === t)) return pick(i);
-  }
-  // Fall back to fuzzy, for OCR errors in the quoted text
-  const match = new ReadAlongAligner(pageWords).bestMatch(tokens, false);
-  if (!match) return -1;
-  return position == 'end' ? match.end : Math.max(0, match.end - tokens.length + 1);
+  const span = resolveQuoteSpan(pageWords, quote);
+  if (!span) return -1;
+  return position == 'end' ? span.end : span.start;
 }
 
 /**
@@ -170,6 +179,8 @@ export class SoundscapePlayer {
 
   /** @type {Map<string, ReturnType<typeof setTimeout>>} */
   _classTimers = new Map();
+  /** @type {Set<ReturnType<typeof setTimeout>>} Actions waiting on their `delay` */
+  _pending = new Set();
 
   /**
    * @param {SoundscapeSpec} spec
@@ -220,7 +231,11 @@ export class SoundscapePlayer {
    */
   run(action) {
     if (action.delay) {
-      setTimeout(() => this.run({ ...action, delay: 0 }), action.delay * 1000);
+      const timer = setTimeout(() => {
+        this._pending.delete(timer);
+        this.run({ ...action, delay: 0 });
+      }, action.delay * 1000);
+      this._pending.add(timer);
       return;
     }
     const { sound, volume = 1, fade = 0 } = action;
@@ -355,6 +370,8 @@ export class SoundscapePlayer {
    * @param {number} fade
    */
   stopAll(fade) {
+    for (const timer of this._pending) clearTimeout(timer);
+    this._pending.clear();
     for (const name of [...this.playing.keys()]) this.stop(name, fade);
   }
 }

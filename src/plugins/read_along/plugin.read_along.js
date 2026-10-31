@@ -3,6 +3,7 @@ import { renderBoxesInPageContainerLayer } from '../../BookReader/PageContainer.
 import { BookReaderPlugin } from '../../BookReaderPlugin.js';
 import { toISO6391 } from '../tts/utils.js';
 import { ReadAlongAligner, normalizeWord, tokenize } from './aligner.js';
+import { SoundscapeView } from './soundscape_view.js';
 import { MAX_CUE_JUMP, SoundscapePlayer, classStateAt, compareCueToWord, loopStateAt, resolveCues } from './soundscape.js';
 
 const BookReader = /** @type {typeof import('../../BookReader').default} */(window.BookReader);
@@ -83,6 +84,10 @@ export class ReadAlongPlugin extends BookReaderPlugin {
   soundscape = null;
   /** @type {SoundscapePlayer | null} */
   soundscapePlayer = null;
+  /** @type {SoundscapeView | null} */
+  soundscapeView = null;
+  /** @type {Map<number, Promise<BookWord[]>>} Words of pages loaded for the soundscape view */
+  _wordsCache = new Map();
   /** @type {import('./soundscape.js').ResolvedCue[]} Cues on the loaded pages */
   cues = [];
   _lastCueText = '';
@@ -118,9 +123,23 @@ export class ReadAlongPlugin extends BookReaderPlugin {
       this.toggle();
       return false;
     });
+    // Shown once a soundscape has loaded
+    this.$viewButton = $(`<li${this.soundscape ? '' : ' style="display: none"'}>
+        <button class="BRicon read-along-view js-tooltip" title="Show soundscape">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <path fill="currentColor" d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/>
+          </svg>
+          <span class="BRtooltip">Show soundscape</span>
+        </button>
+      </li>`);
+    this.$viewButton.find('button').on('click', () => {
+      this.soundscapeView?.toggle();
+      this.$viewButton.find('button').toggleClass('active', !!this.soundscapeView?.active);
+      return false;
+    });
     const $zoomOut = $navBar.find('.BRcontrols .BRicon.zoom_out').closest('li');
-    if ($zoomOut.length) this.$button.insertBefore($zoomOut);
-    else $navBar.find('.BRcontrols').append(this.$button);
+    if ($zoomOut.length) this.$button.add(this.$viewButton).insertBefore($zoomOut);
+    else $navBar.find('.BRcontrols').append(this.$button, this.$viewButton);
   }
 
   /**
@@ -132,6 +151,20 @@ export class ReadAlongPlugin extends BookReaderPlugin {
     if (this.active && boxes) {
       this._renderBoxes(pageContainer.page, pageContainer.$container[0], boxes);
     }
+    if (this.soundscapeView?.active && pageContainer.page) {
+      this.soundscapeView.render(pageContainer.$container[0]);
+    }
+  }
+
+  /**
+   * Words of any page, whether or not read-along has it loaded
+   * @param {number} pageIndex
+   * @returns {Promise<BookWord[]>}
+   */
+  async getPageWords(pageIndex) {
+    if (this.pageWords.has(pageIndex)) return this.pageWords.get(pageIndex);
+    if (!this._wordsCache.has(pageIndex)) this._wordsCache.set(pageIndex, this._loadPageWords(pageIndex));
+    return this._wordsCache.get(pageIndex);
   }
 
   /**
@@ -143,6 +176,8 @@ export class ReadAlongPlugin extends BookReaderPlugin {
       if (!res.ok) return;
       this.soundscape = await res.json();
       this.soundscapePlayer = new SoundscapePlayer(this.soundscape, this.br.refs.$br[0]);
+      this.soundscapeView = new SoundscapeView(this);
+      this.$viewButton?.show();
     } catch (e) {
       console.warn('ReadAlong: failed to load soundscape', url, e);
     }

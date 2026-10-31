@@ -43,4 +43,73 @@
     font-size: 11px;
     opacity: 0.6;
   }
+
+  .BRicon.read-along-view {
+    background-image: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &.active { color: #b48cff; }
+  }
+
+  .soundscapeQuoteLayer {
+    pointer-events: none;
+    z-index: 4;
+
+    rect { fill: rgba(140, 80, 255, 0.15); }
+    rect.anchor {
+      fill: rgba(140, 80, 255, 0.35);
+      stroke: rgb(140, 80, 255);
+      stroke-width: 2px;
+    }
+  }
+
+  .BRsoundscapePins {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .BRsoundscapePin {
+    --stack: 0;
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translate(-50%, -100%);
+
+    // The needle, down to the anchor word
+    &::after {
+      content: '';
+      width: 2px;
+      height: calc(10px + var(--stack) * 26px);
+      background: rgb(140, 80, 255);
+    }
+  }
+
+  .BRsoundscapePin__head {
+    display: flex;
+    gap: 6px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: rgb(60, 25, 120);
+    color: white;
+    font: 12px/1.5 sans-serif;
+    white-space: nowrap;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    pointer-events: auto;
+    cursor: default;
+
+    &:hover {
+      background: rgb(140, 80, 255);
+      transform: scale(1.08);
+    }
+  }
+
+  .BRsoundscapePin__action--stop,
+  .BRsoundscapePin__action--stopAll { color: #ffb4b4; }
+  .BRsoundscapePin__action--css { color: #ffe08a; }
 }
