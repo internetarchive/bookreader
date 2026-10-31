@@ -9,6 +9,7 @@ import { ReadAlongAligner, tokenize } from './aligner.js';
  * @property {1} version
  * @property {{ [name: string]: SoundSpec }} sounds
  * @property {CueSpec[]} cues
+ * @property {string | string[]} [styles] CSS added to the page, for `css` actions
  *
  * @typedef {object} SoundSpec
  * @property {string} src Audio URL; needs CORS if cross-origin
@@ -29,9 +30,14 @@ import { ReadAlongAligner, tokenize } from './aligner.js';
  * @property {'start' | 'end'} [position] Fire on the first or last word of the quote. Default 'start'.
  *
  * @typedef {object} SoundAction
- * @property {'play' | 'volume' | 'stop' | 'stopAll'} action
- *   `play` on a looping sound that's already playing just changes its volume
- * @property {string} [sound] name of the sound; required except for `stopAll`
+ * @property {'play' | 'volume' | 'stop' | 'stopAll' | 'css'} action
+ *   `play` on a looping sound that's already playing just changes its volume.
+ *   `css` adds the class `soundscape-<class>` to the BookReader element.
+ * @property {string} [sound] name of the sound; required for the sound actions except `stopAll`
+ * @property {string} [class] for `css`
+ * @property {number} [duration] for `css`, seconds until the class is removed again;
+ *   omit to keep it until a `css` action with `remove`
+ * @property {boolean} [remove] for `css`, remove the class instead
  * @property {number} [volume] 0-1, default 1
  * @property {number} [fade] seconds to fade to the new volume, default 0
  * @property {number} [delay] seconds to wait before acting, default 0
@@ -127,8 +133,30 @@ export function loopStateAt(spec, cues, pageIndex, wordIndex) {
 }
 
 /**
+ * The persistent `css` classes (those without a duration) that should be
+ * applied at a position, as if everything before it had been read.
+ * @param {ResolvedCue[]} cues in reading order
+ * @param {number} pageIndex
+ * @param {number} wordIndex
+ * @returns {Set<string>}
+ */
+export function classStateAt(cues, pageIndex, wordIndex) {
+  /** @type {Set<string>} */
+  const classes = new Set();
+  for (const cue of cues) {
+    if (compareCueToWord(cue, pageIndex, wordIndex) > 0) break;
+    for (const action of cue.spec.actions) {
+      if (action.action != 'css' || action.duration) continue;
+      if (action.remove) classes.delete(action.class);
+      else classes.add(action.class);
+    }
+  }
+  return classes;
+}
+
+/**
  * Plays a soundscape's sounds with Web Audio, for sample-accurate loops and
- * smooth fades.
+ * smooth fades, and its `css` effects.
  */
 export class SoundscapePlayer {
   /** @type {AudioContext} */
@@ -140,11 +168,21 @@ export class SoundscapePlayer {
   /** @type {Map<string, { source: AudioBufferSourceNode | null, gain: GainNode }>} */
   playing = new Map();
 
+  /** @type {Map<string, ReturnType<typeof setTimeout>>} */
+  _classTimers = new Map();
+
   /**
    * @param {SoundscapeSpec} spec
+   * @param {HTMLElement} effectsEl element `css` actions add their classes to
    */
-  constructor(spec) {
+  constructor(spec, effectsEl) {
     this.spec = spec;
+    this.effectsEl = effectsEl;
+    if (spec.styles) {
+      this.styleEl = document.createElement('style');
+      this.styleEl.textContent = [spec.styles].flat().join('\n');
+      document.head.appendChild(this.styleEl);
+    }
   }
 
   /**
@@ -195,6 +233,7 @@ export class SoundscapePlayer {
     case 'volume': return this.setVolume(sound, volume, fade);
     case 'stop': return this.stop(sound, fade);
     case 'stopAll': return this.stopAll(fade);
+    case 'css': return action.remove ? this.removeClass(action.class) : this.addClass(action.class, action.duration);
     default: console.warn('Soundscape: unknown action', action);
     }
   }
@@ -261,6 +300,47 @@ export class SoundscapePlayer {
     this.playing.delete(name);
     rampTo(entry.gain.gain, 0, fade, this.ctx.currentTime);
     entry.source?.stop(this.ctx.currentTime + Math.max(fade, 0.05));
+  }
+
+  /**
+   * @param {string} name
+   * @param {number} [duration] seconds; omit to keep it
+   */
+  addClass(name, duration) {
+    const className = `soundscape-${name}`;
+    clearTimeout(this._classTimers.get(name));
+    // Restart any animation, even if the class is already there
+    this.effectsEl.classList.remove(className);
+    void this.effectsEl.offsetWidth;
+    this.effectsEl.classList.add(className);
+    if (duration) {
+      this._classTimers.set(name, setTimeout(() => this.removeClass(name), duration * 1000));
+    }
+  }
+
+  /**
+   * @param {string} name
+   */
+  removeClass(name) {
+    clearTimeout(this._classTimers.get(name));
+    this._classTimers.delete(name);
+    this.effectsEl.classList.remove(`soundscape-${name}`);
+  }
+
+  /**
+   * Set exactly these persistent classes
+   * @param {Set<string>} classes
+   */
+  applyClassState(classes) {
+    const current = Array.from(this.effectsEl.classList)
+      .filter(c => c.startsWith('soundscape-'))
+      .map(c => c.slice('soundscape-'.length));
+    for (const name of current) {
+      if (!classes.has(name)) this.removeClass(name);
+    }
+    for (const name of classes) {
+      if (!this.effectsEl.classList.contains(`soundscape-${name}`)) this.addClass(name);
+    }
   }
 
   /**

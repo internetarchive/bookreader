@@ -3,7 +3,7 @@ import { renderBoxesInPageContainerLayer } from '../../BookReader/PageContainer.
 import { BookReaderPlugin } from '../../BookReaderPlugin.js';
 import { toISO6391 } from '../tts/utils.js';
 import { ReadAlongAligner, normalizeWord, tokenize } from './aligner.js';
-import { MAX_CUE_JUMP, SoundscapePlayer, compareCueToWord, loopStateAt, resolveCues } from './soundscape.js';
+import { MAX_CUE_JUMP, SoundscapePlayer, classStateAt, compareCueToWord, loopStateAt, resolveCues } from './soundscape.js';
 
 const BookReader = /** @type {typeof import('../../BookReader').default} */(window.BookReader);
 
@@ -119,7 +119,7 @@ export class ReadAlongPlugin extends BookReaderPlugin {
       const res = await fetch(url);
       if (!res.ok) return;
       this.soundscape = await res.json();
-      this.soundscapePlayer = new SoundscapePlayer(this.soundscape);
+      this.soundscapePlayer = new SoundscapePlayer(this.soundscape, this.br.refs.$br[0]);
     } catch (e) {
       console.warn('ReadAlong: failed to load soundscape', url, e);
     }
@@ -153,6 +153,7 @@ export class ReadAlongPlugin extends BookReaderPlugin {
     this.recognition?.abort();
     this.recognition = null;
     this.soundscapePlayer?.stopAll(1);
+    this.soundscapePlayer?.applyClassState(new Set());
     this._removeHighlights();
     this.$status?.remove();
     this.$status = null;
@@ -279,11 +280,14 @@ export class ReadAlongPlugin extends BookReaderPlugin {
 
     const state = loopStateAt(this.soundscape, this.cues, word.pageIndex, word.indexInPage);
     this.soundscapePlayer.applyLoopState(state, SEEK_FADE);
+    this.soundscapePlayer.applyClassState(classStateAt(this.cues, word.pageIndex, word.indexInPage));
     this._lastCueText = `jumped; looping ${[...state].map(([name, v]) => `${name}@${v}`).join(', ') || 'nothing'}`;
     // The words that located the position were just read, so their one-shots
     // should still play
     const from = this.words[Math.max(index - this.aligner.queryLength, 0)];
-    this._runCues(from, word, action => action.action == 'play' && !this.soundscape.sounds[action.sound]?.loop);
+    this._runCues(from, word, action =>
+      (action.action == 'play' && !this.soundscape.sounds[action.sound]?.loop) ||
+      (action.action == 'css' && !!action.duration));
   }
 
   /**
@@ -299,7 +303,7 @@ export class ReadAlongPlugin extends BookReaderPlugin {
       const actions = cue.spec.actions.filter(filter);
       for (const action of actions) this.soundscapePlayer.run(action);
       if (actions.length) {
-        this._lastCueText = `"${cue.spec.at.quote}": ${actions.map(a => `${a.action} ${a.sound ?? ''}`.trim()).join(', ')}`;
+        this._lastCueText = `"${cue.spec.at.quote}": ${actions.map(a => `${a.action} ${a.sound ?? a.class ?? ''}`.trim()).join(', ')}`;
       }
     }
   }

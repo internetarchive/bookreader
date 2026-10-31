@@ -1,5 +1,15 @@
 {
   "version": 1,
+  "styles": [
+    "@keyframes soundscape-lightning {",
+    "  0%, 100% { background-color: black; }",
+    "  3% { background-color: #dce6ff; }",
+    "  9% { background-color: #10131c; }",
+    "  15% { background-color: #f2f5ff; }",
+    "  35% { background-color: #262d45; }",
+    "}",
+    ".BookReader.soundscape-lightning { animation: soundscape-lightning 1.4s ease-out; }"
+  ],
   "sounds": {
     "rain": {
       "src": "https://archive.org/download/aporee_39549_45202/ForetPluieVent2003181204.mp3",
@@ -54,6 +64,10 @@
     {
       "at": { "pageIndex": 6, "quote": "the thunder roared" },
       "actions": [{ "action": "play", "sound": "thunder" }]
+    },
+    {
+      "at": { "pageIndex": 6, "quote": "the lightning flashed" },
+      "actions": [{ "action": "css", "class": "lightning", "duration": 1.4 }]
     },
     {
       "at": { "pageIndex": 6, "quote": "three men came into the barn", "position": "end" },

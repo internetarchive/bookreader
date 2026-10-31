@@ -1,5 +1,5 @@
 import { tokenize } from '@/src/plugins/read_along/aligner.js';
-import { loopStateAt, resolveCues, resolveQuote } from '@/src/plugins/read_along/soundscape.js';
+import { classStateAt, loopStateAt, resolveCues, resolveQuote } from '@/src/plugins/read_along/soundscape.js';
 
 const PAGE = tokenize(`
   Goody Two Shoes cuddled down in the soft hay, glad of a chance to rest her
@@ -73,5 +73,25 @@ describe('loopStateAt', () => {
   test('ignores cues on later pages', () => {
     expect(at('did')).toEqual({ rain: 0.4 });
     expect(Object.fromEntries(loopStateAt(spec, cues, 9, 0))).toEqual({});
+  });
+});
+
+describe('classStateAt', () => {
+  const spec = {
+    version: 1,
+    sounds: {},
+    cues: [
+      { at: { pageIndex: 6, quote: 'cuddled down' }, actions: [{ action: 'css', class: 'night' }] },
+      { at: { pageIndex: 6, quote: 'the lightning flashed' }, actions: [{ action: 'css', class: 'lightning', duration: 1 }] },
+      { at: { pageIndex: 6, quote: 'the old barn trembled' }, actions: [{ action: 'css', class: 'night', remove: true }] },
+    ],
+  };
+  const cues = resolveCues(spec, new Map([[6, PAGE]]));
+  const at = (/** @type {string} */ word) => [...classStateAt(cues, 6, PAGE.indexOf(word))];
+
+  test('tracks persistent classes, ignoring ones with a duration', () => {
+    expect(at('goody')).toEqual([]);
+    expect(at('lightning')).toEqual(['night']);
+    expect(at('trembled')).toEqual([]);
   });
 });
