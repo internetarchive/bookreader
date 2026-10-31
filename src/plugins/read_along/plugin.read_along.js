@@ -25,7 +25,17 @@ const SEEK_FADE = 1.5;
 /** How far past the displayed pages to look for the next page with text */
 const MAX_LOOKAHEAD_PAGES = 4;
 
+// In Chromium these are the same constructor
 const SpeechRecognitionImpl = window.SpeechRecognition || /** @type {any} */(window).webkitSpeechRecognition;
+
+/** Recognition events worth logging, besides result/error/end which are handled */
+const LIFECYCLE_EVENTS = ['start', 'audiostart', 'soundstart', 'speechstart', 'speechend', 'soundend', 'audioend', 'nomatch'];
+
+/** Errors that just mean "nothing heard yet"; recognition ends and is restarted */
+const ROUTINE_ERRORS = ['no-speech', 'aborted'];
+
+/** After this many sessions in a row without results, tell the user */
+const EMPTY_SESSIONS_WARNING = 3;
 
 /**
  * Highlights the line and word being read aloud by the user, using the
@@ -56,6 +66,17 @@ export class ReadAlongPlugin extends BookReaderPlugin {
   _boxesByIndex = {};
   /** Recognized text of the recognition sessions before the current one */
   _priorTranscript = '';
+  /** Main status message, shown above the recognition diagnostics */
+  _statusHtml = '';
+  /** @type {string[]} Recent recognition events, for debugging */
+  _recEvents = [];
+  _recInfo = '';
+  /** Recognition sessions in a row that ended without any result */
+  _emptySessions = 0;
+  /** @type {ReturnType<typeof setTimeout>} */
+  _restartTimer = null;
+  /** @type {string | null} Language to recognize, after the preferred one was rejected */
+  _langOverride = null;
   /** @type {import('./soundscape.js').SoundscapeSpec | null} */
   soundscape = null;
   /** @type {SoundscapePlayer | null} */
@@ -150,6 +171,7 @@ export class ReadAlongPlugin extends BookReaderPlugin {
   stop() {
     this.active = false;
     this.$button?.find('button').removeClass('active');
+    clearTimeout(this._restartTimer);
     this.recognition?.abort();
     this.recognition = null;
     this.soundscapePlayer?.stopAll(1);
@@ -157,6 +179,8 @@ export class ReadAlongPlugin extends BookReaderPlugin {
     this._removeHighlights();
     this.$status?.remove();
     this.$status = null;
+    this._statusHtml = '';
+    this._recInfo = '';
   }
 
   _startRecognition() {
@@ -166,38 +190,93 @@ export class ReadAlongPlugin extends BookReaderPlugin {
     rec.interimResults = true;
     if (this.options.processLocally && 'processLocally' in rec) rec.processLocally = true;
     this._priorTranscript = '';
+    this._emptySessions = 0;
+    this._recEvents = [];
+    this._recInfo = `${SpeechRecognitionImpl.name}, lang ${rec.lang}` + (rec.processLocally ? ', on-device' : '');
+    console.log(`ReadAlong: using ${this._recInfo}`);
 
     let sessionTranscript = '';
+    let sessionHasResults = false;
+    for (const type of LIFECYCLE_EVENTS) {
+      rec.addEventListener(type, () => this._logRecEvent(type));
+    }
+    rec.onstart = () => {
+      sessionTranscript = '';
+      sessionHasResults = false;
+    };
+    this._renderStatus('Listening…');
     rec.onresult = (/** @type {any} */ ev) => {
+      if (!sessionHasResults) this._logRecEvent('result');
+      sessionHasResults = true;
+      if (this._emptySessions >= EMPTY_SESSIONS_WARNING) this._renderStatus('Listening…');
+      this._emptySessions = 0;
       const results = Array.from(ev.results);
       sessionTranscript = results.map((/** @type {any} */ r) => r[0].transcript).join(' ');
       const lastIsPartial = results.length > 0 && !results[results.length - 1].isFinal;
       this.onSpeech(`${this._priorTranscript} ${sessionTranscript}`, lastIsPartial);
     };
     rec.onerror = (/** @type {any} */ ev) => {
-      // no-speech/aborted are routine; recognition ends and restarts below
+      this._logRecEvent(`error: ${ev.error}`, ev.message);
       if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') {
-        this._renderStatus('Microphone access was denied.');
+        this._renderStatus(`Microphone access was denied (${ev.error}).`);
         this.active = false;
         this.$button?.find('button').removeClass('active');
-      } else if (!['no-speech', 'aborted'].includes(ev.error)) {
-        console.warn('ReadAlong: speech recognition error', ev.error, ev.message);
+      } else if (ev.error === 'language-not-supported' && rec.lang.includes('-')) {
+        // Retry with just the language, e.g. en-CA -> en
+        this._langOverride = rec.lang.split('-')[0];
+        rec.lang = this._langOverride;
+      } else if (!ROUTINE_ERRORS.includes(ev.error)) {
+        this._renderStatus(`Speech recognition error: ${escapeHtml(ev.error)}` +
+          (ev.error === 'network' ? ' (couldn\'t reach the browser\'s speech service)' : '') +
+          (ev.message ? ` – ${escapeHtml(ev.message)}` : ''));
       }
     };
     // Recognition stops on its own after silence or a time limit, so keep
-    // restarting it while active.
+    // restarting it while active. Back off when sessions keep coming back
+    // empty, so a dead microphone doesn't spin.
     rec.onend = () => {
+      this._logRecEvent('end');
       if (!this.active || this.recognition !== rec) return;
       this._priorTranscript = `${this._priorTranscript} ${sessionTranscript}`.split(/\s+/).slice(-20).join(' ');
-      try {
-        rec.start();
-      } catch (e) {
-        console.warn('ReadAlong: failed to restart speech recognition', e);
-      }
+      if (!sessionHasResults) this._emptySessions++;
+      if (this._emptySessions >= EMPTY_SESSIONS_WARNING) this._renderStatus(this._notHearingMessage());
+      const delay = this._emptySessions ? Math.min(250 * 2 ** (this._emptySessions - 1), 5000) : 0;
+      this._restartTimer = setTimeout(() => {
+        if (!this.active || this.recognition !== rec) return;
+        this._logRecEvent('restart', delay ? `after ${delay}ms` : '');
+        try {
+          rec.start();
+        } catch (e) {
+          console.log('ReadAlong: failed to restart speech recognition', e);
+        }
+      }, delay);
     };
-    rec.onstart = () => this._renderStatus('Listening…');
     this.recognition = rec;
     rec.start();
+  }
+
+  /**
+   * Explains repeated empty recognition sessions, based on how far the
+   * recent ones got
+   */
+  _notHearingMessage() {
+    const seen = (/** @type {string} */ type) => this._recEvents.some(e => e.startsWith(type));
+    const hint = !seen('audiostart') ? 'the microphone never started' :
+      !seen('soundstart') ? 'the microphone is on but silent; check which one the browser uses' :
+        !seen('speechstart') ? 'sound but no speech detected' :
+          'speech detected but nothing recognized';
+    return `Not hearing anything (${hint}). Check the site's microphone in the address bar, ` +
+      `or chrome://settings/content/microphone.`;
+  }
+
+  /**
+   * @param {string} type
+   * @param {string} [detail]
+   */
+  _logRecEvent(type, detail = '') {
+    console.log(`ReadAlong: recognition ${type}`, detail);
+    this._recEvents = [...this._recEvents, detail ? `${type} (${detail})` : type].slice(-8);
+    if (this.options.debug) this._renderStatus();
   }
 
   /**
@@ -205,6 +284,7 @@ export class ReadAlongPlugin extends BookReaderPlugin {
    * since accents matter to the recognizer.
    */
   _recognitionLang() {
+    if (this._langOverride) return this._langOverride;
     const bookLang = toISO6391(this.br.options.bookLanguage);
     const userLangs = navigator.languages || [navigator.language];
     if (!bookLang) return userLangs[0];
@@ -418,13 +498,16 @@ export class ReadAlongPlugin extends BookReaderPlugin {
   }
 
   /**
-   * @param {string} html
+   * @param {string} [html] main message; keeps the current one if omitted
    */
-  _renderStatus(html) {
+  _renderStatus(html = this._statusHtml) {
     if (!this.$status) {
       this.$status = $('<div class="BRreadAlong__status" aria-live="polite"></div>').appendTo(this.br.refs.$br);
     }
-    this.$status.html(html);
+    this._statusHtml = html;
+    const diagnostics = this.options.debug && this._recInfo ?
+      `<div class="BRreadAlong__diag">${escapeHtml(this._recInfo)}<br>${escapeHtml(this._recEvents.join(' → '))}</div>` : '';
+    this.$status.html(html + diagnostics);
   }
 }
 
