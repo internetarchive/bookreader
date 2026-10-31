@@ -19,9 +19,24 @@
     "  92% { translate: 2px 0; rotate: 0.2deg; }",
     "  100% { translate: 0 0; rotate: 0deg; }",
     "}",
+    "@keyframes soundscape-lurch {",
+    "  0% { translate: 0 0; rotate: 0deg; }",
+    "  10% { translate: -10px 4px; rotate: -2.2deg; }",
+    "  28% { translate: 6px -2px; rotate: 1.2deg; }",
+    "  46% { translate: -3px 1px; rotate: -0.6deg; }",
+    "  68% { translate: 1px 0; rotate: 0.3deg; }",
+    "  100% { translate: 0 0; rotate: 0deg; }",
+    "}",
+    "@keyframes soundscape-sway {",
+    "  0%, 100% { translate: -4px 0; rotate: -0.8deg; }",
+    "  50% { translate: 4px 0; rotate: 0.8deg; }",
+    "}",
+    ".BookReader.soundscape-sway .BRfooter { animation: soundscape-sway 4.5s ease-in-out infinite; }",
     ".BookReader.soundscape-shake .BRfooter { animation: soundscape-shake 2.5s steps(1, end); }",
+    ".BookReader.soundscape-lurch .BRfooter { animation: soundscape-lurch 1.6s steps(1, end); }",
     ".BookReader .BRfooter { transform-origin: center bottom; transition: scale 8s ease-in-out, filter 8s; }",
-    ".BookReader.soundscape-rising .BRfooter { scale: 1.06; filter: drop-shadow(0 -6px 14px rgba(0, 0, 0, 0.7)); }"
+    ".BookReader.soundscape-rising .BRfooter { scale: 1.06; filter: drop-shadow(0 -6px 14px rgba(0, 0, 0, 0.7)); }",
+    ".BookReader.soundscape-rising.soundscape-higher .BRfooter { scale: 1.1; filter: drop-shadow(0 -10px 22px rgba(0, 0, 0, 0.8)); }"
   ],
   "sounds": {
     "prairieWind": {
@@ -69,6 +84,23 @@
       "src": "https://cdn.freesound.org/previews/422/422434_6613494-hq.mp3",
       "gain": 0.8,
       "credit": "\"trap door open .wav\" by BehanSean, CC0, https://freesound.org/people/BehanSean/sounds/422434/"
+    },
+    "trapdoorClose": {
+      "src": "https://cdn.freesound.org/previews/672/672069_12458758-hq.mp3",
+      "start": 4.3,
+      "gain": 1,
+      "credit": "\"ancient-hatch.wav\" by ilmari_freesound, CC0, https://freesound.org/people/ilmari_freesound/sounds/672069/"
+    },
+    "bark": {
+      "src": "https://cdn.freesound.org/previews/361/361544_6512973-hq.mp3",
+      "gain": 0.6,
+      "credit": "\"Small Dog Barking\" by Jofae, CC0, https://freesound.org/people/Jofae/sounds/361544/"
+    },
+    "lurch": {
+      "src": "https://cdn.freesound.org/previews/218/218163_2737063-hq.mp3",
+      "start": 4.4,
+      "gain": 1.2,
+      "credit": "\"Slow wooden creaks x5\" by peridactyloptrix, CC0, https://freesound.org/people/peridactyloptrix/sounds/218163/"
     }
   },
   "cues": [
@@ -136,6 +168,74 @@
     {
       "at": { "pageIndex": 17, "quote": "rose slowly through the air" },
       "actions": [{ "action": "css", "class": "rising" }]
+    },
+    {
+      "at": { "pageIndex": 18, "quote": "the air is generally still" },
+      "actions": [{ "action": "volume", "sound": "howl", "volume": 0.6, "fade": 3 }]
+    },
+    {
+      "at": { "pageIndex": 18, "quote": "great pressure of the wind" },
+      "actions": [{ "action": "volume", "sound": "howl", "volume": 0.9, "fade": 2 }]
+    },
+    {
+      "at": { "pageIndex": 18, "quote": "raised it up higher and higher" },
+      "actions": [
+        { "action": "css", "class": "higher" },
+        { "action": "stop", "sound": "prairieWind", "fade": 8 }
+      ]
+    },
+    {
+      "at": { "pageIndex": 18, "quote": "the wind howled horribly around her" },
+      "actions": [
+        { "action": "volume", "sound": "howl", "volume": 1, "fade": 1 },
+        { "action": "play", "sound": "whistle", "volume": 0.5, "delay": 0.5 }
+      ]
+    },
+    {
+      "at": { "pageIndex": 18, "quote": "Dorothy found she was riding quite easily", "position": "end" },
+      "actions": [{ "action": "volume", "sound": "howl", "volume": 0.7, "fade": 4 }]
+    },
+    {
+      "at": { "pageIndex": 18, "quote": "the house tipped badly" },
+      "actions": [
+        { "action": "play", "sound": "lurch" },
+        { "action": "stop", "sound": "lurch", "fade": 0.6, "delay": 3 },
+        { "action": "css", "class": "lurch", "duration": 1.6 }
+      ]
+    },
+    {
+      "at": { "pageIndex": 18, "quote": "rocked gently, like a baby in a cradle" },
+      "actions": [
+        { "action": "css", "class": "sway" },
+        { "action": "volume", "sound": "howl", "volume": 0.55, "fade": 5 },
+        { "action": "volume", "sound": "houseCreak", "volume": 0.5, "fade": 5 }
+      ]
+    },
+    {
+      "at": { "pageIndex": 18, "quote": "barking loudly; but Dorothy sat" },
+      "actions": [{ "action": "play", "sound": "bark" }]
+    },
+    {
+      "at": { "pageIndex": 18, "quote": "too near the open trap-door, and fell in", "position": "end" },
+      "actions": [{ "action": "play", "sound": "yelp" }]
+    },
+    {
+      "at": { "pageIndex": 18, "quote": "afterward closing the trap-door" },
+      "actions": [{ "action": "play", "sound": "trapdoorClose" }]
+    },
+    {
+      "at": { "pageIndex": 18, "quote": "the wind shrieked so loudly all about her" },
+      "actions": [
+        { "action": "volume", "sound": "howl", "volume": 1, "fade": 1.5 },
+        { "action": "play", "sound": "whistle", "volume": 0.8 }
+      ]
+    },
+    {
+      "at": { "pageIndex": 18, "quote": "she stopped worrying", "position": "end" },
+      "actions": [
+        { "action": "volume", "sound": "howl", "volume": 0.5, "fade": 6 },
+        { "action": "volume", "sound": "houseCreak", "volume": 0.4, "fade": 6 }
+      ]
     },
     {
       "at": { "pageIndex": 19, "quote": "Dorothy soon closed her eyes and fell fast asleep", "position": "end" },
