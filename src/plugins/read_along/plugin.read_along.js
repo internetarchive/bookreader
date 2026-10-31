@@ -44,8 +44,8 @@ const EMPTY_SESSIONS_WARNING = 3;
 export class ReadAlongPlugin extends BookReaderPlugin {
   options = {
     enabled: true,
-    /** Show the recognized text and match details while listening */
-    debug: true,
+    /** Show the recognized text, match details and recognition events while listening */
+    debug: /[?&]readAlongDebug\b/.test(location.search),
     /** Ask the browser to recognize on-device, where supported */
     processLocally: false,
     /** URL of a soundscape JSON for the book (see soundscape.js); sound cues fire as the reader reads past them */
@@ -300,7 +300,10 @@ export class ReadAlongPlugin extends BookReaderPlugin {
     if (!spoken.length || !this.words.length) return;
     const match = this.aligner.update(spoken, { lastIsPartial });
     if (match) this.setCurrentWord(this.words[match.end]);
-    if (this.options.debug) {
+    if (!this.options.debug) {
+      // Out of the way once it's following along
+      if (match) this._renderStatus('');
+    } else {
       const query = spoken.slice(-this.aligner.queryLength).join(' ');
       this._renderStatus(
         `<div class="BRreadAlong__heard">${escapeHtml(query)}</div>` +

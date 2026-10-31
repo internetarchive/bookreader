@@ -4,15 +4,48 @@
     ".BookReader { transition: background-color 4s; }",
     ".BookReader.soundscape-stormsky { background-color: #1d2127; }",
     "@keyframes soundscape-shake {",
-    "  0%, 100% { transform: translate(0, 0); }",
-    "  15% { transform: translate(-3px, 1px); }",
-    "  30% { transform: translate(3px, -2px); }",
-    "  45% { transform: translate(-2px, 2px); }",
-    "  60% { transform: translate(2px, -1px); }",
-    "  80% { transform: translate(-1px, 1px); }",
+    "  0% { translate: 0 0; rotate: 0deg; }",
+    "  6% { translate: -5px 2px; rotate: -0.6deg; }",
+    "  11% { translate: 4px -3px; rotate: 0.4deg; }",
+    "  19% { translate: -2px 1px; rotate: 0deg; }",
+    "  24% { translate: 6px 2px; rotate: 0.7deg; }",
+    "  33% { translate: -4px -2px; rotate: -0.3deg; }",
+    "  41% { translate: 1px 3px; rotate: 0.2deg; }",
+    "  47% { translate: -6px 0; rotate: -0.8deg; }",
+    "  58% { translate: 3px -2px; rotate: 0.3deg; }",
+    "  66% { translate: -2px 2px; rotate: -0.2deg; }",
+    "  74% { translate: 4px 1px; rotate: 0.5deg; }",
+    "  85% { translate: -1px -1px; rotate: 0deg; }",
+    "  92% { translate: 2px 0; rotate: 0.2deg; }",
+    "  100% { translate: 0 0; rotate: 0deg; }",
     "}",
-    ".BookReader.soundscape-shake .BRcontainer { animation: soundscape-shake 0.25s linear 4; }"
+    ".BookReader.soundscape-shake .BRfooter { animation: soundscape-shake 2.5s steps(1, end); }",
+    ".BookReader .BRfooter { transform-origin: center bottom; transition: scale 8s ease-in-out, filter 8s; }",
+    ".BookReader.soundscape-rising .BRfooter { scale: 1.06; filter: drop-shadow(0 -6px 14px rgba(0, 0, 0, 0.7)); }"
   ],
+  "shadowStyles": {
+    "iaux-item-navigator": [
+      "@keyframes soundscape-shake {",
+      "  0% { translate: 0 0; rotate: 0deg; }",
+      "  6% { translate: -5px 2px; rotate: -0.6deg; }",
+      "  11% { translate: 4px -3px; rotate: 0.4deg; }",
+      "  19% { translate: -2px 1px; rotate: 0deg; }",
+      "  24% { translate: 6px 2px; rotate: 0.7deg; }",
+      "  33% { translate: -4px -2px; rotate: -0.3deg; }",
+      "  41% { translate: 1px 3px; rotate: 0.2deg; }",
+      "  47% { translate: -6px 0; rotate: -0.8deg; }",
+      "  58% { translate: 3px -2px; rotate: 0.3deg; }",
+      "  66% { translate: -2px 2px; rotate: -0.2deg; }",
+      "  74% { translate: 4px 1px; rotate: 0.5deg; }",
+      "  85% { translate: -1px -1px; rotate: 0deg; }",
+      "  92% { translate: 2px 0; rotate: 0.2deg; }",
+      "  100% { translate: 0 0; rotate: 0deg; }",
+      "}",
+      ":host(.soundscape-shake) .menu-and-reader > nav { animation: soundscape-shake 2.5s steps(1, end); }",
+      ".menu-and-reader > nav { transform-origin: left center; transition: scale 8s ease-in-out, filter 8s; }",
+      ":host(.soundscape-rising) .menu-and-reader > nav { scale: 1.12; filter: drop-shadow(6px 0 14px rgba(0, 0, 0, 0.7)); }"
+    ]
+  },
   "sounds": {
     "prairieWind": {
       "src": "https://cdn.freesound.org/previews/675/675711_2524442-hq.mp3",
@@ -42,21 +75,12 @@
       "gain": 1.2,
       "credit": "\"Whistling Wind.wav\" by Motion_S, CC0, https://freesound.org/people/Motion_S/sounds/218386/"
     },
-    "cow": {
-      "src": "https://cdn.freesound.org/previews/546/546481_11588763-hq.mp3",
-      "gain": 12,
-      "credit": "\"Cow Moo\" by invertedturtle, CC0, https://freesound.org/people/invertedturtle/sounds/546481/"
-    },
-    "horse": {
-      "src": "https://cdn.freesound.org/previews/347/347036_1708499-hq.mp3",
-      "start": 1,
-      "gain": 0.7,
-      "credit": "\"horse's whinny\" by Kubuzz, CC0, https://freesound.org/people/Kubuzz/sounds/347036/"
-    },
-    "dishes": {
-      "src": "https://cdn.freesound.org/previews/209/209009_140737-hq.mp3",
-      "gain": 2,
-      "credit": "\"Kitchen Dish Clank\" by OwlStorm, CC0, https://freesound.org/people/OwlStorm/sounds/209009/"
+    "running": {
+      "src": "https://cdn.freesound.org/previews/816/816777_17552599-hq.mp3",
+      "loop": true,
+      "loopStart": 0.4,
+      "gain": 0.6,
+      "credit": "\"run in mud 2 edit\" by Luisa_Sanchez, CC0, https://freesound.org/people/Luisa_Sanchez/sounds/816777/"
     },
     "yelp": {
       "src": "https://cdn.freesound.org/previews/452/452180_612689-hq.mp3",
@@ -95,15 +119,12 @@
       "actions": [{ "action": "css", "class": "stormsky" }]
     },
     {
-      "at": { "pageIndex": 17, "quote": "cows and horses were kept" },
+      "at": { "pageIndex": 17, "quote": "he ran toward the sheds" },
       "actions": [
-        { "action": "play", "sound": "cow" },
-        { "action": "play", "sound": "horse", "delay": 1.3 }
+        { "action": "play", "sound": "running", "volume": 0.8, "fade": 0.2 },
+        { "action": "volume", "sound": "running", "volume": 0, "fade": 4, "delay": 0.8 },
+        { "action": "stop", "sound": "running", "delay": 5 }
       ]
-    },
-    {
-      "at": { "pageIndex": 17, "quote": "dropped her work and came to the door" },
-      "actions": [{ "action": "play", "sound": "dishes" }]
     },
     {
       "at": { "pageIndex": 17, "quote": "run for the cellar" },
@@ -125,15 +146,19 @@
       "at": { "pageIndex": 17, "quote": "the house shook so hard" },
       "actions": [
         { "action": "play", "sound": "houseCreak", "volume": 0.9, "fade": 0.3 },
-        { "action": "css", "class": "shake", "duration": 1.2 }
+        { "action": "css", "class": "shake", "duration": 2.5 }
       ]
     },
     {
       "at": { "pageIndex": 17, "quote": "whirled around two or three times" },
       "actions": [
         { "action": "volume", "sound": "houseCreak", "volume": 1, "fade": 1 },
-        { "action": "css", "class": "shake", "duration": 1.2 }
+        { "action": "css", "class": "shake", "duration": 2.5 }
       ]
+    },
+    {
+      "at": { "pageIndex": 17, "quote": "rose slowly through the air" },
+      "actions": [{ "action": "css", "class": "rising" }]
     },
     {
       "at": { "pageIndex": 19, "quote": "Dorothy soon closed her eyes and fell fast asleep", "position": "end" },
