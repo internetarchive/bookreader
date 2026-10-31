@@ -1,16 +1,27 @@
 // @ts-check
 import { renderBoxesInPageContainerLayer } from '../../BookReader/PageContainer.js';
-import { SoundscapePlayer, resolveQuoteSpan } from './soundscape.js';
+import { SoundscapePlayer, effectStateAt, loopStateAt, resolveQuoteSpan } from './soundscape.js';
 /** @typedef {import('./soundscape.js').SoundAction} SoundAction */
 /** @typedef {import('./soundscape.js').CueSpec} CueSpec */
 /** @typedef {import('./plugin.read_along.js').ReadAlongPlugin} ReadAlongPlugin */
+/** @typedef {import('./plugin.read_along.js').BookWord} BookWord */
 
-const ACTION_ICONS = {
-  play: '▶',
-  volume: '🔊',
-  stop: '■',
-  stopAll: '■',
-  css: '✦',
+/**
+ * @typedef {object} PinContext
+ * @property {number} pageIndex
+ * @property {BookWord[]} words the page's words
+ * @property {{ start: number, end: number }} span the quote's words
+ * @property {number} anchorIndex
+ */
+
+/** Starts and stops are shown by styling instead (stops are struck through) */
+const VERB_ICONS = {
+  set: '✎',
+};
+
+const TARGET_ICONS = {
+  sound: '🔊',
+  effect: '✦',
 };
 
 /** Seconds a looping sound plays for when previewed */
@@ -41,6 +52,7 @@ export class SoundscapeView {
       for (const container of this.br.getActivePageContainerElements()) this.render(container);
     } else {
       this.previewPlayer.stopAll(0.2);
+      this.closeDetails();
       $(this.br.getActivePageContainerElements()).find('.soundscapeQuoteLayer, .BRsoundscapePins').remove();
     }
   }
@@ -82,7 +94,7 @@ export class SoundscapeView {
       const pin = this._renderPin(cue, {
         left: `${(anchorBox.l + anchorBox.r) / 2 / page.width * 100}%`,
         top: `${anchorBox.t / page.height * 100}%`,
-      });
+      }, { pageIndex, words, span, anchorIndex });
       pin.style.setProperty('--stack', `${stack}`);
       pinsEl.appendChild(pin);
     }
@@ -93,8 +105,9 @@ export class SoundscapeView {
   /**
    * @param {CueSpec} cue
    * @param {{ left: string, top: string }} position
+   * @param {PinContext} context
    */
-  _renderPin(cue, { left, top }) {
+  _renderPin(cue, { left, top }, context) {
     const pin = document.createElement('div');
     pin.className = 'BRsoundscapePin';
     pin.style.left = left;
@@ -105,15 +118,170 @@ export class SoundscapeView {
     head.title = `"${cue.at.quote}"\n` + cue.actions.map(describeAction).join('\n');
     for (const action of cue.actions) {
       const item = document.createElement('span');
-      item.className = `BRsoundscapePin__action BRsoundscapePin__action--${action.action}`;
-      item.textContent = `${ACTION_ICONS[action.action] ?? '?'} ${action.sound ?? action.class ?? ''}`.trim();
+      item.className = `BRsoundscapePin__action BRsoundscapePin__action--${action.action} BRsoundscapePin__action--${targetType(action)}`;
+      item.innerHTML = actionLabelHtml(action);
       head.appendChild(item);
     }
     head.addEventListener('mouseenter', () => this.preview(cue));
     head.addEventListener('mouseleave', () => this.previewPlayer.stopAll(0.3));
+    head.addEventListener('click', ev => {
+      ev.stopPropagation();
+      this.showDetails(cue, context, head);
+    });
+    // 2up flips the page on mouseup, so keep presses on pins to themselves
+    for (const type of ['mousedown', 'mouseup', 'pointerdown', 'pointerup']) {
+      head.addEventListener(type, ev => ev.stopPropagation());
+    }
     pin.appendChild(head);
     return pin;
   }
+
+  /**
+   * Open the side panel with a cue's details
+   * @param {CueSpec} cue
+   * @param {PinContext} context
+   * @param {HTMLElement} head the pin head that was clicked
+   */
+  showDetails(cue, { pageIndex, words, span, anchorIndex }, head) {
+    const spec = this.plugin.soundscape;
+    this.closeDetails();
+    head.classList.add('BRsoundscapePin__head--selected');
+    this._selectedHead = head;
+
+    const quoteHtml = words.slice(span.start, span.end + 1).map((w, i) =>
+      span.start + i == anchorIndex ? `<mark>${escapeHtml(w.text)}</mark>` : escapeHtml(w.text)).join(' ');
+
+    // What's playing once this cue has fired. Cues on other pages only need
+    // their page to be ordered, so only this page's need resolving.
+    const norms = words.map(w => w.norm);
+    const resolved = spec.cues.map(c => {
+      if (c.at.pageIndex !== pageIndex) return { spec: c, pageIndex: c.at.pageIndex, wordIndex: null };
+      const s = resolveQuoteSpan(norms, c.at.quote);
+      return { spec: c, pageIndex, wordIndex: s ? (c.at.position == 'end' ? s.end : s.start) : -1 };
+    }).filter(c => c.wordIndex !== -1)
+      .sort((a, b) => a.pageIndex - b.pageIndex || (a.wordIndex ?? 0) - (b.wordIndex ?? 0));
+    const loops = loopStateAt(spec, resolved, pageIndex, anchorIndex);
+    const effects = effectStateAt(resolved, pageIndex, anchorIndex);
+
+    const panel = document.createElement('aside');
+    panel.className = 'BRsoundscapePanel';
+    panel.innerHTML = `
+      <header>
+        <h3>Cue on page index ${pageIndex}${this.br.book.getPage(pageIndex).pageNumString ? ` (p. ${escapeHtml(this.br.book.getPage(pageIndex).pageNumString)})` : ''}</h3>
+        <button type="button" class="BRsoundscapePanel__close" title="Close">×</button>
+      </header>
+      <div class="BRsoundscapePanel__main">
+        <section>
+          <blockquote>${quoteHtml}</blockquote>
+          <div class="BRsoundscapePanel__meta">quote: "${escapeHtml(cue.at.quote)}" · fires on the ${cue.at.position == 'end' ? 'last' : 'first'} word</div>
+        </section>
+        <section>
+          <h4>Actions</h4>
+          ${cue.actions.map((action, i) => this._renderActionDetails(action, i)).join('')}
+        </section>
+        <section>
+          <h4>After this cue</h4>
+          <div>Looping: ${loops.size ? [...loops].map(([name, v]) => `<code>${escapeHtml(name)}</code> @ ${v}`).join(', ') : 'nothing'}</div>
+          <div>Effects: ${effects.size ? [...effects].map(e => `<code>${escapeHtml(e)}</code>`).join(', ') : 'none'}</div>
+        </section>
+      </div>
+    `;
+    panel.querySelector('.BRsoundscapePanel__close').addEventListener('click', () => this.closeDetails());
+    for (const pill of panel.querySelectorAll('.BRsoundscapePanel__resource')) {
+      pill.addEventListener('click', () => {
+        for (const p of panel.querySelectorAll('.BRsoundscapePanel__resource')) p.classList.toggle('selected', p === pill);
+        this._showResource(panel, pill.getAttribute('data-resource-type'), pill.getAttribute('data-resource-name'));
+      });
+    }
+    for (const button of panel.querySelectorAll('[data-preview-action]')) {
+      button.addEventListener('click', () => {
+        const action = cue.actions[parseFloat(button.getAttribute('data-preview-action'))];
+        this.preview({ ...cue, actions: [action] });
+      });
+    }
+    this._onKeydown = (/** @type {KeyboardEvent} */ ev) => { if (ev.key == 'Escape') this.closeDetails(); };
+    document.addEventListener('keydown', this._onKeydown);
+    this._panel = panel;
+    // A sidebar beside the reader, which resizes itself to the narrower body
+    document.body.classList.add('BRsoundscapePanel-open');
+    document.body.appendChild(panel);
+  }
+
+  closeDetails() {
+    this._panel?.remove();
+    this._panel = null;
+    document.body.classList.remove('BRsoundscapePanel-open');
+    this._selectedHead?.classList.remove('BRsoundscapePin__head--selected');
+    this._selectedHead = null;
+    if (this._onKeydown) document.removeEventListener('keydown', this._onKeydown);
+    this._onKeydown = null;
+    this.previewPlayer.stopAll(0.3);
+  }
+
+  /**
+   * Show a sound's or effect's definition in a section at the bottom of the panel
+   * @param {HTMLElement} panel
+   * @param {string} type 'sound' or 'effect'
+   * @param {string} name
+   */
+  _showResource(panel, type, name) {
+    panel.querySelector('.BRsoundscapePanel__resourceDetails')?.remove();
+    const spec = this.plugin.soundscape;
+    const resource = type == 'sound' ? spec.sounds[name] : spec.effects?.[name];
+    /** @type {Array<[string, string]>} label, html */
+    const rows = !resource ? [['', `No ${type} named <code>${escapeHtml(name)}</code> in this soundscape`]] :
+      type == 'sound' ? [
+        ['file', `<a href="${escapeHtml(resource.src)}" target="_blank" rel="noopener">${escapeHtml(resource.src.split('/').pop())}</a>`],
+        ['loop', resource.loop ? `yes${resource.loopStart != null || resource.loopEnd != null ? ` (${resource.loopStart ?? 0}s–${resource.loopEnd != null ? `${resource.loopEnd}s` : 'end'})` : ''}` : 'no (one-shot)'],
+        ['start', resource.start != null && `${resource.start}s`],
+        ['gain', resource.gain != null && `${resource.gain}`],
+        ['credit', resource.credit && linkify(resource.credit)],
+      ] : [
+        ['css', `<pre>${escapeHtml([resource.css ?? []].flat().join('\n'))}</pre>`],
+      ];
+    const section = document.createElement('section');
+    section.className = 'BRsoundscapePanel__resourceDetails';
+    section.innerHTML = `
+      <div class="BRsoundscapePanel__actionTitle">
+        <h4>${TARGET_ICONS[type]} ${escapeHtml(type)} <code>${escapeHtml(name)}</code></h4>
+        ${resource ? '<button type="button" title="Preview">▶ preview</button>' : ''}
+      </div>
+      <dl>${rows.filter(([, v]) => v).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>`;
+    section.querySelector('button')?.addEventListener('click', () => {
+      this.preview({ at: null, actions: [type == 'sound' ? { action: 'start', sound: name } : { action: 'start', effect: name }] });
+    });
+    panel.appendChild(section);
+  }
+
+  /**
+   * @param {SoundAction} action
+   * @param {number} index
+   */
+  _renderActionDetails(action, index) {
+    const canPreview = action.sound || (action.effect && action.action == 'start');
+    const rows = [
+      ['volume', action.volume],
+      ['fade', action.fade != null && `${action.fade}s`],
+      ['delay', action.delay != null && `${action.delay}s`],
+      ['duration', action.duration != null && `${action.duration}s`],
+    ].filter(([, v]) => v != null && v !== false);
+    return `
+      <div class="BRsoundscapePanel__action">
+        <div class="BRsoundscapePanel__actionTitle">
+          <span>
+            ${VERB_ICONS[action.action] ?? ''} <b>${escapeHtml(action.action)}</b>
+            ${action.sound || action.effect ? `
+              <button type="button" class="BRsoundscapePanel__resource BRsoundscapePin__action--${action.action} BRsoundscapePin__action--${targetType(action)}"
+                data-resource-type="${targetType(action)}" data-resource-name="${escapeHtml(targetName(action))}" title="Show ${targetType(action)} details">
+                ${TARGET_ICONS[targetType(action)]} <span class="BRsoundscapePin__name">${escapeHtml(targetName(action))}</span>
+              </button>` : `<code>${escapeHtml(targetName(action))}</code>`}
+          </span>
+          ${canPreview ? `<button type="button" data-preview-action="${index}" title="Preview">▶ preview</button>` : ''}
+        </div>
+        ${rows.length ? `<dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${escapeHtml(String(v))}</dd>`).join('')}</dl>` : ''}
+      </div>`;
+  }
+
 
   /**
    * Play the sounds a cue touches, and apply its css effects. Stops play the
@@ -124,14 +292,14 @@ export class SoundscapeView {
     const player = this.previewPlayer;
     player.stopAll(0.1);
     for (const action of cue.actions) {
-      const { sound, volume = 1, fade = 0, delay = 0 } = action;
-      if (action.action == 'css') {
-        if (!action.remove) player.run({ ...action, duration: action.duration ?? 2 });
+      const { sound, effect, volume = 1, fade = 0, delay = 0 } = action;
+      if (effect) {
+        if (action.action == 'start') player.run({ ...action, duration: action.duration ?? 2 });
         continue;
       }
       if (!sound) continue;
       const isStop = action.action == 'stop';
-      player.run({ action: 'play', sound, volume: isStop ? 1 : volume, fade: isStop ? 0 : fade, delay });
+      player.run({ action: 'start', sound, volume: isStop ? 1 : volume, fade: isStop ? 0 : fade, delay });
       if (isStop) {
         player.run({ action: 'stop', sound, fade: Math.max(fade, 1), delay: delay + 1 });
       } else if (this.plugin.soundscape.sounds[sound]?.loop) {
@@ -139,17 +307,56 @@ export class SoundscapeView {
       }
     }
   }
+
 }
 
 /**
  * @param {SoundAction} action
  */
 function describeAction(action) {
-  const parts = [action.action, action.sound ?? action.class];
+  const parts = [action.action, targetType(action), targetName(action)];
   if (action.volume != null) parts.push(`volume ${action.volume}`);
   if (action.fade) parts.push(`fade ${action.fade}s`);
   if (action.delay) parts.push(`delay ${action.delay}s`);
   if (action.duration) parts.push(`for ${action.duration}s`);
-  if (action.remove) parts.push('remove');
   return parts.filter(Boolean).join(' ');
+}
+
+/**
+ * @param {SoundAction} action
+ * @returns {'sound' | 'effect' | 'all'}
+ */
+function targetType(action) {
+  return action.sound ? 'sound' : action.effect ? 'effect' : 'all';
+}
+
+/**
+ * @param {SoundAction} action
+ */
+function targetName(action) {
+  return action.sound ?? action.effect ?? 'everything';
+}
+
+/**
+ * e.g. "🔊 rain"; stops are struck through by CSS
+ * @param {SoundAction} action
+ */
+function actionLabelHtml(action) {
+  return `${VERB_ICONS[action.action] ?? ''}${TARGET_ICONS[targetType(action)] ?? ''} ` +
+    `<span class="BRsoundscapePin__name">${escapeHtml(targetName(action))}</span>`;
+}
+
+/**
+ * @param {string} s
+ */
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
+}
+
+/**
+ * Escape, and turn URLs into links
+ * @param {string} s
+ */
+function linkify(s) {
+  return escapeHtml(s).replace(/https?:\/\/[^\s<]+/g, url => `<a href="${url}" target="_blank" rel="noopener">${url}</a>`);
 }

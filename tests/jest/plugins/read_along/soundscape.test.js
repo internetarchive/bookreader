@@ -1,5 +1,5 @@
 import { tokenize } from '@/src/plugins/read_along/aligner.js';
-import { classStateAt, loopStateAt, resolveCues, resolveQuote } from '@/src/plugins/read_along/soundscape.js';
+import { effectStateAt, loopStateAt, resolveCues, resolveQuote, soundscapeCss } from '@/src/plugins/read_along/soundscape.js';
 
 const PAGE = tokenize(`
   Goody Two Shoes cuddled down in the soft hay, glad of a chance to rest her
@@ -31,7 +31,7 @@ describe('resolveQuote', () => {
 describe('resolveCues', () => {
   test('resolves cues on loaded pages only, in reading order', () => {
     const spec = {
-      version: 1,
+      version: 2,
       sounds: {},
       cues: [
         { at: { pageIndex: 6, quote: 'thunder roared' }, actions: [] },
@@ -47,12 +47,12 @@ describe('resolveCues', () => {
 
 describe('loopStateAt', () => {
   const spec = {
-    version: 1,
+    version: 2,
     sounds: { rain: { src: '', loop: true }, wind: { src: '', loop: true }, thunder: { src: '' } },
     cues: [
-      { at: { pageIndex: 2, quote: 'x' }, actions: [{ action: 'play', sound: 'wind', volume: 0.5 }] },
-      { at: { pageIndex: 6, quote: 'down rattled the rain' }, actions: [{ action: 'play', sound: 'rain' }, { action: 'play', sound: 'thunder' }] },
-      { at: { pageIndex: 6, quote: 'the old barn trembled' }, actions: [{ action: 'volume', sound: 'rain', volume: 0.4 }, { action: 'stop', sound: 'wind' }] },
+      { at: { pageIndex: 2, quote: 'x' }, actions: [{ action: 'start', sound: 'wind', volume: 0.5 }] },
+      { at: { pageIndex: 6, quote: 'down rattled the rain' }, actions: [{ action: 'start', sound: 'rain' }, { action: 'start', sound: 'thunder' }] },
+      { at: { pageIndex: 6, quote: 'the old barn trembled' }, actions: [{ action: 'set', sound: 'rain', volume: 0.4 }, { action: 'stop', sound: 'wind' }] },
       { at: { pageIndex: 9, quote: 'x' }, actions: [{ action: 'stop', sound: 'rain' }] },
     ],
   };
@@ -76,22 +76,55 @@ describe('loopStateAt', () => {
   });
 });
 
-describe('classStateAt', () => {
+describe('effectStateAt', () => {
   const spec = {
-    version: 1,
+    version: 2,
     sounds: {},
     cues: [
-      { at: { pageIndex: 6, quote: 'cuddled down' }, actions: [{ action: 'css', class: 'night' }] },
-      { at: { pageIndex: 6, quote: 'the lightning flashed' }, actions: [{ action: 'css', class: 'lightning', duration: 1 }] },
-      { at: { pageIndex: 6, quote: 'the old barn trembled' }, actions: [{ action: 'css', class: 'night', remove: true }] },
+      { at: { pageIndex: 6, quote: 'cuddled down' }, actions: [{ action: 'start', effect: 'night' }] },
+      { at: { pageIndex: 6, quote: 'the lightning flashed' }, actions: [{ action: 'start', effect: 'lightning', duration: 1 }] },
+      { at: { pageIndex: 6, quote: 'the old barn trembled' }, actions: [{ action: 'stop', effect: 'night' }] },
     ],
   };
   const cues = resolveCues(spec, new Map([[6, PAGE]]));
-  const at = (/** @type {string} */ word) => [...classStateAt(cues, 6, PAGE.indexOf(word))];
+  const at = (/** @type {string} */ word) => [...effectStateAt(cues, 6, PAGE.indexOf(word))];
 
-  test('tracks persistent classes, ignoring ones with a duration', () => {
+  test('tracks lasting effects, ignoring ones with a duration', () => {
     expect(at('goody')).toEqual([]);
     expect(at('lightning')).toEqual(['night']);
     expect(at('trembled')).toEqual([]);
+  });
+});
+
+describe('soundscapeCss', () => {
+  test('expands & in effect CSS, after the shared styles', () => {
+    const css = soundscapeCss({
+      version: 2,
+      sounds: {},
+      cues: [],
+      styles: ['@keyframes spin {}'],
+      effects: { dark: { css: ['& { background: black; }', '&.soundscape-x .BRfooter { scale: 1.1; }'] } },
+    });
+    expect(css).toBe([
+      '@keyframes spin {}',
+      '.BookReader.soundscape-dark { background: black; }',
+      '.BookReader.soundscape-dark.soundscape-x .BRfooter { scale: 1.1; }',
+    ].join('\n'));
+  });
+});
+
+describe('loopStateAt with stop all', () => {
+  test('clears everything, and ignores loops started for a duration', () => {
+    const spec = {
+      version: 2,
+      sounds: { rain: { src: '', loop: true }, wind: { src: '', loop: true } },
+      cues: [
+        { at: { pageIndex: 6, quote: 'cuddled down' }, actions: [{ action: 'start', sound: 'rain' }, { action: 'start', sound: 'wind', duration: 3 }] },
+        { at: { pageIndex: 6, quote: 'the old barn trembled' }, actions: [{ action: 'stop', all: true }] },
+      ],
+    };
+    const cues = resolveCues(spec, new Map([[6, PAGE]]));
+    expect(Object.fromEntries(loopStateAt(spec, cues, 6, PAGE.indexOf('hay')))).toEqual({ rain: 1 });
+    expect(Object.fromEntries(loopStateAt(spec, cues, 6, PAGE.indexOf('trembled')))).toEqual({});
   });
 });

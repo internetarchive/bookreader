@@ -1,15 +1,5 @@
 {
-  "version": 1,
-  "styles": [
-    "@keyframes soundscape-lightning {",
-    "  0%, 100% { background-color: black; }",
-    "  3% { background-color: #dce6ff; }",
-    "  9% { background-color: #10131c; }",
-    "  15% { background-color: #f2f5ff; }",
-    "  35% { background-color: #262d45; }",
-    "}",
-    ".BookReader.soundscape-lightning { animation: soundscape-lightning 1.4s ease-out; }"
-  ],
+  "version": 2,
   "sounds": {
     "rain": {
       "src": "https://archive.org/download/aporee_39549_45202/ForetPluieVent2003181204.mp3",
@@ -56,29 +46,41 @@
       "credit": "\"R21-14-Man Grunts and Struggles\" by craigsmith, CC0, https://freesound.org/people/craigsmith/sounds/481753/"
     }
   },
+  "effects": {
+    "lightning": { "css": [
+      "@keyframes soundscape-lightning {",
+      "  0%, 100% { background-color: black; }",
+      "  3% { background-color: #dce6ff; }",
+      "  9% { background-color: #10131c; }",
+      "  15% { background-color: #f2f5ff; }",
+      "  35% { background-color: #262d45; }",
+      "}",
+      "& { animation: soundscape-lightning 1.4s ease-out; }"
+    ] }
+  },
   "cues": [
     {
       "at": { "pageIndex": 6, "quote": "and just then down rattled the rain", "position": "start" },
-      "actions": [{ "action": "play", "sound": "rain", "volume": 1, "fade": 2 }]
+      "actions": [{ "action": "start", "sound": "rain", "volume": 1, "fade": 2 }]
     },
     {
       "at": { "pageIndex": 6, "quote": "the thunder roared" },
-      "actions": [{ "action": "play", "sound": "thunder" }]
+      "actions": [{ "action": "start", "sound": "thunder" }]
     },
     {
       "at": { "pageIndex": 6, "quote": "the lightning flashed" },
-      "actions": [{ "action": "css", "class": "lightning", "duration": 1.4 }]
+      "actions": [{ "action": "start", "effect": "lightning", "duration": 1.4 }]
     },
     {
       "at": { "pageIndex": 6, "quote": "three men came into the barn", "position": "end" },
-      "actions": [{ "action": "volume", "sound": "rain", "volume": 0.4, "fade": 4 }]
+      "actions": [{ "action": "set", "sound": "rain", "volume": 0.4, "fade": 4 }]
     },
     {
       "at": { "pageIndex": 9, "quote": "dashed out of the barn" },
       "actions": [
-        { "action": "play", "sound": "running", "fade": 0.3 },
-        { "action": "volume", "sound": "rain", "volume": 1, "fade": 1.5 },
-        { "action": "play", "sound": "thunder", "volume": 0.8, "delay": 1 }
+        { "action": "start", "sound": "running", "fade": 0.3 },
+        { "action": "set", "sound": "rain", "volume": 1, "fade": 1.5 },
+        { "action": "start", "sound": "thunder", "volume": 0.8, "delay": 1 }
       ]
     },
     {
@@ -88,13 +90,13 @@
     {
       "at": { "pageIndex": 9, "quote": "He was at dinner with some friends" },
       "actions": [
-        { "action": "play", "sound": "dinner", "volume": 0.7, "fade": 2 },
-        { "action": "volume", "sound": "rain", "volume": 0.3, "fade": 2 }
+        { "action": "start", "sound": "dinner", "volume": 0.7, "fade": 2 },
+        { "action": "set", "sound": "rain", "volume": 0.3, "fade": 2 }
       ]
     },
     {
       "at": { "pageIndex": 9, "quote": "excuse him for a moment, and came out and said", "position": "end" },
-      "actions": [{ "action": "volume", "sound": "dinner", "volume": 0.3, "fade": 1.5 }]
+      "actions": [{ "action": "set", "sound": "dinner", "volume": 0.3, "fade": 1.5 }]
     },
     {
       "at": { "pageIndex": 9, "quote": "went back and told his friends the news he had heard", "position": "end" },
@@ -102,15 +104,15 @@
     },
     {
       "at": { "pageIndex": 9, "quote": "and all kept a close watch both inside and outside", "position": "end" },
-      "actions": [{ "action": "volume", "sound": "rain", "volume": 0.6, "fade": 3 }]
+      "actions": [{ "action": "set", "sound": "rain", "volume": 0.6, "fade": 3 }]
     },
     {
       "at": { "pageIndex": 9, "quote": "six men sprang out on them" },
-      "actions": [{ "action": "play", "sound": "struggle", "fade": 0.2 }]
+      "actions": [{ "action": "start", "sound": "struggle", "fade": 0.2 }]
     },
     {
       "at": { "pageIndex": 9, "quote": "The thieves struggled in vain to get away" },
-      "actions": [{ "action": "play", "sound": "grunts", "volume": 0.6, "fade": 0.5 }]
+      "actions": [{ "action": "start", "sound": "grunts", "volume": 0.6, "fade": 0.5 }]
     },
     {
       "at": { "pageIndex": 10, "quote": "locked in an out-house until daylight" },

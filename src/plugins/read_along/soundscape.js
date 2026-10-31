@@ -6,10 +6,11 @@ import { ReadAlongAligner, tokenize } from './aligner.js';
  * that fire as the reader reads past them.
  *
  * @typedef {object} SoundscapeSpec
- * @property {1} version
+ * @property {2} version
  * @property {{ [name: string]: SoundSpec }} sounds
+ * @property {{ [name: string]: EffectSpec }} [effects]
  * @property {CueSpec[]} cues
- * @property {string | string[]} [styles] CSS added to the page, for `css` actions
+ * @property {string | string[]} [styles] CSS shared by effects, e.g. keyframes, added to the page as is
  *
  * @typedef {object} SoundSpec
  * @property {string} src Audio URL; needs CORS if cross-origin
@@ -19,6 +20,10 @@ import { ReadAlongAligner, tokenize } from './aligner.js';
  * @property {number} [start] seconds into the file to start playing from
  * @property {number} [gain] Base level of the file, so cue volumes can be 0-1 across sounds
  * @property {string} [credit]
+ *
+ * @typedef {object} EffectSpec A visual effect: a class on the BookReader element while it's on
+ * @property {string | string[]} [css] CSS where `&` stands for the BookReader element while the
+ *   effect is on (`.BookReader.soundscape-<name>`), e.g. `& .BRfooter { scale: 1.1; }`
  *
  * @typedef {object} CueSpec
  * @property {CueAnchor} at
@@ -30,17 +35,17 @@ import { ReadAlongAligner, tokenize } from './aligner.js';
  * @property {'start' | 'end'} [position] Fire on the first or last word of the quote. Default 'start'.
  *
  * @typedef {object} SoundAction
- * @property {'play' | 'volume' | 'stop' | 'stopAll' | 'css'} action
- *   `play` on a looping sound that's already playing just changes its volume.
- *   `css` adds the class `soundscape-<class>` to the BookReader element.
- * @property {string} [sound] name of the sound; required for the sound actions except `stopAll`
- * @property {string} [class] for `css`
- * @property {number} [duration] for `css`, seconds until the class is removed again;
- *   omit to keep it until a `css` action with `remove`
- * @property {boolean} [remove] for `css`, remove the class instead
- * @property {number} [volume] 0-1, default 1
- * @property {number} [fade] seconds to fade to the new volume, default 0
+ * @property {'start' | 'set' | 'stop'} action
+ *   `start` on a looping sound that's already playing just changes its volume;
+ *   `set` changes a playing sound's volume without starting it
+ * @property {string} [sound] the sound to act on
+ * @property {string} [effect] the effect to act on
+ * @property {boolean} [all] with `stop`, stop every sound and effect
+ * @property {number} [volume] sounds: 0-1, default 1
+ * @property {number} [fade] sounds: seconds to fade to the new volume, default 0
  * @property {number} [delay] seconds to wait before acting, default 0
+ * @property {number} [duration] with `start`, seconds until it stops again; omit to keep it
+ *   going (one-shot sounds stop by themselves)
  */
 
 /**
@@ -131,10 +136,10 @@ export function loopStateAt(spec, cues, pageIndex, wordIndex) {
   const state = new Map();
   for (const cue of cues) {
     if (compareCueToWord(cue, pageIndex, wordIndex) > 0) break;
-    for (const { action, sound, volume = 1 } of cue.spec.actions) {
-      if (action == 'stopAll') state.clear();
+    for (const { action, sound, all, duration, volume = 1 } of cue.spec.actions) {
+      if (action == 'stop' && all) state.clear();
       if (!spec.sounds[sound]?.loop) continue;
-      if (action == 'play' || (action == 'volume' && state.has(sound))) state.set(sound, volume);
+      if ((action == 'start' && !duration) || (action == 'set' && state.has(sound))) state.set(sound, volume);
       else if (action == 'stop') state.delete(sound);
     }
   }
@@ -142,30 +147,49 @@ export function loopStateAt(spec, cues, pageIndex, wordIndex) {
 }
 
 /**
- * The persistent `css` classes (those without a duration) that should be
- * applied at a position, as if everything before it had been read.
+ * The lasting effects (started without a duration) that should be on at a
+ * position, as if everything before it had been read.
  * @param {ResolvedCue[]} cues in reading order
  * @param {number} pageIndex
  * @param {number} wordIndex
- * @returns {Set<string>}
+ * @returns {Set<string>} effect names
  */
-export function classStateAt(cues, pageIndex, wordIndex) {
+export function effectStateAt(cues, pageIndex, wordIndex) {
   /** @type {Set<string>} */
-  const classes = new Set();
+  const effects = new Set();
   for (const cue of cues) {
     if (compareCueToWord(cue, pageIndex, wordIndex) > 0) break;
-    for (const action of cue.spec.actions) {
-      if (action.action != 'css' || action.duration) continue;
-      if (action.remove) classes.delete(action.class);
-      else classes.add(action.class);
+    for (const { action, effect, all, duration } of cue.spec.actions) {
+      if (action == 'stop' && all) effects.clear();
+      if (!effect) continue;
+      if (action == 'start' && !duration) effects.add(effect);
+      else if (action == 'stop') effects.delete(effect);
     }
   }
-  return classes;
+  return effects;
+}
+
+/**
+ * The page CSS for a soundscape: its shared styles, plus each effect's CSS
+ * with `&` expanded
+ * @param {SoundscapeSpec} spec
+ */
+export function soundscapeCss(spec) {
+  const effectCss = Object.entries(spec.effects ?? {}).map(([name, { css = [] }]) =>
+    [css].flat().join('\n').replaceAll('&', `.BookReader.${effectClass(name)}`));
+  return [...[spec.styles ?? []].flat(), ...effectCss].join('\n');
+}
+
+/**
+ * @param {string} name
+ */
+export function effectClass(name) {
+  return `soundscape-${name}`;
 }
 
 /**
  * Plays a soundscape's sounds with Web Audio, for sample-accurate loops and
- * smooth fades, and its `css` effects.
+ * smooth fades, and turns its effects on and off.
  */
 export class SoundscapePlayer {
   /** @type {AudioContext} */
@@ -177,19 +201,21 @@ export class SoundscapePlayer {
   /** @type {Map<string, { source: AudioBufferSourceNode | null, gain: GainNode }>} */
   playing = new Map();
 
-  /** @type {Map<string, ReturnType<typeof setTimeout>>} */
-  _classTimers = new Map();
+  /** @type {Map<string, ReturnType<typeof setTimeout>>} Effects waiting on their `duration` */
+  _effectTimers = new Map();
   /** @type {Set<ReturnType<typeof setTimeout>>} Actions waiting on their `delay` */
   _pending = new Set();
 
   /**
    * @param {SoundscapeSpec} spec
-   * @param {HTMLElement} effectsEl element `css` actions add their classes to
+   * @param {HTMLElement} effectsEl the BookReader element, which effects add their classes to
    */
   constructor(spec, effectsEl) {
     this.spec = spec;
     this.effectsEl = effectsEl;
-    if (spec.styles) document.head.appendChild(createStyle(spec.styles));
+    const styleEl = document.createElement('style');
+    styleEl.textContent = soundscapeCss(spec);
+    document.head.appendChild(styleEl);
   }
 
   /**
@@ -238,14 +264,23 @@ export class SoundscapePlayer {
       this._pending.add(timer);
       return;
     }
-    const { sound, volume = 1, fade = 0 } = action;
-    switch (action.action) {
-    case 'play': return this.play(sound, volume, fade);
-    case 'volume': return this.setVolume(sound, volume, fade);
-    case 'stop': return this.stop(sound, fade);
-    case 'stopAll': return this.stopAll(fade);
-    case 'css': return action.remove ? this.removeClass(action.class) : this.addClass(action.class, action.duration);
-    default: console.warn('Soundscape: unknown action', action);
+    const { action: verb, sound, effect, volume = 1, fade = 0, duration } = action;
+    if (verb == 'stop' && action.all) {
+      this.stopAll(fade);
+      this.applyEffectState(new Set());
+    } else if (sound && verb == 'start') {
+      this.play(sound, volume, fade);
+      if (duration) this.run({ action: 'stop', sound, fade: 0.3, delay: duration });
+    } else if (sound && verb == 'set') {
+      this.setVolume(sound, volume, fade);
+    } else if (sound && verb == 'stop') {
+      this.stop(sound, fade);
+    } else if (effect && verb == 'start') {
+      this.startEffect(effect, duration);
+    } else if (effect && verb == 'stop') {
+      this.stopEffect(effect);
+    } else {
+      console.warn('Soundscape: unknown action', action);
     }
   }
 
@@ -315,42 +350,43 @@ export class SoundscapePlayer {
 
   /**
    * @param {string} name
-   * @param {number} [duration] seconds; omit to keep it
+   * @param {number} [duration] seconds; omit to keep it on
    */
-  addClass(name, duration) {
-    const className = `soundscape-${name}`;
-    clearTimeout(this._classTimers.get(name));
-    // Restart any animation, even if the class is already there
+  startEffect(name, duration) {
+    const className = effectClass(name);
+    clearTimeout(this._effectTimers.get(name));
+    // Restart any animation, even if the effect is already on
     this.effectsEl.classList.remove(className);
     void this.effectsEl.offsetWidth;
     this.effectsEl.classList.add(className);
     if (duration) {
-      this._classTimers.set(name, setTimeout(() => this.removeClass(name), duration * 1000));
+      this._effectTimers.set(name, setTimeout(() => this.stopEffect(name), duration * 1000));
     }
   }
 
   /**
    * @param {string} name
    */
-  removeClass(name) {
-    clearTimeout(this._classTimers.get(name));
-    this._classTimers.delete(name);
-    this.effectsEl.classList.remove(`soundscape-${name}`);
+  stopEffect(name) {
+    clearTimeout(this._effectTimers.get(name));
+    this._effectTimers.delete(name);
+    this.effectsEl.classList.remove(effectClass(name));
   }
 
   /**
-   * Set exactly these persistent classes
-   * @param {Set<string>} classes
+   * Turn on exactly these effects
+   * @param {Set<string>} effects
    */
-  applyClassState(classes) {
+  applyEffectState(effects) {
+    const prefix = effectClass('');
     const current = Array.from(this.effectsEl.classList)
-      .filter(c => c.startsWith('soundscape-'))
-      .map(c => c.slice('soundscape-'.length));
+      .filter(c => c.startsWith(prefix))
+      .map(c => c.slice(prefix.length));
     for (const name of current) {
-      if (!classes.has(name)) this.removeClass(name);
+      if (!effects.has(name)) this.stopEffect(name);
     }
-    for (const name of classes) {
-      if (!this.effectsEl.classList.contains(`soundscape-${name}`)) this.addClass(name);
+    for (const name of effects) {
+      if (!this.effectsEl.classList.contains(effectClass(name))) this.startEffect(name);
     }
   }
 
@@ -387,13 +423,4 @@ function rampTo(param, value, fade, now) {
   param.setValueAtTime(param.value, now);
   // A minimum ramp avoids clicks
   param.linearRampToValueAtTime(value, now + Math.max(fade, 0.05));
-}
-
-/**
- * @param {string | string[]} css
- */
-function createStyle(css) {
-  const styleEl = document.createElement('style');
-  styleEl.textContent = [css].flat().join('\n');
-  return styleEl;
 }

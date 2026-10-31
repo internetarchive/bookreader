@@ -1,46 +1,8 @@
 {
-  "version": 1,
+  "version": 2,
   "styles": [
     ".BookReader { transition: background-color 4s; }",
-    ".BookReader.soundscape-stormsky { background-color: #1d2127; }",
-    ".BookReader.soundscape-sleep { background-color: #0b0c0f; }",
-    ".BookReader.soundscape-sunshine { background-color: #4a3d22; }",
-    ".BookReader.soundscape-oz { background-color: #1e3524; }",
-    "@keyframes soundscape-shake {",
-    "  0% { translate: 0 0; rotate: 0deg; }",
-    "  6% { translate: -5px 2px; rotate: -0.6deg; }",
-    "  11% { translate: 4px -3px; rotate: 0.4deg; }",
-    "  19% { translate: -2px 1px; rotate: 0deg; }",
-    "  24% { translate: 6px 2px; rotate: 0.7deg; }",
-    "  33% { translate: -4px -2px; rotate: -0.3deg; }",
-    "  41% { translate: 1px 3px; rotate: 0.2deg; }",
-    "  47% { translate: -6px 0; rotate: -0.8deg; }",
-    "  58% { translate: 3px -2px; rotate: 0.3deg; }",
-    "  66% { translate: -2px 2px; rotate: -0.2deg; }",
-    "  74% { translate: 4px 1px; rotate: 0.5deg; }",
-    "  85% { translate: -1px -1px; rotate: 0deg; }",
-    "  92% { translate: 2px 0; rotate: 0.2deg; }",
-    "  100% { translate: 0 0; rotate: 0deg; }",
-    "}",
-    "@keyframes soundscape-lurch {",
-    "  0% { translate: 0 0; rotate: 0deg; }",
-    "  10% { translate: -10px 4px; rotate: -2.2deg; }",
-    "  28% { translate: 6px -2px; rotate: 1.2deg; }",
-    "  46% { translate: -3px 1px; rotate: -0.6deg; }",
-    "  68% { translate: 1px 0; rotate: 0.3deg; }",
-    "  100% { translate: 0 0; rotate: 0deg; }",
-    "}",
-    "@keyframes soundscape-sway {",
-    "  0%, 100% { translate: -4px 0; rotate: -0.8deg; }",
-    "  50% { translate: 4px 0; rotate: 0.8deg; }",
-    "}",
-    ".BookReader.soundscape-sway .BRfooter { animation: soundscape-sway 4.5s ease-in-out infinite; }",
-    ".BookReader.soundscape-shake .BRfooter { animation: soundscape-shake 2.5s steps(1, end); }",
-    ".BookReader.soundscape-lurch .BRfooter { animation: soundscape-lurch 1.6s steps(1, end); }",
-    ".BookReader .BRfooter { transform-origin: center bottom; transition: scale 8s ease-in-out, filter 8s; }",
-    ".BookReader.soundscape-rising .BRfooter { scale: 1.06; filter: drop-shadow(0 -6px 14px rgba(0, 0, 0, 0.7)); }",
-    ".BookReader.soundscape-rising.soundscape-higher .BRfooter { scale: 1.1; filter: drop-shadow(0 -10px 22px rgba(0, 0, 0, 0.8)); }",
-    ".BookReader.soundscape-landed .BRfooter { transition: scale 0.35s ease-in, filter 0.6s; }"
+    ".BookReader .BRfooter { transform-origin: center bottom; transition: scale 8s ease-in-out, filter 8s; }"
   ],
   "sounds": {
     "prairieWind": {
@@ -163,227 +125,273 @@
       "credit": "\"Chimes Sparkle\" by lukabea, CC0, https://freesound.org/people/lukabea/sounds/660493/"
     }
   },
+  "effects": {
+    "stormsky": { "css": ["& { background-color: #1d2127; }"] },
+    "shake": { "css": [
+      "@keyframes soundscape-shake {",
+      "  0% { translate: 0 0; rotate: 0deg; }",
+      "  6% { translate: -5px 2px; rotate: -0.6deg; }",
+      "  11% { translate: 4px -3px; rotate: 0.4deg; }",
+      "  19% { translate: -2px 1px; rotate: 0deg; }",
+      "  24% { translate: 6px 2px; rotate: 0.7deg; }",
+      "  33% { translate: -4px -2px; rotate: -0.3deg; }",
+      "  41% { translate: 1px 3px; rotate: 0.2deg; }",
+      "  47% { translate: -6px 0; rotate: -0.8deg; }",
+      "  58% { translate: 3px -2px; rotate: 0.3deg; }",
+      "  66% { translate: -2px 2px; rotate: -0.2deg; }",
+      "  74% { translate: 4px 1px; rotate: 0.5deg; }",
+      "  85% { translate: -1px -1px; rotate: 0deg; }",
+      "  92% { translate: 2px 0; rotate: 0.2deg; }",
+      "  100% { translate: 0 0; rotate: 0deg; }",
+      "}",
+      "& .BRfooter { animation: soundscape-shake 2.5s steps(1, end); }"
+    ] },
+    "rising": { "css": ["& .BRfooter { scale: 1.06; filter: drop-shadow(0 -6px 14px rgba(0, 0, 0, 0.7)); }"] },
+    "higher": { "css": ["&.soundscape-rising .BRfooter { scale: 1.1; filter: drop-shadow(0 -10px 22px rgba(0, 0, 0, 0.8)); }"] },
+    "lurch": { "css": [
+      "@keyframes soundscape-lurch {",
+      "  0% { translate: 0 0; rotate: 0deg; }",
+      "  10% { translate: -10px 4px; rotate: -2.2deg; }",
+      "  28% { translate: 6px -2px; rotate: 1.2deg; }",
+      "  46% { translate: -3px 1px; rotate: -0.6deg; }",
+      "  68% { translate: 1px 0; rotate: 0.3deg; }",
+      "  100% { translate: 0 0; rotate: 0deg; }",
+      "}",
+      "& .BRfooter { animation: soundscape-lurch 1.6s steps(1, end); }"
+    ] },
+    "sway": { "css": [
+      "@keyframes soundscape-sway {",
+      "  0%, 100% { translate: -4px 0; rotate: -0.8deg; }",
+      "  50% { translate: 4px 0; rotate: 0.8deg; }",
+      "}",
+      "& .BRfooter { animation: soundscape-sway 4.5s ease-in-out infinite; }"
+    ] },
+    "sleep": { "css": ["& { background-color: #0b0c0f; }"] },
+    "landed": { "css": ["& .BRfooter { transition: scale 0.35s ease-in, filter 0.6s; }"] },
+    "sunshine": { "css": ["& { background-color: #4a3d22; }"] },
+    "oz": { "css": ["& { background-color: #1e3524; }"] }
+  },
   "cues": [
     {
       "at": { "pageIndex": 17, "quote": "low wail on the wind" },
-      "actions": [{ "action": "play", "sound": "prairieWind", "volume": 0.3, "fade": 4 }]
+      "actions": [{ "action": "start", "sound": "prairieWind", "volume": 0.3, "fade": 4 }]
     },
     {
       "at": { "pageIndex": 17, "quote": "bowed in waves before the coming storm", "position": "end" },
-      "actions": [{ "action": "volume", "sound": "prairieWind", "volume": 0.5, "fade": 3 }]
+      "actions": [{ "action": "set", "sound": "prairieWind", "volume": 0.5, "fade": 3 }]
     },
     {
       "at": { "pageIndex": 17, "quote": "sharp whistling in the air" },
       "actions": [
-        { "action": "play", "sound": "whistle", "volume": 0.7 },
-        { "action": "play", "sound": "whistle", "volume": 0.4, "delay": 2.5 }
+        { "action": "start", "sound": "whistle", "volume": 0.7 },
+        { "action": "start", "sound": "whistle", "volume": 0.4, "delay": 2.5 }
       ]
     },
     {
       "at": { "pageIndex": 17, "quote": "ripples in the grass coming from that direction also", "position": "end" },
-      "actions": [{ "action": "volume", "sound": "prairieWind", "volume": 0.65, "fade": 2 }]
+      "actions": [{ "action": "set", "sound": "prairieWind", "volume": 0.65, "fade": 2 }]
     },
     {
       "at": { "pageIndex": 17, "quote": "a cyclone coming, Em" },
-      "actions": [{ "action": "css", "class": "stormsky" }]
+      "actions": [{ "action": "start", "effect": "stormsky" }]
     },
     {
       "at": { "pageIndex": 17, "quote": "he ran toward the sheds" },
       "actions": [
-        { "action": "play", "sound": "running", "volume": 0.8, "fade": 0.2 },
-        { "action": "volume", "sound": "running", "volume": 0, "fade": 4, "delay": 0.8 },
+        { "action": "start", "sound": "running", "volume": 0.8, "fade": 0.2 },
+        { "action": "set", "sound": "running", "volume": 0, "fade": 4, "delay": 0.8 },
         { "action": "stop", "sound": "running", "delay": 5 }
       ]
     },
     {
       "at": { "pageIndex": 17, "quote": "run for the cellar" },
-      "actions": [{ "action": "volume", "sound": "prairieWind", "volume": 0.85, "fade": 1.5 }]
+      "actions": [{ "action": "set", "sound": "prairieWind", "volume": 0.85, "fade": 1.5 }]
     },
     {
       "at": { "pageIndex": 17, "quote": "jumped out of Dorothy's arms and hid under the bed" },
-      "actions": [{ "action": "play", "sound": "yelp" }]
+      "actions": [{ "action": "start", "sound": "yelp" }]
     },
     {
       "at": { "pageIndex": 17, "quote": "threw open the trap-door" },
-      "actions": [{ "action": "play", "sound": "trapdoor" }]
+      "actions": [{ "action": "start", "sound": "trapdoor" }]
     },
     {
       "at": { "pageIndex": 17, "quote": "great shriek from the wind" },
-      "actions": [{ "action": "play", "sound": "howl", "volume": 1, "fade": 1.5 }]
+      "actions": [{ "action": "start", "sound": "howl", "volume": 1, "fade": 1.5 }]
     },
     {
       "at": { "pageIndex": 17, "quote": "the house shook so hard" },
       "actions": [
-        { "action": "play", "sound": "houseCreak", "volume": 0.9, "fade": 0.3 },
-        { "action": "css", "class": "shake", "duration": 2.5 }
+        { "action": "start", "sound": "houseCreak", "volume": 0.9, "fade": 0.3 },
+        { "action": "start", "effect": "shake", "duration": 2.5 }
       ]
     },
     {
       "at": { "pageIndex": 17, "quote": "whirled around two or three times" },
       "actions": [
-        { "action": "volume", "sound": "houseCreak", "volume": 1, "fade": 1 },
-        { "action": "css", "class": "shake", "duration": 2.5 }
+        { "action": "set", "sound": "houseCreak", "volume": 1, "fade": 1 },
+        { "action": "start", "effect": "shake", "duration": 2.5 }
       ]
     },
     {
       "at": { "pageIndex": 17, "quote": "rose slowly through the air" },
-      "actions": [{ "action": "css", "class": "rising" }]
+      "actions": [{ "action": "start", "effect": "rising" }]
     },
     {
       "at": { "pageIndex": 18, "quote": "the air is generally still" },
-      "actions": [{ "action": "volume", "sound": "howl", "volume": 0.6, "fade": 3 }]
+      "actions": [{ "action": "set", "sound": "howl", "volume": 0.6, "fade": 3 }]
     },
     {
       "at": { "pageIndex": 18, "quote": "great pressure of the wind" },
-      "actions": [{ "action": "volume", "sound": "howl", "volume": 0.9, "fade": 2 }]
+      "actions": [{ "action": "set", "sound": "howl", "volume": 0.9, "fade": 2 }]
     },
     {
       "at": { "pageIndex": 18, "quote": "raised it up higher and higher" },
       "actions": [
-        { "action": "css", "class": "higher" },
+        { "action": "start", "effect": "higher" },
         { "action": "stop", "sound": "prairieWind", "fade": 8 }
       ]
     },
     {
       "at": { "pageIndex": 18, "quote": "the wind howled horribly around her" },
       "actions": [
-        { "action": "volume", "sound": "howl", "volume": 1, "fade": 1 },
-        { "action": "play", "sound": "whistle", "volume": 0.5, "delay": 0.5 }
+        { "action": "set", "sound": "howl", "volume": 1, "fade": 1 },
+        { "action": "start", "sound": "whistle", "volume": 0.5, "delay": 0.5 }
       ]
     },
     {
       "at": { "pageIndex": 18, "quote": "Dorothy found she was riding quite easily", "position": "end" },
-      "actions": [{ "action": "volume", "sound": "howl", "volume": 0.7, "fade": 4 }]
+      "actions": [{ "action": "set", "sound": "howl", "volume": 0.7, "fade": 4 }]
     },
     {
       "at": { "pageIndex": 18, "quote": "the house tipped badly" },
       "actions": [
-        { "action": "play", "sound": "lurch" },
+        { "action": "start", "sound": "lurch" },
         { "action": "stop", "sound": "lurch", "fade": 0.6, "delay": 3 },
-        { "action": "css", "class": "lurch", "duration": 1.6 }
+        { "action": "start", "effect": "lurch", "duration": 1.6 }
       ]
     },
     {
       "at": { "pageIndex": 18, "quote": "rocked gently, like a baby in a cradle" },
       "actions": [
-        { "action": "css", "class": "sway" },
-        { "action": "volume", "sound": "howl", "volume": 0.55, "fade": 5 },
-        { "action": "volume", "sound": "houseCreak", "volume": 0.5, "fade": 5 }
+        { "action": "start", "effect": "sway" },
+        { "action": "set", "sound": "howl", "volume": 0.55, "fade": 5 },
+        { "action": "set", "sound": "houseCreak", "volume": 0.5, "fade": 5 }
       ]
     },
     {
       "at": { "pageIndex": 18, "quote": "barking loudly; but Dorothy sat" },
-      "actions": [{ "action": "play", "sound": "bark" }]
+      "actions": [{ "action": "start", "sound": "bark" }]
     },
     {
       "at": { "pageIndex": 18, "quote": "too near the open trap-door, and fell in", "position": "end" },
-      "actions": [{ "action": "play", "sound": "yelp" }]
+      "actions": [{ "action": "start", "sound": "yelp" }]
     },
     {
       "at": { "pageIndex": 18, "quote": "afterward closing the trap-door" },
-      "actions": [{ "action": "play", "sound": "trapdoorClose" }]
+      "actions": [{ "action": "start", "sound": "trapdoorClose" }]
     },
     {
       "at": { "pageIndex": 18, "quote": "the wind shrieked so loudly all about her" },
       "actions": [
-        { "action": "volume", "sound": "howl", "volume": 1, "fade": 1.5 },
-        { "action": "play", "sound": "whistle", "volume": 0.8 }
+        { "action": "set", "sound": "howl", "volume": 1, "fade": 1.5 },
+        { "action": "start", "sound": "whistle", "volume": 0.8 }
       ]
     },
     {
       "at": { "pageIndex": 18, "quote": "she stopped worrying", "position": "end" },
       "actions": [
-        { "action": "volume", "sound": "howl", "volume": 0.5, "fade": 6 },
-        { "action": "volume", "sound": "houseCreak", "volume": 0.4, "fade": 6 }
+        { "action": "set", "sound": "howl", "volume": 0.5, "fade": 6 },
+        { "action": "set", "sound": "houseCreak", "volume": 0.4, "fade": 6 }
       ]
     },
     {
       "at": { "pageIndex": 19, "quote": "crawled over the swaying floor to her bed" },
       "actions": [
-        { "action": "volume", "sound": "houseCreak", "volume": 0.7, "fade": 1 },
-        { "action": "volume", "sound": "houseCreak", "volume": 0.4, "fade": 3, "delay": 3 }
+        { "action": "set", "sound": "houseCreak", "volume": 0.7, "fade": 1 },
+        { "action": "set", "sound": "houseCreak", "volume": 0.4, "fade": 3, "delay": 3 }
       ]
     },
     {
       "at": { "pageIndex": 19, "quote": "Dorothy soon closed her eyes and fell fast asleep", "position": "end" },
       "actions": [
-        { "action": "css", "class": "sleep" },
-        { "action": "volume", "sound": "howl", "volume": 0.3, "fade": 6 },
-        { "action": "volume", "sound": "houseCreak", "volume": 0.35, "fade": 6 },
-        { "action": "volume", "sound": "prairieWind", "volume": 0.3, "fade": 6 }
+        { "action": "start", "effect": "sleep" },
+        { "action": "set", "sound": "howl", "volume": 0.3, "fade": 6 },
+        { "action": "set", "sound": "houseCreak", "volume": 0.35, "fade": 6 },
+        { "action": "set", "sound": "prairieWind", "volume": 0.3, "fade": 6 }
       ]
     },
     {
       "at": { "pageIndex": 22, "quote": "by a shock, so sudden and severe" },
       "actions": [
-        { "action": "play", "sound": "landingThud" },
-        { "action": "play", "sound": "landingCrash" },
+        { "action": "start", "sound": "landingThud" },
+        { "action": "start", "sound": "landingCrash" },
         { "action": "stop", "sound": "howl", "fade": 0.4 },
         { "action": "stop", "sound": "houseCreak", "fade": 0.3 },
-        { "action": "css", "class": "landed" },
-        { "action": "css", "class": "sway", "remove": true },
-        { "action": "css", "class": "higher", "remove": true },
-        { "action": "css", "class": "rising", "remove": true },
-        { "action": "css", "class": "lurch", "duration": 1.6 }
+        { "action": "start", "effect": "landed" },
+        { "action": "stop", "effect": "sway" },
+        { "action": "stop", "effect": "higher" },
+        { "action": "stop", "effect": "rising" },
+        { "action": "start", "effect": "lurch", "duration": 1.6 }
       ]
     },
     {
       "at": { "pageIndex": 22, "quote": "whined dismally" },
       "actions": [
-        { "action": "play", "sound": "whimper" },
+        { "action": "start", "sound": "whimper" },
         { "action": "stop", "sound": "whimper", "fade": 0.4, "delay": 2.7 }
       ]
     },
     {
       "at": { "pageIndex": 22, "quote": "the bright sunshine came in at the window" },
       "actions": [
-        { "action": "css", "class": "stormsky", "remove": true },
-        { "action": "css", "class": "sleep", "remove": true },
-        { "action": "css", "class": "sunshine" },
-        { "action": "play", "sound": "birds", "volume": 0.25, "fade": 4 }
+        { "action": "stop", "effect": "stormsky" },
+        { "action": "stop", "effect": "sleep" },
+        { "action": "start", "effect": "sunshine" },
+        { "action": "start", "sound": "birds", "volume": 0.25, "fade": 4 }
       ]
     },
     {
       "at": { "pageIndex": 22, "quote": "ran and opened the door", "position": "end" },
       "actions": [
-        { "action": "play", "sound": "doorOpen" },
-        { "action": "volume", "sound": "birds", "volume": 0.9, "fade": 2, "delay": 0.3 }
+        { "action": "start", "sound": "doorOpen" },
+        { "action": "set", "sound": "birds", "volume": 0.9, "fade": 2, "delay": 0.3 }
       ]
     },
     {
       "at": { "pageIndex": 23, "quote": "a country of marvelous beauty" },
       "actions": [
-        { "action": "css", "class": "sunshine", "remove": true },
-        { "action": "css", "class": "oz" }
+        { "action": "stop", "effect": "sunshine" },
+        { "action": "start", "effect": "oz" }
       ]
     },
     {
       "at": { "pageIndex": 23, "quote": "brilliant plumage sang and fluttered", "position": "end" },
       "actions": [
-        { "action": "play", "sound": "flutter" },
-        { "action": "volume", "sound": "birds", "volume": 1, "fade": 1.5 }
+        { "action": "start", "sound": "flutter" },
+        { "action": "set", "sound": "birds", "volume": 1, "fade": 1.5 }
       ]
     },
     {
       "at": { "pageIndex": 23, "quote": "small brook, rushing and sparkling" },
-      "actions": [{ "action": "play", "sound": "brook", "volume": 0.7, "fade": 3 }]
+      "actions": [{ "action": "start", "sound": "brook", "volume": 0.7, "fade": 3 }]
     },
     {
       "at": { "pageIndex": 23, "quote": "coming toward her a group of the queerest people" },
       "actions": [
-        { "action": "play", "sound": "hatBells", "volume": 0.15, "fade": 4 },
-        { "action": "volume", "sound": "birds", "volume": 0.6, "fade": 4 },
-        { "action": "volume", "sound": "brook", "volume": 0.4, "fade": 4 }
+        { "action": "start", "sound": "hatBells", "volume": 0.15, "fade": 4 },
+        { "action": "set", "sound": "birds", "volume": 0.6, "fade": 4 },
+        { "action": "set", "sound": "brook", "volume": 0.4, "fade": 4 }
       ]
     },
     {
       "at": { "pageIndex": 23, "quote": "tinkled sweetly as they moved" },
-      "actions": [{ "action": "volume", "sound": "hatBells", "volume": 0.7, "fade": 1.5 }]
+      "actions": [{ "action": "set", "sound": "hatBells", "volume": 0.7, "fade": 1.5 }]
     },
     {
       "at": { "pageIndex": 23, "quote": "glistened in the sun like diamonds" },
       "actions": [
-        { "action": "play", "sound": "sparkle" },
+        { "action": "start", "sound": "sparkle" },
         { "action": "stop", "sound": "sparkle", "fade": 1, "delay": 2.5 }
       ]
     }
