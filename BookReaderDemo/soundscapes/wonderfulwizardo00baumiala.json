@@ -135,7 +135,7 @@
       "actions": [{ "action": "play", "sound": "yelp" }]
     },
     {
-      "at": { "pageIndex": 17, "quote": "threw open the trap-door", "position": "end" },
+      "at": { "pageIndex": 17, "quote": "threw open the trap-door" },
       "actions": [{ "action": "play", "sound": "trapdoor" }]
     },
     {
