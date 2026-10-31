@@ -24,6 +24,8 @@ const SEEK_FADE = 1.5;
 
 /** How far past the displayed pages to look for the next page with text */
 const MAX_LOOKAHEAD_PAGES = 4;
+/** Pages with fewer words (e.g. chapter titles, captions) don't end the lookahead */
+const MIN_LOOKAHEAD_WORDS = 20;
 
 // In Chromium these are the same constructor
 const SpeechRecognitionImpl = window.SpeechRecognition || /** @type {any} */(window).webkitSpeechRecognition;
@@ -428,12 +430,13 @@ export class ReadAlongPlugin extends BookReaderPlugin {
     }));
     await loadWanted();
 
-    // Also load up to the next page with text, skipping e.g. illustration plates
+    // Also load up to the next page of running text, skipping e.g. illustration
+    // plates and chapter title pages
     const lastIndex = this.br.book.getNumLeafs() - 1;
     for (let i = Math.max(...displayed) + 1; i <= Math.min(lastIndex, Math.max(...displayed) + MAX_LOOKAHEAD_PAGES); i++) {
       wanted.add(i);
       await loadWanted();
-      if (this.pageWords.get(i)?.length) break;
+      if ((this.pageWords.get(i)?.length ?? 0) >= MIN_LOOKAHEAD_WORDS) break;
     }
     for (const i of this.pageWords.keys()) {
       if (!wanted.has(i)) this.pageWords.delete(i);

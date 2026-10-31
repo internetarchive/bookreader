@@ -3,6 +3,8 @@
   "styles": [
     ".BookReader { transition: background-color 4s; }",
     ".BookReader.soundscape-stormsky { background-color: #1d2127; }",
+    ".BookReader.soundscape-sleep { background-color: #0b0c0f; }",
+    ".BookReader.soundscape-sunshine { background-color: #4a3d22; }",
     "@keyframes soundscape-shake {",
     "  0% { translate: 0 0; rotate: 0deg; }",
     "  6% { translate: -5px 2px; rotate: -0.6deg; }",
@@ -36,7 +38,8 @@
     ".BookReader.soundscape-lurch .BRfooter { animation: soundscape-lurch 1.6s steps(1, end); }",
     ".BookReader .BRfooter { transform-origin: center bottom; transition: scale 8s ease-in-out, filter 8s; }",
     ".BookReader.soundscape-rising .BRfooter { scale: 1.06; filter: drop-shadow(0 -6px 14px rgba(0, 0, 0, 0.7)); }",
-    ".BookReader.soundscape-rising.soundscape-higher .BRfooter { scale: 1.1; filter: drop-shadow(0 -10px 22px rgba(0, 0, 0, 0.8)); }"
+    ".BookReader.soundscape-rising.soundscape-higher .BRfooter { scale: 1.1; filter: drop-shadow(0 -10px 22px rgba(0, 0, 0, 0.8)); }",
+    ".BookReader.soundscape-landed .BRfooter { transition: scale 0.35s ease-in, filter 0.6s; }"
   ],
   "sounds": {
     "prairieWind": {
@@ -101,6 +104,36 @@
       "start": 4.4,
       "gain": 1.2,
       "credit": "\"Slow wooden creaks x5\" by peridactyloptrix, CC0, https://freesound.org/people/peridactyloptrix/sounds/218163/"
+    },
+    "landingThud": {
+      "src": "https://cdn.freesound.org/previews/584/584891_13194852-hq.mp3",
+      "start": 3.7,
+      "gain": 1.2,
+      "credit": "\"big log on dirt throwing.wav\" by KrystianPawlowski, CC0, https://freesound.org/people/KrystianPawlowski/sounds/584891/"
+    },
+    "landingCrash": {
+      "src": "https://cdn.freesound.org/previews/257/257752_2276808-hq.mp3",
+      "gain": 0.35,
+      "credit": "\"Wooden Ship Break\" by Kodack, CC0, https://freesound.org/people/Kodack/sounds/257752/"
+    },
+    "whine": {
+      "src": "https://cdn.freesound.org/previews/455/455745_612689-hq.mp3",
+      "start": 2,
+      "gain": 1,
+      "credit": "\"dog small whine wants attention.flac\" by kyles, CC0, https://freesound.org/people/kyles/sounds/455745/"
+    },
+    "doorOpen": {
+      "src": "https://cdn.freesound.org/previews/244/244425_2326086-hq.mp3",
+      "gain": 1,
+      "credit": "\"creaking-door-open01.flac\" by Aiyumi, CC0, https://freesound.org/people/Aiyumi/sounds/244425/"
+    },
+    "birds": {
+      "src": "https://cdn.freesound.org/previews/747/747614_3655844-hq.mp3",
+      "loop": true,
+      "loopStart": 1,
+      "loopEnd": 136,
+      "gain": 3,
+      "credit": "\"European Stonechats\" by iainmccurdy, CC0, https://freesound.org/people/iainmccurdy/sounds/747614/"
     }
   },
   "cues": [
@@ -238,11 +271,56 @@
       ]
     },
     {
+      "at": { "pageIndex": 19, "quote": "crawled over the swaying floor to her bed" },
+      "actions": [
+        { "action": "volume", "sound": "houseCreak", "volume": 0.7, "fade": 1 },
+        { "action": "volume", "sound": "houseCreak", "volume": 0.4, "fade": 3, "delay": 3 }
+      ]
+    },
+    {
       "at": { "pageIndex": 19, "quote": "Dorothy soon closed her eyes and fell fast asleep", "position": "end" },
       "actions": [
+        { "action": "css", "class": "sleep" },
         { "action": "volume", "sound": "howl", "volume": 0.3, "fade": 6 },
         { "action": "volume", "sound": "houseCreak", "volume": 0.35, "fade": 6 },
         { "action": "volume", "sound": "prairieWind", "volume": 0.3, "fade": 6 }
+      ]
+    },
+    {
+      "at": { "pageIndex": 22, "quote": "by a shock, so sudden and severe" },
+      "actions": [
+        { "action": "play", "sound": "landingThud" },
+        { "action": "play", "sound": "landingCrash" },
+        { "action": "stop", "sound": "howl", "fade": 0.4 },
+        { "action": "stop", "sound": "houseCreak", "fade": 0.3 },
+        { "action": "css", "class": "landed" },
+        { "action": "css", "class": "sway", "remove": true },
+        { "action": "css", "class": "higher", "remove": true },
+        { "action": "css", "class": "rising", "remove": true },
+        { "action": "css", "class": "lurch", "duration": 1.6 }
+      ]
+    },
+    {
+      "at": { "pageIndex": 22, "quote": "whined dismally" },
+      "actions": [
+        { "action": "play", "sound": "whine" },
+        { "action": "stop", "sound": "whine", "fade": 0.4, "delay": 2.4 }
+      ]
+    },
+    {
+      "at": { "pageIndex": 22, "quote": "the bright sunshine came in at the window" },
+      "actions": [
+        { "action": "css", "class": "stormsky", "remove": true },
+        { "action": "css", "class": "sleep", "remove": true },
+        { "action": "css", "class": "sunshine" },
+        { "action": "play", "sound": "birds", "volume": 0.25, "fade": 4 }
+      ]
+    },
+    {
+      "at": { "pageIndex": 22, "quote": "ran and opened the door", "position": "end" },
+      "actions": [
+        { "action": "play", "sound": "doorOpen" },
+        { "action": "volume", "sound": "birds", "volume": 0.9, "fade": 2, "delay": 0.3 }
       ]
     }
   ]
