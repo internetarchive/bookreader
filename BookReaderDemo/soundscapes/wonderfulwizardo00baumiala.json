@@ -23,29 +23,6 @@
     ".BookReader .BRfooter { transform-origin: center bottom; transition: scale 8s ease-in-out, filter 8s; }",
     ".BookReader.soundscape-rising .BRfooter { scale: 1.06; filter: drop-shadow(0 -6px 14px rgba(0, 0, 0, 0.7)); }"
   ],
-  "shadowStyles": {
-    "iaux-item-navigator": [
-      "@keyframes soundscape-shake {",
-      "  0% { translate: 0 0; rotate: 0deg; }",
-      "  6% { translate: -5px 2px; rotate: -0.6deg; }",
-      "  11% { translate: 4px -3px; rotate: 0.4deg; }",
-      "  19% { translate: -2px 1px; rotate: 0deg; }",
-      "  24% { translate: 6px 2px; rotate: 0.7deg; }",
-      "  33% { translate: -4px -2px; rotate: -0.3deg; }",
-      "  41% { translate: 1px 3px; rotate: 0.2deg; }",
-      "  47% { translate: -6px 0; rotate: -0.8deg; }",
-      "  58% { translate: 3px -2px; rotate: 0.3deg; }",
-      "  66% { translate: -2px 2px; rotate: -0.2deg; }",
-      "  74% { translate: 4px 1px; rotate: 0.5deg; }",
-      "  85% { translate: -1px -1px; rotate: 0deg; }",
-      "  92% { translate: 2px 0; rotate: 0.2deg; }",
-      "  100% { translate: 0 0; rotate: 0deg; }",
-      "}",
-      ":host(.soundscape-shake) .menu-and-reader > nav { animation: soundscape-shake 2.5s steps(1, end); }",
-      ".menu-and-reader > nav { transform-origin: left center; transition: scale 8s ease-in-out, filter 8s; }",
-      ":host(.soundscape-rising) .menu-and-reader > nav { scale: 1.12; filter: drop-shadow(6px 0 14px rgba(0, 0, 0, 0.7)); }"
-    ]
-  },
   "sounds": {
     "prairieWind": {
       "src": "https://cdn.freesound.org/previews/675/675711_2524442-hq.mp3",
