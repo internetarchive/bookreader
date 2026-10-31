@@ -1,5 +1,5 @@
 import { tokenize } from '@/src/plugins/read_along/aligner.js';
-import { effectStateAt, loopStateAt, resolveCues, resolveQuote, soundscapeCss } from '@/src/plugins/read_along/soundscape.js';
+import { effectStateAt, loopStateAt, resolveCues, resolveQuote, soundscapeCss, volumeDirections } from '@/src/plugins/read_along/soundscape.js';
 
 const PAGE = tokenize(`
   Goody Two Shoes cuddled down in the soft hay, glad of a chance to rest her
@@ -126,5 +126,31 @@ describe('loopStateAt with stop all', () => {
     const cues = resolveCues(spec, new Map([[6, PAGE]]));
     expect(Object.fromEntries(loopStateAt(spec, cues, 6, PAGE.indexOf('hay')))).toEqual({ rain: 1 });
     expect(Object.fromEntries(loopStateAt(spec, cues, 6, PAGE.indexOf('trembled')))).toEqual({});
+  });
+});
+
+describe('volumeDirections', () => {
+  test('compares each set to the volume before it, in delay order within a cue', () => {
+    const spec = {
+      version: 2,
+      sounds: { rain: { src: '', loop: true } },
+      cues: [
+        { at: { pageIndex: 6, quote: 'cuddled down' }, actions: [{ action: 'set', sound: 'rain', volume: 0.5 }, { action: 'start', sound: 'rain', volume: 0.4 }] },
+        { at: { pageIndex: 6, quote: 'down rattled the rain' }, actions: [
+          { action: 'set', sound: 'rain', volume: 0.3, delay: 3 },
+          { action: 'set', sound: 'rain', volume: 1 },
+          { action: 'set', sound: 'rain', volume: 0.3, delay: 5 },
+        ] },
+      ],
+    };
+    const cues = resolveCues(spec, new Map([[6, PAGE]]));
+    const directions = volumeDirections(cues);
+    const [first, second] = spec.cues;
+    // Before the start, there's nothing to compare to
+    expect(directions.get(first.actions[0])).toBeUndefined();
+    expect(directions.get(second.actions[1])).toBe('up');
+    expect(directions.get(second.actions[0])).toBe('down');
+    // Unchanged
+    expect(directions.get(second.actions[2])).toBeUndefined();
   });
 });

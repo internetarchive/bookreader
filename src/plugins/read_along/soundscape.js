@@ -172,6 +172,36 @@ export function effectStateAt(cues, pageIndex, wordIndex) {
 }
 
 /**
+ * Whether each `set` raises or lowers its sound's volume, from replaying the
+ * cues in reading order
+ * @param {ResolvedCue[]} cues in reading order
+ * @returns {Map<SoundAction, 'up' | 'down'>} only `set`s that change a playing sound's volume
+ */
+export function volumeDirections(cues) {
+  /** @type {Map<string, number>} sound name -> current volume */
+  const volumes = new Map();
+  /** @type {Map<SoundAction, 'up' | 'down'>} */
+  const directions = new Map();
+  for (const cue of cues) {
+    // Within a cue, actions happen in the order of their delays
+    const actions = [...cue.spec.actions].sort((a, b) => (a.delay ?? 0) - (b.delay ?? 0));
+    for (const action of actions) {
+      const { sound, volume = 1 } = action;
+      if (action.action == 'stop' && action.all) volumes.clear();
+      if (!sound) continue;
+      if (action.action == 'start') volumes.set(sound, volume);
+      else if (action.action == 'stop') volumes.delete(sound);
+      else if (action.action == 'set' && volumes.has(sound)) {
+        const prev = volumes.get(sound);
+        if (volume != prev) directions.set(action, volume > prev ? 'up' : 'down');
+        volumes.set(sound, volume);
+      }
+    }
+  }
+  return directions;
+}
+
+/**
  * The page CSS for a soundscape: its shared styles, plus each effect's CSS
  * with `&` expanded
  * @param {SoundscapeSpec} spec

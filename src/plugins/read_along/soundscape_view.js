@@ -1,6 +1,6 @@
 // @ts-check
 import { renderBoxesInPageContainerLayer } from '../../BookReader/PageContainer.js';
-import { SoundscapePlayer, effectStateAt, loopStateAt, resolveQuoteSpan } from './soundscape.js';
+import { SoundscapePlayer, effectStateAt, loopStateAt, resolveCues, resolveQuoteSpan, volumeDirections } from './soundscape.js';
 /** @typedef {import('./soundscape.js').SoundAction} SoundAction */
 /** @typedef {import('./soundscape.js').CueSpec} CueSpec */
 /** @typedef {import('./plugin.read_along.js').ReadAlongPlugin} ReadAlongPlugin */
@@ -12,6 +12,7 @@ import { SoundscapePlayer, effectStateAt, loopStateAt, resolveQuoteSpan } from '
  * @property {BookWord[]} words the page's words
  * @property {{ start: number, end: number }} span the quote's words
  * @property {number} anchorIndex
+ * @property {Map<SoundAction, 'up' | 'down'>} directions of the `set`s, from `volumeDirections`
  */
 
 /** Starts and stops are shown by styling instead (stops are struck through) */
@@ -19,8 +20,22 @@ const VERB_ICONS = {
   set: '✎',
 };
 
+/**
+ * Crescendo/diminuendo hairpins, for `set`s that change volume. Drawn rather
+ * than using the Unicode musical symbols, which few fonts have.
+ * @param {string} points
+ */
+const hairpin = points => `<svg class="BRsoundscapeHairpin" viewBox="0 0 8 9" width="8" height="9" aria-hidden="true">` +
+  `<polyline points="${points}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const VOLUME_ICONS = {
+  up: hairpin('7.25,1 0.75,4.5 7.25,8'),
+  down: hairpin('0.75,1 7.25,4.5 0.75,8'),
+};
+
 const TARGET_ICONS = {
-  sound: '🔊',
+  // A music note, as on the toolbar button
+  sound: '<svg class="BRsoundscapeNote" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">' +
+    '<path fill="currentColor" d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>',
   effect: '✦',
 };
 
@@ -69,6 +84,7 @@ export class SoundscapeView {
 
     const page = this.br.book.getPage(pageIndex);
     const norms = words.map(w => w.norm);
+    const directions = volumeDirections(resolveCues(this.plugin.soundscape, new Map([[pageIndex, norms]])));
     const pinsEl = document.createElement('div');
     pinsEl.className = 'BRsoundscapePins';
     /** @type {Array<{ l: number, r: number, b: number, t: number }>} */
@@ -94,7 +110,7 @@ export class SoundscapeView {
       const pin = this._renderPin(cue, {
         left: `${(anchorBox.l + anchorBox.r) / 2 / page.width * 100}%`,
         top: `${anchorBox.t / page.height * 100}%`,
-      }, { pageIndex, words, span, anchorIndex });
+      }, { pageIndex, words, span, anchorIndex, directions });
       pin.style.setProperty('--stack', `${stack}`);
       pinsEl.appendChild(pin);
     }
@@ -119,7 +135,7 @@ export class SoundscapeView {
     for (const action of cue.actions) {
       const item = document.createElement('span');
       item.className = `BRsoundscapePin__action BRsoundscapePin__action--${action.action} BRsoundscapePin__action--${targetType(action)}`;
-      item.innerHTML = actionLabelHtml(action);
+      item.innerHTML = actionLabelHtml(action, context.directions.get(action));
       head.appendChild(item);
     }
     head.addEventListener('mouseenter', () => this.preview(cue));
@@ -142,7 +158,7 @@ export class SoundscapeView {
    * @param {PinContext} context
    * @param {HTMLElement} head the pin head that was clicked
    */
-  showDetails(cue, { pageIndex, words, span, anchorIndex }, head) {
+  showDetails(cue, { pageIndex, words, span, anchorIndex, directions }, head) {
     const spec = this.plugin.soundscape;
     this.closeDetails();
     head.classList.add('BRsoundscapePin__head--selected');
@@ -153,13 +169,7 @@ export class SoundscapeView {
 
     // What's playing once this cue has fired. Cues on other pages only need
     // their page to be ordered, so only this page's need resolving.
-    const norms = words.map(w => w.norm);
-    const resolved = spec.cues.map(c => {
-      if (c.at.pageIndex !== pageIndex) return { spec: c, pageIndex: c.at.pageIndex, wordIndex: null };
-      const s = resolveQuoteSpan(norms, c.at.quote);
-      return { spec: c, pageIndex, wordIndex: s ? (c.at.position == 'end' ? s.end : s.start) : -1 };
-    }).filter(c => c.wordIndex !== -1)
-      .sort((a, b) => a.pageIndex - b.pageIndex || (a.wordIndex ?? 0) - (b.wordIndex ?? 0));
+    const resolved = resolveCues(spec, new Map([[pageIndex, words.map(w => w.norm)]]));
     const loops = loopStateAt(spec, resolved, pageIndex, anchorIndex);
     const effects = effectStateAt(resolved, pageIndex, anchorIndex);
 
@@ -177,7 +187,7 @@ export class SoundscapeView {
         </section>
         <section>
           <h4>Actions</h4>
-          ${cue.actions.map((action, i) => this._renderActionDetails(action, i)).join('')}
+          ${cue.actions.map((action, i) => this._renderActionDetails(action, i, directions.get(action))).join('')}
         </section>
         <section>
           <h4>After this cue</h4>
@@ -257,8 +267,9 @@ export class SoundscapeView {
   /**
    * @param {SoundAction} action
    * @param {number} index
+   * @param {'up' | 'down'} [direction] for `set`s that change volume
    */
-  _renderActionDetails(action, index) {
+  _renderActionDetails(action, index, direction) {
     const canPreview = action.sound || (action.effect && action.action == 'start');
     const rows = [
       ['volume', action.volume],
@@ -270,7 +281,7 @@ export class SoundscapeView {
       <div class="BRsoundscapePanel__action">
         <div class="BRsoundscapePanel__actionTitle">
           <span>
-            ${VERB_ICONS[action.action] ?? ''} <b>${escapeHtml(action.action)}</b>
+            ${verbIcon(action, direction)} <b>${escapeHtml(action.action)}</b>
             ${action.sound || action.effect ? `
               <button type="button" class="BRsoundscapePanel__resource BRsoundscapePin__action--${action.action} BRsoundscapePin__action--${targetType(action)}"
                 data-resource-type="${targetType(action)}" data-resource-name="${escapeHtml(targetName(action))}" title="Show ${targetType(action)} details">
@@ -341,9 +352,10 @@ function targetName(action) {
 /**
  * e.g. "🔊 rain"; stops are struck through by CSS
  * @param {SoundAction} action
+ * @param {'up' | 'down'} [direction] for `set`s that change volume
  */
-function actionLabelHtml(action) {
-  return `${VERB_ICONS[action.action] ?? ''}${TARGET_ICONS[targetType(action)] ?? ''} ` +
+function actionLabelHtml(action, direction) {
+  return `${verbIcon(action, direction)}${TARGET_ICONS[targetType(action)] ?? ''} ` +
     `<span class="BRsoundscapePin__name">${escapeHtml(targetName(action))}</span>`;
 }
 
@@ -360,4 +372,12 @@ function escapeHtml(s) {
  */
 function linkify(s) {
   return escapeHtml(s).replace(/https?:\/\/[^\s<]+/g, url => `<a href="${url}" target="_blank" rel="noopener">${url}</a>`);
+}
+
+/**
+ * @param {SoundAction} action
+ * @param {'up' | 'down'} [direction] for `set`s that change volume
+ */
+function verbIcon(action, direction) {
+  return (direction && VOLUME_ICONS[direction]) ?? VERB_ICONS[action.action] ?? '';
 }
