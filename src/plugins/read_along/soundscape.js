@@ -10,9 +10,6 @@ import { ReadAlongAligner, tokenize } from './aligner.js';
  * @property {{ [name: string]: SoundSpec }} sounds
  * @property {CueSpec[]} cues
  * @property {string | string[]} [styles] CSS added to the page, for `css` actions
- * @property {{ [tagName: string]: string | string[] }} [shadowStyles] CSS added inside the
- *   shadow root of the first element with that tag name, for UI the page's CSS can't reach.
- *   `css` classes are also added to that element, so these can use `:host(.soundscape-<class>)`.
  *
  * @typedef {object} SoundSpec
  * @property {string} src Audio URL; needs CORS if cross-origin
@@ -35,7 +32,7 @@ import { ReadAlongAligner, tokenize } from './aligner.js';
  * @typedef {object} SoundAction
  * @property {'play' | 'volume' | 'stop' | 'stopAll' | 'css'} action
  *   `play` on a looping sound that's already playing just changes its volume.
- *   `css` adds the class `soundscape-<class>` to the BookReader element (and `shadowStyles` hosts).
+ *   `css` adds the class `soundscape-<class>` to the BookReader element.
  * @property {string} [sound] name of the sound; required for the sound actions except `stopAll`
  * @property {string} [class] for `css`
  * @property {number} [duration] for `css`, seconds until the class is removed again;
@@ -185,27 +182,6 @@ export class SoundscapePlayer {
   }
 
   /**
-   * The elements `css` classes go on. Found on first use, since web
-   * components may render after the soundscape loads.
-   * @returns {Element[]}
-   */
-  _effectTargets() {
-    if (!this._targets) {
-      this._targets = [this.effectsEl];
-      for (const [tagName, styles] of Object.entries(this.spec.shadowStyles ?? {})) {
-        const host = findInShadowRoots(document, tagName);
-        if (!host?.shadowRoot) {
-          console.warn(`Soundscape: no <${tagName}> with a shadow root found for shadowStyles`);
-          continue;
-        }
-        host.shadowRoot.appendChild(createStyle(styles));
-        this._targets.push(host);
-      }
-    }
-    return this._targets;
-  }
-
-  /**
    * Must be called from a user gesture, or browsers keep the audio muted
    */
   unlock() {
@@ -330,11 +306,9 @@ export class SoundscapePlayer {
     const className = `soundscape-${name}`;
     clearTimeout(this._classTimers.get(name));
     // Restart any animation, even if the class is already there
-    for (const target of this._effectTargets()) {
-      target.classList.remove(className);
-      void /** @type {HTMLElement} */(target).offsetWidth;
-      target.classList.add(className);
-    }
+    this.effectsEl.classList.remove(className);
+    void this.effectsEl.offsetWidth;
+    this.effectsEl.classList.add(className);
     if (duration) {
       this._classTimers.set(name, setTimeout(() => this.removeClass(name), duration * 1000));
     }
@@ -346,7 +320,7 @@ export class SoundscapePlayer {
   removeClass(name) {
     clearTimeout(this._classTimers.get(name));
     this._classTimers.delete(name);
-    for (const target of this._effectTargets()) target.classList.remove(`soundscape-${name}`);
+    this.effectsEl.classList.remove(`soundscape-${name}`);
   }
 
   /**
@@ -405,21 +379,4 @@ function createStyle(css) {
   const styleEl = document.createElement('style');
   styleEl.textContent = [css].flat().join('\n');
   return styleEl;
-}
-
-/**
- * Like querySelector, but also searching inside open shadow roots
- * @param {Document | ShadowRoot | Element} root
- * @param {string} selector
- * @returns {Element | null}
- */
-function findInShadowRoots(root, selector) {
-  const found = root.querySelector(selector);
-  if (found) return found;
-  for (const el of root.querySelectorAll('*')) {
-    if (!el.shadowRoot) continue;
-    const inner = findInShadowRoots(el.shadowRoot, selector);
-    if (inner) return inner;
-  }
-  return null;
 }
