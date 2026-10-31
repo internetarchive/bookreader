@@ -21,6 +21,29 @@
       "loopStart": 0.4,
       "gain": 0.6,
       "credit": "\"run in mud 2 edit\" by Luisa_Sanchez, CC0, https://freesound.org/people/Luisa_Sanchez/sounds/816777/"
+    },
+    "dinner": {
+      "src": "https://cdn.freesound.org/previews/480/480724_2524442-hq.mp3",
+      "loop": true,
+      "loopStart": 1,
+      "loopEnd": 32,
+      "credit": "\"R08-14-Dinner Party or Restaurant\" by craigsmith, CC0, https://freesound.org/people/craigsmith/sounds/480724/"
+    },
+    "struggle": {
+      "src": "https://cdn.freesound.org/previews/575/575410_12956274-hq.mp3",
+      "loop": true,
+      "loopStart": 1,
+      "loopEnd": 14,
+      "gain": 2,
+      "credit": "\"Forest - Fight/Struggle 2\" by MWsfx, CC0, https://freesound.org/people/MWsfx/sounds/575410/"
+    },
+    "grunts": {
+      "src": "https://cdn.freesound.org/previews/481/481753_2524442-hq.mp3",
+      "loop": true,
+      "loopStart": 0.5,
+      "loopEnd": 37.5,
+      "gain": 0.8,
+      "credit": "\"R21-14-Man Grunts and Struggles\" by craigsmith, CC0, https://freesound.org/people/craigsmith/sounds/481753/"
     }
   },
   "cues": [
@@ -49,7 +72,41 @@
       "actions": [{ "action": "stop", "sound": "running", "fade": 1.5 }]
     },
     {
+      "at": { "pageIndex": 9, "quote": "He was at dinner with some friends" },
+      "actions": [
+        { "action": "play", "sound": "dinner", "volume": 0.7, "fade": 2 },
+        { "action": "volume", "sound": "rain", "volume": 0.3, "fade": 2 }
+      ]
+    },
+    {
+      "at": { "pageIndex": 9, "quote": "excuse him for a moment, and came out and said", "position": "end" },
+      "actions": [{ "action": "volume", "sound": "dinner", "volume": 0.3, "fade": 1.5 }]
+    },
+    {
+      "at": { "pageIndex": 9, "quote": "went back and told his friends the news he had heard", "position": "end" },
+      "actions": [{ "action": "stop", "sound": "dinner", "fade": 4 }]
+    },
+    {
       "at": { "pageIndex": 9, "quote": "and all kept a close watch both inside and outside", "position": "end" },
+      "actions": [{ "action": "volume", "sound": "rain", "volume": 0.6, "fade": 3 }]
+    },
+    {
+      "at": { "pageIndex": 9, "quote": "six men sprang out on them" },
+      "actions": [{ "action": "play", "sound": "struggle", "fade": 0.2 }]
+    },
+    {
+      "at": { "pageIndex": 9, "quote": "The thieves struggled in vain to get away" },
+      "actions": [{ "action": "play", "sound": "grunts", "volume": 0.6, "fade": 0.5 }]
+    },
+    {
+      "at": { "pageIndex": 10, "quote": "locked in an out-house until daylight" },
+      "actions": [
+        { "action": "stop", "sound": "struggle", "fade": 2 },
+        { "action": "stop", "sound": "grunts", "fade": 2 }
+      ]
+    },
+    {
+      "at": { "pageIndex": 10, "quote": "until daylight, when a cart came and took them off to jail", "position": "end" },
       "actions": [{ "action": "stop", "sound": "rain", "fade": 8 }]
     }
   ]
