@@ -87,6 +87,9 @@ const initializeBookReader = (brManifest) => {
       search: {
         initialSearchTerm: searchTerm,
       },
+      readAlong: {
+        soundscapeUrl: `/BookReaderDemo/soundscapes/${ocaid}.json`,
+      },
     },
   };
 

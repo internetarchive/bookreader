@@ -1,0 +1,277 @@
+$soundscapePanelWidth: 360px;
+
+#{$brScope} {
+  .readAlongLineLayer, .readAlongWordLayer {
+    pointer-events: none;
+    z-index: 4;
+  }
+  .readAlongLineLayer rect {
+    fill: rgba(255, 220, 0, 0.25);
+  }
+  .readAlongWordLayer rect {
+    fill: rgba(255, 140, 0, 0.35);
+    stroke: rgb(255, 140, 0);
+    stroke-width: 3px;
+  }
+
+  .BRicon.read-along {
+    background-image: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &.active { color: #e33; }
+  }
+
+  .BRreadAlong__status {
+    position: absolute;
+    left: 10px;
+    bottom: 60px;
+    z-index: 100;
+    max-width: min(480px, calc(100% - 20px));
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+    font-size: 13px;
+    line-height: 1.4;
+    pointer-events: none;
+  }
+  .BRreadAlong__status:empty { display: none; }
+  .BRreadAlong__match { opacity: 0.75; }
+  .BRreadAlong__diag {
+    margin-top: 4px;
+    font-size: 11px;
+    opacity: 0.6;
+  }
+
+  .BRicon.read-along-view {
+    background-image: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &.active { color: #b48cff; }
+  }
+
+  .soundscapeQuoteLayer {
+    pointer-events: none;
+    z-index: 4;
+
+    rect { fill: rgba(140, 80, 255, 0.15); }
+    rect.anchor {
+      fill: rgba(140, 80, 255, 0.35);
+      stroke: rgb(140, 80, 255);
+      stroke-width: 2px;
+    }
+  }
+
+  .BRsoundscapePins {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .BRsoundscapePin {
+    --stack: 0;
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translate(-50%, -100%);
+
+    // The needle, down to the anchor word
+    &::after {
+      content: '';
+      width: 2px;
+      height: calc(10px + var(--stack) * 26px);
+      background: rgb(140, 80, 255);
+    }
+  }
+
+  .BRsoundscapePin__head {
+    display: flex;
+    gap: 6px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: rgb(60, 25, 120);
+    color: white;
+    font: 12px/1.5 sans-serif;
+    white-space: nowrap;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    pointer-events: auto;
+    cursor: default;
+
+    &:hover {
+      background: rgb(140, 80, 255);
+      transform: scale(1.08);
+    }
+  }
+
+
+  .BRsoundscapePin__head { cursor: pointer; }
+  .BRsoundscapePin__head--selected {
+    background: rgb(140, 80, 255);
+    outline: 2px solid white;
+  }
+}
+
+// The soundscape panel is a sidebar outside the BookReader, so it isn't scoped
+.BRsoundscapePin__action--effect { color: #ffe08a; }
+.BRsoundscapePin__action--stop .BRsoundscapePin__name {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+.BRsoundscapePin__action + .BRsoundscapePin__action {
+  padding-left: 6px;
+  border-left: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.BRsoundscapePanel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  width: $soundscapePanelWidth;
+  box-sizing: border-box;
+  color-scheme: dark;
+  // The actions and the resource details scroll separately
+  display: flex;
+  flex-direction: column;
+  background: rgba(30, 18, 55, 0.95);
+  color: #eee;
+  font: 13px/1.45 sans-serif;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+
+  header {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px 6px;
+  }
+  h3 { margin: 0; font-size: 14px; }
+  h4 {
+    margin: 12px 0 4px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.7;
+  }
+  blockquote {
+    margin: 6px 0 2px;
+    padding-left: 8px;
+    border-left: 3px solid rgb(140, 80, 255);
+    font-family: Georgia, serif;
+    font-size: 15px;
+  }
+  mark {
+    background: rgba(140, 80, 255, 0.6);
+    color: inherit;
+    border-radius: 2px;
+  }
+  code { color: #d7c4ff; }
+  dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1px 10px;
+    margin: 4px 0 0;
+  }
+  dt { opacity: 0.6; }
+  dd { margin: 0; }
+  a { color: #b9a3ff; word-break: break-all; }
+  pre {
+    margin: 0;
+    font-size: 11px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+}
+.BRsoundscapePanel__close {
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.BRsoundscapePanel__meta { opacity: 0.6; font-size: 12px; }
+.BRsoundscapePanel__action {
+  margin-top: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+}
+.BRsoundscapePanel__actionTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  button {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    background: none;
+    color: inherit;
+    font-size: 11px;
+    cursor: pointer;
+
+    &:hover { background: rgba(140, 80, 255, 0.5); }
+  }
+}
+body.BRsoundscapePanel-open {
+  margin-right: $soundscapePanelWidth;
+}
+
+.BRsoundscapePanel__resource {
+  margin-left: 4px;
+  padding: 1px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  font: 12px monospace;
+  cursor: pointer;
+
+  &.BRsoundscapePin__action--effect { color: #ffe08a; }
+  &:hover { background: rgba(140, 80, 255, 0.4); }
+  &.selected {
+    background: rgba(140, 80, 255, 0.6);
+    border-color: white;
+  }
+}
+.BRsoundscapePanel__main {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding: 0 14px 14px;
+}
+.BRsoundscapePanel__resourceDetails {
+  flex: 0 1 auto;
+  max-height: 50%;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding: 8px 14px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+
+  h4 {
+    margin: 0;
+    font-size: 13px;
+    text-transform: none;
+    letter-spacing: 0;
+    opacity: 1;
+  }
+}
+
+.BRsoundscapeHairpin {
+  margin-right: 2px;
+  vertical-align: 0;
+}
+
+.BRsoundscapeNote {
+  vertical-align: -1px;
+}
