@@ -59,10 +59,12 @@ export class TranslationManager {
     /** @type {BatchTranslator} */
     // Arbitrary setting for number of workers, 1 is already quite fast
     // batchSize from 8 -> 4 for improved performance
+    // No download timeout: the default 60s per file aborts the ~60MB models (e.g. ko, ja) on slow connections
     this.translator = new BatchTranslator({
       registryUrl: `data:application/json,${encodeURIComponent(JSON.stringify(registryJson))}`,
       workers: 2,
       batchSize: 4,
+      downloadTimeout: 0,
       workerUrl: this.publicPath + '/translator-worker.js',
     });
 
