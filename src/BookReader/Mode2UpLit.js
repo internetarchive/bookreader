@@ -668,7 +668,7 @@ export class Mode2UpLit extends LitElement {
   /**
    * @param {MouseEvent} ev
    */
-  handlePageClick = (ev) => {
+  handlePageClick = async (ev) => {
     // right click
     if (ev.which == 3 && this.br.protected) {
       return false;
@@ -678,10 +678,17 @@ export class Mode2UpLit extends LitElement {
 
     const $page = $(ev.target).closest('.BRpagecontainer');
     if (!$page.length) return;
-    if ($page.data('side') == 'L') {
-      this.br.left();
-    } else if ($page.data('side') == 'R') {
-      this.br.right();
+    const side = $page.data('side');
+    if (side != 'L' && side != 'R') return;
+
+    // If this tap turns out to be the first of a double-tap(-drag) zoom,
+    // don't flip the page out from under it.
+    if (await this.smoothZoomer.isSingleTap()) {
+      if (side == 'L') {
+        this.br.left();
+      } else {
+        this.br.right();
+      }
     }
   }
 }
