@@ -75,6 +75,20 @@ describe('Plugin: Search', () => {
     expect($.ajax).toHaveBeenCalled();
   });
 
+  test.each([
+    ['“lives down”', '"lives down"'],
+    ['before “lives down” after “next page”', 'before "lives down" after "next page"'],
+    ['"lives down"', '"lives down"'],
+    ["O’Connor's café 日本語 ‘single quotes’", "O’Connor's café 日本語 ‘single quotes’"],
+  ])('preserves phrase search syntax for %s', async (query, expected) => {
+    br.init();
+    await br.search(query);
+
+    const request = $.ajax.mock.calls[0][0];
+    const url = new URL(request.url, 'https://archive.org');
+    expect(url.searchParams.get('q')).toBe(expected);
+  });
+
   test('SearchStarted event fires when search method called', () => {
     br.init();
     br.search('foo');
