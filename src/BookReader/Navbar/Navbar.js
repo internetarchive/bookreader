@@ -170,12 +170,6 @@ export class Navbar {
       },
     };
 
-    // custom event for auto-loan-renew in ia-book-actions
-    // - to know if user is actively reading
-    this.$nav.find('nav.BRcontrols li button').on('click', () => {
-      this.br.trigger(EVENTS.userAction);
-    });
-
     for (const control in navigationControls) {
       jIcons.filter(`.${control}`).on('click.bindNavigationHandlers', () => {
         navigationControls[control]();
