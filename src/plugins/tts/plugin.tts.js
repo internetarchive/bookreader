@@ -5,6 +5,7 @@ import WebTTSEngine from './WebTTSEngine.js';
 import { toISO6391 } from './utils.js';
 import { en as tooltips } from './tooltip_dict.js';
 import { renderBoxesInPageContainerLayer } from '../../BookReader/PageContainer.js';
+import { throttle } from '../../BookReader/utils.js';
 import { BookReaderPlugin } from '../../BookReaderPlugin.js';
 import { applyVariables, countWords } from '../../util/strings.js';
 /** @typedef {import('./PageChunk.js').default} PageChunk */
@@ -72,6 +73,10 @@ export class TtsPlugin extends BookReaderPlugin {
           festivalUrl: applyVariables(this.options.remoteTtsUrl, this.br.options.vars),
         } : {}),
       });
+
+      // Resuming picks up inside the current chunk, so it would otherwise wait for the
+      // next one to register as activity.
+      this.ttsEngine.events.on('resume', this.signalUserIsActive);
     }
   }
 
@@ -278,10 +283,29 @@ export class TtsPlugin extends BookReaderPlugin {
   }
 
   /**
+   * Tell the lending code the patron is still here.
+   *
+   * `userAction` is how ia-book-actions decides a browse loan is still in use, but it
+   * is otherwise only triggered by an index change (see BookReader.prototype
+   * .updateFirstIndex) or a navbar click. Read aloud holds someone's attention without
+   * either: in 2up the engine reads both pages before it flips, so a spread can easily
+   * outlast the window the loan renewal allows, and a listener would have their loan
+   * auto-returned mid-playback. Driving the signal off chunk playback instead ties it
+   * to actual progress through the book.
+   *
+   * Throttled because chunks are paragraphs -- short ones would otherwise signal every
+   * few seconds, and the renewal only cares about minutes.
+   */
+  signalUserIsActive = throttle(() => {
+    this.br.trigger(BookReader.eventNames.userAction);
+  }, 60000, false);
+
+  /**
    * @param {PageChunk} chunk
    * Returns once the flip is done
    */
   async beforeChunkPlay(chunk) {
+    this.signalUserIsActive();
     await this.maybeFlipToIndex(chunk.leafIndex);
     this.highlightChunk(chunk);
     this.scrollToChunk(chunk);
