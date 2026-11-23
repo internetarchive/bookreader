@@ -96,7 +96,7 @@ export class IABookmarksList extends LitElement {
 
   bookmarkItem(bookmark) {
     const editMode = this.editedBookmark.id === bookmark.id;
-    const { className } = this.bookmarkColorInfo(bookmark.color);
+    const { className, label } = this.bookmarkColorInfo(bookmark.color);
     const activeClass = bookmark.id === this.activeBookmarkID ? 'active' : '';
     return html`
       <li data-pageIndex=${bookmark.id}>
@@ -104,7 +104,7 @@ export class IABookmarksList extends LitElement {
         <div class="bookmark-card ${activeClass}">
           <div class="bookmark-header" @click=${() => this.emitSelectedEvent(bookmark)}>
             <button>
-              <icon-bookmark class=${className} aria-label="${className} bookmark"></icon-bookmark>
+              <icon-bookmark class=${className} aria-label="${label} bookmark"></icon-bookmark>
               <span> Page ${bookmark.page}</span>
             </button>
             <button
