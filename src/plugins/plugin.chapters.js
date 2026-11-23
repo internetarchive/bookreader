@@ -120,10 +120,7 @@ export class ChaptersPlugin extends BookReaderPlugin {
       label: 'Table of Contents',
       component: html`<br-chapters-panel
         .contents="${this._tocEntries}"
-        .jumpToPage="${(pageIndex) => {
-        this._updateCurrent(pageIndex);
-        this.br.jumpToIndex(pageIndex, { ariaLive: true });
-      }}"
+        .jumpToPage="${(pageIndex) => this._jumpToChapter(pageIndex)}"
         @connected="${(e) => {
         this._chaptersPanel = e.target;
         this._updateCurrent();
@@ -174,10 +171,7 @@ export class ChaptersPlugin extends BookReaderPlugin {
         $(event.target).addClass('front');
       })
       .on("mouseleave", event => $(event.target).removeClass('front'))
-      .on('click', () => {
-        this._updateCurrent(tocEntry.pageIndex);
-        this.br.jumpToIndex(tocEntry.pageIndex, { ariaLive: true });
-      });
+      .on('click', () => this._jumpToChapter(tocEntry.pageIndex));
 
     this.br.$('.BRchapter, .BRsearch').each((i, el) => {
       const $el = $(el);
@@ -188,10 +182,34 @@ export class ChaptersPlugin extends BookReaderPlugin {
   }
 
   /**
+   * Fires `chapterSelected` so e.g. read aloud can follow along
+   * @param {PageIndex} pageIndex
+   */
+  _jumpToChapter(pageIndex) {
+    if (pageIndex == undefined) return;
+    this._updateCurrent(pageIndex);
+    this.br.jumpToIndex(pageIndex, { ariaLive: true });
+    this.br.trigger('chapterSelected', { pageIndex });
+  }
+
+  /** @type {Promise<Object | null> | null} */
+  _openLibraryRecord = null;
+
+  /**
+   * The book's Open Library edition record. Fetched once and shared, since
+   * other plugins (e.g. tts, for the cover) use it too.
+   * @returns {Promise<Object | null>}
+   */
+  getOpenLibraryRecord() {
+    this._openLibraryRecord ||= this._fetchOpenLibraryRecord();
+    return this._openLibraryRecord;
+  }
+
+  /**
    * This makes a call to OL API and calls the given callback function with the
    * response from the API.
    */
-  async getOpenLibraryRecord() {
+  async _fetchOpenLibraryRecord() {
     const olHost = applyVariables(this.options.openLibraryHost, this.br.options.vars);
 
     if (this.options.openLibraryId) {
@@ -230,14 +248,30 @@ export class ChaptersPlugin extends BookReaderPlugin {
   _updateCurrent(
     curIndex = (this.br.mode == 2 ? Math.max(...this.br.displayedIndices) : this.br.firstIndex),
   ) {
-    const tocEntriesIndexed = this._tocEntries.filter((el) => el.pageIndex != undefined).reverse();
-    const currChapter = tocEntriesIndexed[
-      // subtract one so that 2up shows the right label
-      tocEntriesIndexed.findIndex((chapter) => chapter.pageIndex <= curIndex)
-    ];
     if (this._chaptersPanel) {
-      this._chaptersPanel.currentChapter = currChapter;
+      this._chaptersPanel.currentChapter = this.getChapterAt(curIndex);
     }
+  }
+
+  /**
+   * The chapter containing the given page, if the table of contents has loaded
+   * @param {PageIndex} pageIndex
+   * @returns {TocEntry | undefined}
+   */
+  getChapterAt(pageIndex) {
+    return this._tocEntries
+      ?.filter((el) => el.pageIndex != undefined)
+      .findLast((chapter) => chapter.pageIndex <= pageIndex);
+  }
+
+  /**
+   * First page index after the chapter (the page count for the last chapter)
+   * @param {TocEntry} chapter
+   * @returns {PageIndex}
+   */
+  getChapterEnd(chapter) {
+    return this._tocEntries.find((el) => el.pageIndex > chapter.pageIndex)?.pageIndex
+      ?? this.br.book.getNumLeafs();
   }
 }
 BookReader?.registerPlugin('chapters', ChaptersPlugin);
@@ -292,6 +326,16 @@ export class BRChaptersPanel extends LitElement {
   /**
    * @param {TocEntry} tocEntry
    */
+  selectEntry(tocEntry) {
+    if (tocEntry.pageIndex == undefined) return;
+    this.jumpToPage(tocEntry.pageIndex);
+    // Lets the shell close the side menu on narrow screens
+    this.dispatchEvent(new CustomEvent('closeMenu', { bubbles: true, composed: true }));
+  }
+
+  /**
+   * @param {TocEntry} tocEntry
+   */
   renderTOCEntry(tocEntry) {
     const chapterTitle = [tocEntry.label, tocEntry.title]
       .filter(x => x)
@@ -307,7 +351,7 @@ export class BRChaptersPanel extends LitElement {
       "
       style="${styleMap({marginLeft: (tocEntry.level - 1) * 10 + 'px'})}"
       data-event-click-tracking="${ifDefined(clickable ? "BRTOCPanel|GoToChapter" : undefined)}"
-      @click="${() => this.jumpToPage(tocEntry.pageIndex)}"
+      @click="${() => this.selectEntry(tocEntry)}"
     >
       ${chapterTitle}
       ${tocEntry.pagenum ? html`

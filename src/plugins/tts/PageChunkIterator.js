@@ -45,6 +45,35 @@ export default class PageChunkIterator {
   }
 
   /**
+   * Moves the cursor to the chunk at the given fraction of a page
+   * @param {number} page
+   * @param {number} [pageFraction] 0-1
+   * @return {Promise}
+   */
+  seek(page, pageFraction = 0) {
+    return this._cursorLock = this._cursorLock
+      .then(async () => {
+        this._recenterBuffer(page);
+        const chunks = await this._fetchPageChunks(page);
+        this._cursor = {
+          page,
+          chunk: Math.max(0, Math.min(Math.floor(pageFraction * chunks.length), chunks.length - 1)),
+        };
+      });
+  }
+
+  /**
+   * Where a chunk sits on its page, if that page is still buffered
+   * @param {PageChunk} chunk
+   * @return {{ index: number, count: number } | null}
+   */
+  getPagePosition(chunk) {
+    const chunks = this._bufferedPages[chunk.leafIndex];
+    const index = chunks?.indexOf(chunk) ?? -1;
+    return index == -1 ? null : { index, count: chunks.length };
+  }
+
+  /**
    * Gets without ensuring synchronization. Since this iterator has a lot of async
    * code, calling e.g. "next" twice (before the first call to next has finished)
    * would cause the system to be in a weird state. To avoid that, we make sure calls
