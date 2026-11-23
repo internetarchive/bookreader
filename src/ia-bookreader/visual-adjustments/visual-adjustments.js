@@ -285,4 +285,6 @@ export class IABookVisualAdjustments extends LitElement {
     return [sharedStyles, main];
   }
 }
-customElements.define('ia-book-visual-adjustments', IABookVisualAdjustments);
+if (!customElements.get('ia-book-visual-adjustments')) {
+  customElements.define('ia-book-visual-adjustments', IABookVisualAdjustments);
+}
