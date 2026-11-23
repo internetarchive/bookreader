@@ -55,6 +55,7 @@ const bookreaderEntries = {
   'plugins/plugin.archive_analytics.js': { import: './src/plugins/plugin.archive_analytics.js', dependOn: 'ia-bookreader.js' },
   'plugins/plugin.autoplay.js': { import: './src/plugins/plugin.autoplay.js', dependOn: 'ia-bookreader.js' },
   'plugins/plugin.chapters.js': { import: './src/plugins/plugin.chapters.js', dependOn: 'ia-bookreader.js' },
+  'plugins/plugin.deep_read.js': { import: './src/plugins/deep_read/plugin.deep_read.js', dependOn: 'ia-bookreader.js' },
   'plugins/plugin.experiments.js': { import: './src/plugins/plugin.experiments.js', dependOn: 'ia-bookreader.js' },
   'plugins/plugin.iframe.js': { import: './src/plugins/plugin.iframe.js', dependOn: 'ia-bookreader.js' },
   'plugins/plugin.iiif.js': { import: './src/plugins/plugin.iiif.js', dependOn: 'ia-bookreader.js' },
