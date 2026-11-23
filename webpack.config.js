@@ -181,4 +181,37 @@ export default [
       'jquery-3.js': { import: './src/jquery-wrapper.js' },
     },
   },
+
+  // Audio-first reading mode (issue #1580).
+  //
+  // Its own config rather than another entry above, because it deliberately does
+  // not participate in the shared jQuery arrangement: this mode renders no page
+  // images and boots no BookReader, so it has no global jQuery to be external to.
+  // `jquery` resolves to a stub for the sake of the read-aloud modules it reuses;
+  // see src/audioreader/jqueryShim.js.
+  {
+    ...shared,
+
+    entry: {
+      'audioreader.js': { import: './src/audioreader/index.js' },
+      // PocketTTS runs in a worker: per-frame ONNX inference on the main thread
+      // would stall the transport controls.
+      'pocket-tts-worker.js': { import: './src/audioreader/pocket/pocket-tts-worker.js' },
+    },
+
+    resolve: {
+      alias: {
+        jquery: path.resolve(__dirname, 'src/audioreader/jqueryShim.js'),
+      },
+    },
+
+    plugins: [
+      new webpack.ProvidePlugin({
+        $: 'jquery',
+        jQuery: 'jquery',
+      }),
+    ],
+
+    devtool: 'source-map',
+  },
 ];

@@ -8,3 +8,19 @@ coverage*/
 
 .vscode
 CLAUDE.local.md
+
+# Playwright (prototype branch)
+tests/playwright/screenshots/
+test-results/
+playwright-report/
+
+# PocketTTS model weights are fetched at runtime, never committed (~28MB small)
+*.onnx
+pocket-tts-sample.wav
+*.f32.wav
+
+# Locally-served PocketTTS weights for browser tests (fetched at runtime).
+# The small 18M bundle is ~28MB; the old 2026-04 bundle was ~170MB. Both ignored.
+# The precomputed voice embeddings (pocket-tts-voices/, ~430KB) ARE committed.
+BookReaderDemo/pocket-tts-models/
+BookReaderDemo/pocket-tts-models-small/
