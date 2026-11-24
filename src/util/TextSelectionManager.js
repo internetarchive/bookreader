@@ -604,7 +604,7 @@ class BRSelectMenu extends LitElement {
     e.preventDefault();
     const currentSelection = /** @type {Selection} */ (window.getSelection());
     const range = currentSelection.getRangeAt(0);
-    const textLayer = this.getNodeTextLayer(range.startContainer);
+    const textLayer = getNodeTextLayer(range.startContainer);
     if (!textLayer) {
       console.warn("No text layer found for selection");
       return;
@@ -1158,7 +1158,8 @@ export class BookReaderTextFragment {
     // In urlMode 'hash' the BookReader state lives in the hash (e.g. #page/4/mode/2up)
     const isHashMode = /^#\/?page\//.test(currentUrl.hash);
     if (isHashMode) {
-      return `${currentUrl.origin}${currentUrl.pathname}?${params}#page/${pageNum}`;
+      const searchParam = currentUrl.search.split("?")[1];
+      return `${currentUrl.origin}${currentUrl.pathname}?${searchParam + "&"}${params}#page/${pageNum}`;
     }
 
     // urlMode 'history': only keep /page/X in the path, adding it if missing
