@@ -206,6 +206,30 @@
   }
 }
 
+.BRnavMain .BRcontrols .BRadvanceOneScreen {
+  display: none;
+
+  button {
+    width: auto;
+    min-width: 44px;
+    padding: 0 8px;
+    color: $controlsText;
+    font: inherit;
+    white-space: nowrap;
+
+    &:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: -2px;
+    }
+  }
+}
+
+@media (orientation: landscape) {
+  .BRmode1up .BRnavMain .BRcontrols .BRadvanceOneScreen {
+    display: list-item;
+  }
+}
+
 .BRnavpos {
   position: relative;
   margin-right: 10px;

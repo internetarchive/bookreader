@@ -86,6 +86,10 @@ export class Mode1Up extends ModeAbstract {
     this.mode1UpLit.jumpToIndex(index, { smooth });
   }
 
+  advanceOneScreen() {
+    this.mode1UpLit.advanceOneScreen();
+  }
+
   /**
    * @param {'in' | 'out'} direction
    */

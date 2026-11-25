@@ -128,9 +128,9 @@ export class Navbar {
   }
 
   bindControlClickHandlers() {
-    const jIcons = this.$nav.find('.BRicon');
+    const $controls = this.$nav.find('.BRicon, .advance_one_screen');
 
-    // Map of jIcon class -> click handler
+    // Map of control class -> click handler
     const navigationControls = {
       toggle_slider: () => {
         this.br.toggleSlider();
@@ -149,6 +149,11 @@ export class Navbar {
       },
       twopg: () => {
         this.br.switchMode('2up');
+      },
+      advance_one_screen: () => {
+        if (this.br.mode === this.br.constMode1up) {
+          this.br._modes.mode1Up.advanceOneScreen();
+        }
       },
       zoom_in: () => {
         this.br.trigger(EVENTS.stop);
@@ -177,7 +182,7 @@ export class Navbar {
     });
 
     for (const control in navigationControls) {
-      jIcons.filter(`.${control}`).on('click.bindNavigationHandlers', () => {
+      $controls.filter(`.${control}`).on('click.bindNavigationHandlers', () => {
         navigationControls[control]();
         return false;
       });
@@ -287,6 +292,9 @@ export class Navbar {
                 </div>
               </li>
               ${this._renderControls()}
+              <li class="BRadvanceOneScreen">
+                <button type="button" class="advance_one_screen">Advance one screen</button>
+              </li>
             </ul>
           </nav>
         </div>`);

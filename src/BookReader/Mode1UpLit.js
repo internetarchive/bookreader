@@ -127,12 +127,51 @@ export class Mode1UpLit extends LitElement {
   jumpToIndex(index, { smooth = false } = {}) {
     if (smooth) {
       this.style.scrollBehavior = 'smooth';
-    }
-    this.scrollTop = this.coordSpace.worldUnitsToVisiblePixels(this.pageTops[index] - this.SPACING_IN / 2);
-    // TODO: Also h center?
-    if (smooth) {
       setTimeout(() => this.style.scrollBehavior = '', 100);
+    } else if (this.style.scrollBehavior === 'smooth') {
+      this.style.scrollBehavior = '';
     }
+    this.scrollTop = this.getPageScrollTop(index);
+  }
+
+  advanceOneScreen() {
+    const height = this.clientHeight;
+    if (!height || this.smoothZoomer.pinching || this.smoothZoomer.pinchMoveFrame !== null) return;
+
+    const scrollTop = Math.max(0, this.scrollTop);
+    const bottomOf = page => this.coordSpace.worldUnitsToVisiblePixels(this.pageTops[page.index] + page.heightInches);
+    // Include the leading gutter and ignore subpixel slivers at a page boundary.
+    const tolerance = 1;
+    const page = this.pages.find(page => bottomOf(page) > scrollTop + tolerance);
+    if (!page) return;
+
+    const bottomScrollTop = bottomOf(page) - height;
+    if (scrollTop < bottomScrollTop - tolerance) {
+      const top = Math.min(scrollTop + height, bottomScrollTop);
+      this.scrollTo({ top, behavior: 'instant' });
+      return;
+    }
+
+    const next = page.findNext({ combineConsecutiveUnviewables: true });
+    if (!next) return;
+
+    const top = this.getPageScrollTop(next.index);
+    if (top > this.scrollHeight - height) {
+      // A short last scan needs extra scroll range to align its top with the viewport.
+      const minHeight = this.coordSpace.visiblePixelsToRenderedPixels(top + height);
+      this.$world.style.minHeight = `${Math.ceil(minHeight)}px`;
+    }
+    if (next.index === this.br.currentIndex()) {
+      // Scroll events and Lit updates can leave the reader index ahead of the viewport.
+      this.jumpToIndex(next.index);
+    } else {
+      this.br.jumpToIndex(next.index, { noAnimate: true, ariaLive: true });
+    }
+  }
+
+  /** @param {PageIndex} index */
+  getPageScrollTop(index) {
+    return this.coordSpace.worldUnitsToVisiblePixels(this.pageTops[index] - this.SPACING_IN / 2);
   }
 
   zoomIn() {
@@ -207,6 +246,9 @@ export class Mode1UpLit extends LitElement {
       // Need to set this scale to update the world size, so the scrollbar gets the correct size
       this.$world.style.transform = `scale(${this.scale})`;
     }
+    if (changedProps.has('pages') || changedProps.has('scale')) {
+      this.$world.style.minHeight = '';
+    }
   }
 
   updatePages() {
@@ -226,6 +268,7 @@ export class Mode1UpLit extends LitElement {
     this.htmlDimensionsCacher.detachResizeListener();
     this.detachScrollListeners();
     this.smoothZoomer.detach();
+    if (this.$world) this.$world.style.minHeight = '';
     super.disconnectedCallback();
   }
 

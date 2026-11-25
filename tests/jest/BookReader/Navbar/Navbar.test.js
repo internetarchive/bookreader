@@ -62,6 +62,26 @@ beforeEach(() => {
 
 afterEach(() => sinon.restore());
 
+describe('Advance one screen control', () => {
+  test('uses a named native button and delegates only in single-page mode', () => {
+    const button = navbar.$root.find('.advance_one_screen')[0];
+    const advance = sinon.stub(br._modes.mode1Up, 'advanceOneScreen');
+    expect(button).toBeInstanceOf(HTMLButtonElement);
+    expect(button.type).toBe('button');
+    expect(button.textContent).toBe('Advance one screen');
+
+    br.switchMode('1up');
+    expect(br.refs.$br.hasClass('BRmode1up')).toBe(true);
+    button.click();
+    expect(advance.callCount).toBe(1);
+
+    br.switchMode('2up');
+    expect(br.refs.$br.hasClass('BRmode1up')).toBe(false);
+    button.click();
+    expect(advance.callCount).toBe(1);
+  });
+});
+
 describe('Navbar slider', () => {
   test('while sliding, visible page number updates, but does not flip', () => {
     const $slider = navbar.$root.find('.BRpager');
