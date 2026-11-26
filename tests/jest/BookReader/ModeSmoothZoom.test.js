@@ -216,3 +216,109 @@ describe("TouchesMonitor", () => {
     expect(spy._totalListenerCount).toBe(0);
   });
 });
+
+describe('paragraph double-tap zoom', () => {
+  let mode;
+  let zoom;
+  let layer;
+  let paragraph;
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    mode = dummy_mode();
+    Object.defineProperty(mode.$container, 'clientWidth', { value: 200 });
+    mode.$container.getBoundingClientRect = () => ({ left: 0, top: 0 });
+    mode.updateComplete = Promise.resolve();
+    layer = document.createElement('div');
+    layer.className = 'BRtextLayer';
+    layer.style.width = '1000px';
+    layer.style.height = '1000px';
+    layer.getBoundingClientRect = () => ({ left: 0, top: 0, width: 500, height: 500 });
+    paragraph = document.createElement('p');
+    paragraph.className = 'BRparagraphElement';
+    paragraph.dataset.ocrCoords = '100,300,500,100';
+    layer.appendChild(paragraph);
+    mode.$container.appendChild(layer);
+    document.body.appendChild(mode.$container);
+    zoom = new ModeSmoothZoom(mode);
+  });
+
+  afterEach(() => {
+    mode.$container.remove();
+    jest.useRealTimers();
+  });
+
+  function tap(x = 75, y = 75) {
+    zoom._touchStart({ touches: [{ clientX: x, clientY: y }] });
+    const event = { touches: [], preventDefault: jest.fn() };
+    zoom._touchEnd(event);
+    return event;
+  }
+
+  test('fits the OCR paragraph to the viewport on a second tap', async () => {
+    tap();
+    const second = tap();
+    await Promise.resolve();
+    expect(second.preventDefault).toHaveBeenCalled();
+    expect(mode.scale).toBe(1);
+    expect(mode.autoFit).toBe('none');
+  });
+
+  test('scales a narrower paragraph further', async () => {
+    paragraph.dataset.ocrCoords = '100,300,300,100';
+    tap();
+    tap();
+    await Promise.resolve();
+    expect(mode.scale).toBe(2);
+  });
+
+  test('leaves touches without OCR untouched', () => {
+    layer.remove();
+    tap();
+    const second = tap();
+    expect(second.preventDefault).not.toHaveBeenCalled();
+    expect(mode.scale).toBe(1);
+  });
+
+  test('defers a two-page single tap and cancels it on double tap', () => {
+    mode.$container.classList.add('BRmode2up');
+    mode.br = { left: jest.fn(), right: jest.fn() };
+    const page = document.createElement('div');
+    page.className = 'BRpagecontainer';
+    page.dataset.side = 'L';
+    layer.replaceWith(page);
+    page.appendChild(layer);
+    expect(tap().preventDefault).toHaveBeenCalled();
+    expect(mode.br.left).not.toHaveBeenCalled();
+    tap();
+    jest.advanceTimersByTime(300);
+    expect(mode.br.left).not.toHaveBeenCalled();
+  });
+
+  test('a two-page single tap still turns the page', () => {
+    mode.$container.classList.add('BRmode2up');
+    mode.br = { left: jest.fn(), right: jest.fn() };
+    const page = document.createElement('div');
+    page.className = 'BRpagecontainer';
+    page.dataset.side = 'R';
+    layer.replaceWith(page);
+    page.appendChild(layer);
+    tap();
+    jest.advanceTimersByTime(300);
+    expect(mode.br.right).toHaveBeenCalledTimes(1);
+  });
+
+  test('movement and multitouch cancel a pending page turn', () => {
+    mode.$container.classList.add('BRmode2up');
+    mode.br = { left: jest.fn(), right: jest.fn() };
+    const page = document.createElement('div');
+    page.className = 'BRpagecontainer';
+    page.dataset.side = 'L';
+    layer.replaceWith(page);
+    page.appendChild(layer);
+    tap();
+    zoom._touchStart({ touches: [{}, {}] });
+    jest.advanceTimersByTime(300);
+    expect(mode.br.left).not.toHaveBeenCalled();
+  });
+});

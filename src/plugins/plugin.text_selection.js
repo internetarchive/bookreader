@@ -276,6 +276,7 @@ export class TextSelectionPlugin extends BookReaderPlugin {
   renderParagraph(ocrParagraph) {
     const paragEl = document.createElement('p');
     paragEl.classList.add('BRparagraphElement');
+    paragEl.dataset.ocrCoords = ocrParagraph.getAttribute('coords');
     if (ocrParagraph.getAttribute("x-role")) {
       paragEl.classList.add('ocr-role-header-footer');
       paragEl.ariaHidden = "true";

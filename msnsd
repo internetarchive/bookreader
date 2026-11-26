@@ -1,0 +1,150 @@
+[1mdiff --git a/src/BookReader/ModeSmoothZoom.js b/src/BookReader/ModeSmoothZoom.js[m
+[1mindex a1f8b262..1398a920 100644[m
+[1m--- a/src/BookReader/ModeSmoothZoom.js[m
+[1m+++ b/src/BookReader/ModeSmoothZoom.js[m
+[36m@@ -44,6 +44,10 @@[m [mexport class ModeSmoothZoom {[m
+     if (this.attached) return;[m
+ [m
+     this.attachCtrlZoom();[m
+[32m+[m[32m    this.mode.$container.addEventListener('touchstart', this._touchStart, { passive: true });[m
+[32m+[m[32m    this.mode.$container.addEventListener('touchmove', this._touchMove, { passive: true });[m
+[32m+[m[32m    this.mode.$container.addEventListener('touchend', this._touchEnd, { passive: false });[m
+[32m+[m[32m    this.mode.$container.addEventListener('touchcancel', this._touchCancel);[m
+ [m
+     // GestureEvents work only on Safari; they're too glitchy to use[m
+     // fully, but they can sometimes help error correct when interact[m
+[36m@@ -89,6 +93,12 @@[m [mexport class ModeSmoothZoom {[m
+ [m
+   detach() {[m
+     this.detachCtrlZoom();[m
+[32m+[m[32m    this.mode.$container.removeEventListener('touchstart', this._touchStart);[m
+[32m+[m[32m    this.mode.$container.removeEventListener('touchmove', this._touchMove);[m
+[32m+[m[32m    this.mode.$container.removeEventListener('touchend', this._touchEnd);[m
+[32m+[m[32m    this.mode.$container.removeEventListener('touchcancel', this._touchCancel);[m
+[32m+[m[32m    clearTimeout(this.tapTimer);[m
+[32m+[m[32m    this.lastTap = null;[m
+ [m
+     // GestureEvents work only on Safari; they interfere with Hammer,[m
+     // so block them.[m
+[36m@@ -105,6 +115,123 @@[m [mexport class ModeSmoothZoom {[m
+     this.attached = false;[m
+   }[m
+ [m
+[32m+[m[32m  _paragraphAt(clientX, clientY) {[m
+[32m+[m[32m    for (const layer of this.mode.$container.querySelectorAll('.BRtextLayer')) {[m
+[32m+[m[32m      const rect = layer.getBoundingClientRect();[m
+[32m+[m[32m      const width = parseFloat(layer.style.width);[m
+[32m+[m[32m      const height = parseFloat(layer.style.height);[m
+[32m+[m[32m      if (!rect.width || !rect.height || !width || !height) continue;[m
+[32m+[m[32m      for (const paragraph of layer.querySelectorAll('.BRparagraphElement[data-ocr-coords]')) {[m
+[32m+[m[32m        const [left, bottom, right, top] = paragraph.dataset.ocrCoords.split(',').map(Number);[m
+[32m+[m[32m        if (![left, bottom, right, top].every(Number.isFinite) || right <= left || bottom <= top) continue;[m
+[32m+[m[32m        const bounds = {[m
+[32m+[m[32m          left: rect.left + left * rect.width / width,[m
+[32m+[m[32m          right: rect.left + right * rect.width / width,[m
+[32m+[m[32m          top: rect.top + top * rect.height / height,[m
+[32m+[m[32m          bottom: rect.top + bottom * rect.height / height,[m
+[32m+[m[32m        };[m
+[32m+[m[32m        if (clientX >= bounds.left && clientX <= bounds.right && clientY >= bounds.top && clientY <= bounds.bottom) {[m
+[32m+[m[32m          return { paragraph, layer, bounds };[m
+[32m+[m[32m        }[m
+[32m+[m[32m      }[m
+[32m+[m[32m    }[m
+[32m+[m[32m    return null;[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  _touchStart = (event) => {[m
+[32m+[m[32m    if (event.touches.length !== 1) {[m
+[32m+[m[32m      clearTimeout(this.tapTimer);[m
+[32m+[m[32m      this.lastTap = null;[m
+[32m+[m[32m      this.touch = null;[m
+[32m+[m[32m      return;[m
+[32m+[m[32m    }[m
+[32m+[m[32m    const { clientX, clientY } = event.touches[0];[m
+[32m+[m[32m    this.touch = { clientX, clientY, time: Date.now() };[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  _touchMove = (event) => {[m
+[32m+[m[32m    if (!this.touch || event.touches.length !== 1 ||[m
+[32m+[m[32m        Math.hypot(event.touches[0].clientX - this.touch.clientX, event.touches[0].clientY - this.touch.clientY) > 10) {[m
+[32m+[m[32m      clearTimeout(this.tapTimer);[m
+[32m+[m[32m      this.lastTap = null;[m
+[32m+[m[32m      this.touch = null;[m
+[32m+[m[32m    }[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  _touchCancel = () => {[m
+[32m+[m[32m    clearTimeout(this.tapTimer);[m
+[32m+[m[32m    this.lastTap = null;[m
+[32m+[m[32m    this.touch = null;[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  _touchEnd = (event) => {[m
+[32m+[m[32m    if (!this.touch || event.touches.length || Date.now() - this.touch.time > 350 || this.pinching) {[m
+[32m+[m[32m      this.touch = null;[m
+[32m+[m[32m      return;[m
+[32m+[m[32m    }[m
+[32m+[m[32m    const { clientX, clientY } = this.touch;[m
+[32m+[m[32m    this.touch = null;[m
+[32m+[m[32m    const hit = this._paragraphAt(clientX, clientY);[m
+[32m+[m[32m    if (!hit) return;[m
+[32m+[m
+[32m+[m[32m    const previous = this.lastTap;[m
+[32m+[m[32m    if (previous && previous.paragraph === hit.paragraph &&[m
+[32m+[m[32m        Date.now() - previous.time < 300 &&[m
+[32m+[m[32m        Math.hypot(clientX - previous.clientX, clientY - previous.clientY) < 30) {[m
+[32m+[m[32m      event.preventDefault();[m
+[32m+[m[32m      clearTimeout(this.tapTimer);[m
+[32m+[m[32m      this.lastTap = null;[m
+[32m+[m[32m      this._zoomToParagraph(hit);[m
+[32m+[m[32m      return;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    if (previous?.navigate) {[m
+[32m+[m[32m      clearTimeout(this.tapTimer);[m
+[32m+[m[32m      previous.navigate();[m
+[32m+[m[32m      this.lastTap = null;[m
+[32m+[m[32m      return;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    // Two-page mode turns pages on the compatibility mouseup. Delay only taps[m
+[32m+[m[32m    // over OCR paragraphs so a second tap can cancel the pending page turn.[m
+[32m+[m[32m    const page = hit.layer.closest('.BRpagecontainer');[m
+[32m+[m[32m    const isTwoPage = this.mode.$container.classList.contains('BRmode2up');[m
+[32m+[m[32m    if (isTwoPage && page && this.mode.br) {[m
+[32m+[m[32m      event.preventDefault();[m
+[32m+[m[32m      const side = page.dataset.side;[m
+[32m+[m[32m      const navigate = () => {[m
+[32m+[m[32m        if (side === 'L') this.mode.br.left();[m
+[32m+[m[32m        if (side === 'R') this.mode.br.right();[m
+[32m+[m[32m      };[m
+[32m+[m[32m      this.lastTap = { paragraph: hit.paragraph, clientX, clientY, time: Date.now(), navigate };[m
+[32m+[m[32m      this.tapTimer = setTimeout(() => {[m
+[32m+[m[32m        navigate();[m
+[32m+[m[32m        this.lastTap = null;[m
+[32m+[m[32m      }, 300);[m
+[32m+[m[32m    } else {[m
+[32m+[m[32m      this.lastTap = { paragraph: hit.paragraph, clientX, clientY, time: Date.now() };[m
+[32m+[m[32m    }[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  async _zoomToParagraph({ layer, paragraph, bounds }) {[m
+[32m+[m[32m    const container = this.mode.$container;[m
+[32m+[m[32m    const width = bounds.right - bounds.left;[m
+[32m+[m[32m    if (!width || !container.clientWidth) return;[m
+[32m+[m[32m    this.mode.autoFit = 'none';[m
+[32m+[m[32m    this.updateScaleCenter({ clientX: (bounds.left + bounds.right) / 2, clientY: bounds.top });[m
+[32m+[m[32m    this.mode.scale *= container.clientWidth / width;[m
+[32m+[m[32m    await this.mode.updateComplete;[m
+[32m+[m[32m    if (!paragraph.isConnected) return;[m
+[32m+[m[32m    const [left, , right, top] = paragraph.dataset.ocrCoords.split(',').map(Number);[m
+[32m+[m[32m    const layerRect = layer.getBoundingClientRect();[m
+[32m+[m[32m    const containerRect = container.getBoundingClientRect();[m
+[32m+[m[32m    const scaleX = layerRect.width / parseFloat(layer.style.width);[m
+[32m+[m[32m    const scaleY = layerRect.height / parseFloat(layer.style.height);[m
+[32m+[m[32m    container.scrollLeft += layerRect.left + (left + right) * scaleX / 2 - containerRect.left - container.clientWidth / 2;[m
+[32m+[m[32m    container.scrollTop += layerRect.top + top * scaleY - containerRect.top;[m
+[32m+[m[32m    this.scaleCenter = { x: 0.5, y: 0.5 };[m
+[32m+[m[32m  }[m
+[32m+[m
+   /** @param {Event} e
