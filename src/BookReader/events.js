@@ -6,6 +6,7 @@ export const EVENTS = {
   pageChanged: 'pageChanged',
   beforePageChanged: 'beforePageChanged',
   PostInit: 'PostInit',
+  PluginInit: 'PluginInit',
   stop: 'stop',
   resize: 'resize',
   userAction: 'userAction', // event to know if user is actively reading
