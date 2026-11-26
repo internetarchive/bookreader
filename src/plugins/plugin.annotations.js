@@ -86,7 +86,7 @@ export class AnnotationsPlugin extends BookReaderPlugin {
     highlights.push(highlight);
     this.storageService.save(highlights);
     this.renderSavedHighlights();
-    this.activeHighlightNodes = document.querySelectorAll(`.${highlight.uuid}`);
+    this.activeHighlightNodes = this.br.$(`.${highlight.uuid}`).toArray();
     this.selectMenu.requestUpdate();
   }
 
@@ -139,7 +139,7 @@ export class AnnotationsPlugin extends BookReaderPlugin {
       const textLayer = /** @type {HTMLElement} */ (this.br.$(`.pagediv${hl.pageIndex} .BRtextLayer`)[0]);
       if (!textLayer) continue;
       const highlightedRange = renderHighlight(textLayer, hl);
-      const hasExistingAnnotation = document.querySelector(`.icon-${hl.uuid}`) ? true : false;
+      const hasExistingAnnotation = this.br.$(`.icon-${hl.uuid}`).length > 0;
       // Attach click behaviour here? Only need one handler per text layer
       if (hl.annotation && !hasExistingAnnotation) {
         const iconLocation = findTopRightMostNode(highlightedRange);
@@ -217,8 +217,8 @@ export class BRAnnotationModal extends LitElement {
     window.removeEventListener('ol-popover-open', this.focusTextArea);
   }
 
-  focusTextArea() {
-    const textArea = document.querySelector('#annotateTextArea');
+  focusTextArea = () => {
+    const textArea = this.querySelector('#annotateTextArea');
     textArea?.focus();
   }
 
@@ -351,7 +351,7 @@ export class BRAnnotationModal extends LitElement {
     if (!nodes.length) return;
     this.currentAnnotationNodes = nodes;
     const identifier = retrieveUUID(nodes[0]);
-    const selectedQuoteNodes = document.querySelectorAll(`.${identifier}`);
+    const selectedQuoteNodes = this.br.$(`.${identifier}`).toArray();
 
     const firstNode = selectedQuoteNodes[0];
     const lastNode = selectedQuoteNodes[selectedQuoteNodes.length - 1];
@@ -401,7 +401,7 @@ export class BRAnnotationModal extends LitElement {
   }
 
   handleSaveAnnotation() {
-    const inputEle = document.querySelector("#annotateTextArea");
+    const inputEle = this.querySelector("#annotateTextArea");
     if (!inputEle || !this.currentAnnotationNodes) return;
     if (inputEle.value) {
       const currentUUID = retrieveUUID(this.currentAnnotationNodes[0]);
